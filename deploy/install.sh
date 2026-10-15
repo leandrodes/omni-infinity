@@ -1,6 +1,14 @@
 #!/bin/bash
 set -euo pipefail
 
+# Rodando via "wget | bash", o stdin é o pipe (fechado) e os `read` abortariam.
+# Redireciona entrada de teclado para o terminal real (se existir).
+if [ ! -t 0 ]; then
+  if { exec 3</dev/tty; } 2>/dev/null; then
+    exec 0<&3 3<&-
+  fi
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 
