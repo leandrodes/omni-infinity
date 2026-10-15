@@ -109,6 +109,11 @@ if [[ "$CFG_WACALLS" =~ ^[Ss]$ ]]; then
   read -rp "Domínio do WaCalls (ex.: wacalls.seudominio.com.br): " WACALLS_DOMAIN
 fi
 
+say "Validando DNS dos domínios..."
+check_dns "$APP_DOMAIN"
+[ -n "$WUZAPI_DOMAIN" ] && check_dns "$WUZAPI_DOMAIN"
+[ -n "$WACALLS_DOMAIN" ] && check_dns "$WACALLS_DOMAIN"
+
 # Email para Let's Encrypt (Modo 2 precisa)
 LE_EMAIL=""
 if [ "$INSTALL_MODE" = "1" ]; then
