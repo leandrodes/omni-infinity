@@ -306,6 +306,13 @@ fi
 echo
 read -rp "Subir containers (docker compose up -d)? [S/n]: " UP
 UP=${UP:-S}
+if [[ "$CFG_UFW" =~ ^[Ss]$ ]]; then
+  setup_ufw
+fi
+if [[ "$CFG_FAIL2BAN" =~ ^[Ss]$ ]]; then
+  setup_fail2ban
+fi
+
 if [[ "$UP" =~ ^[Ss]$ ]]; then
   say "Subindo containers em modo produção..."
   cd "$PROJECT_DIR/deploy"
