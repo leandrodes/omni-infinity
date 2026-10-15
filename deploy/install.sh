@@ -1,17 +1,77 @@
 #!/bin/bash
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+REQUIRED_DISK_GB=15
+REQUIRED_RAM_GB=4
+REQUIRED_CPU=2
 
 say() { echo -e "\e[1;36m[Omni-Infinity]\e[0m $*"; }
 warn() { echo -e "\e[1;33m[AVISO]\e[0m $*"; }
 err() { echo -e "\e[1;31m[ERRO]\e[0m $*"; }
 
+check_prereqs() {
+  say "Verificando pré-requisitos..."
+  DISK_AVAIL_GB=$(df -BG / | awk 'NR==2 {gsub("G","",$4); print $4}')
+  if [ "$DISK_AVAIL_GB" -lt "$REQUIRED_DISK_GB" ]; then
+    err "Espaço em disco insuficiente. Disponível: ${DISK_AVAIL_GB}GB, mínimo: ${REQUIRED_DISK_GB}GB"
+    exit 1
+  fi
+  say "✓ Espaço em disco: ${DISK_AVAIL_GB}GB OK"
+  RAM_TOTAL_GB=$(free -g | awk 'NR==2 {print $2}')
+  if [ "$RAM_TOTAL_GB" -lt "$REQUIRED_RAM_GB" ]; then
+    warn "Memória RAM baixa. Total: ${RAM_TOTAL_GB}GB, recomendado: ${REQUIRED_RAM_GB}GB"
+  else
+    say "✓ RAM: ${RAM_TOTAL_GB}GB OK"
+  fi
+  CPU_COUNT=$(nproc)
+  if [ "$CPU_COUNT" -lt "$REQUIRED_CPU" ]; then
+    warn "CPU baixa. Núcleos: ${CPU_COUNT}, recomendado: ${REQUIRED_CPU}"
+  else
+    say "✓ CPU: ${CPU_COUNT} núcleos OK"
+  fi
+  if ! command -v docker >/dev/null 2>&1; then
+    err "Docker não encontrado. Instale o Docker antes de continuar."
+    exit 1
+  fi
+  if ! docker compose version >/dev/null 2>&1 && ! docker-compose --version >/dev/null 2>&1; then
+    err "Docker Compose não encontrado."
+    exit 1
+  fi
+  say "✓ Docker e Docker Compose OK"
+}
+
+check_dns() {
+  local domain=$1
+  local ip
+  ip=$(curl -s --connect-timeout 5 https://api.ipify.org 2>/dev/null || curl -s --connect-timeout 5 https://ifconfig.me 2>/dev/null || true)
+  if [ -z "$ip" ]; then
+    warn "Não foi possível obter IP público. Pulando validação DNS para $domain"
+    return 0
+  fi
+  local resolved
+  resolved=$(getent hosts "$domain" 2>/dev/null | awk '{print $1}' | head -1)
+  if [ -z "$resolved" ]; then
+    resolved=$(nslookup "$domain" 2>/dev/null | grep -A1 "Name:" | grep "Address:" | awk '{print $NF}' | head -1)
+  fi
+  if [ "$resolved" = "$ip" ]; then
+    say "✓ DNS $domain aponta para $ip"
+    return 0
+  else
+    warn "DNS $domain não aponta para IP atual ($ip). Resolução atual: ${resolved:-desconhecido}"
+    read -rp "Continuar mesmo assim? [s/N]: " cont
+    if ! [[ "$cont" =~ ^[Ss]$ ]]; then
+      err "Validação DNS falhou para $domain"
+      exit 1
+    fi
+    return 0
+  fi
+}
+
 gen_hex() {
   openssl rand -hex "$1" 2>/dev/null || head -c "$(( $1 * 2 ))" /dev/urandom | xxd -p -c 256 | head -c "$(( $1 * 2 ))" || true
 }
 
+check_prereqs
 say "Instalador Omni-Infinity (Chatwoot personalizado)"
 say "Projeto: $PROJECT_DIR"
 echo
