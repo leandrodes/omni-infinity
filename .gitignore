@@ -108,3 +108,5 @@ Procfile.worktree
 deploy/.env
 deploy/Caddyfile
 deploy/logs/
+deploy/wuzapi/
+deploy/wacalls/

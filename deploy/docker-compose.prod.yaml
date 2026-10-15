@@ -76,29 +76,31 @@ services:
 
   # OPCIONAIS - gerenciados pelo install.sh
   # wuzapi:
-  #   image: wuzapi/wuzapi:latest
+  #   build:
+  #     context: ./wuzapi
   #   restart: always
   #   volumes:
-  #     - wuzapi_data:/usr/src/app/.wuzapi
+  #     - wuzapi_data:/app/dbdata
+  #     - wuzapi_files:/app/files
   #   env_file: .env
+  #   environment:
+  #     - WUZAPI_ADMIN_TOKEN=${WUZAPI_ADMIN_TOKEN:-changeme}
   #   ports:
   #     - '127.0.0.1:8080:8080'
 
   # wacalls:
-  #   image: whazing/wacalls:latest
+  #   build:
+  #     context: ./wacalls
   #   restart: always
   #   ports:
   #     - '127.0.0.1:8082:8080'
-  #     - '5000:5000/tcp'
-  #     - '5000:5000/udp'
   #   volumes:
   #     - wacalls_data:/data
   #   env_file: .env
   #   environment:
-  #     - WACALLS_PUBLIC_IP=${WACALLS_PUBLIC_IP:-auto}
-  #     - WACALLS_UDP_PORT=5000
-  #     - WACALLS_MAX_CALLS=1
   #     - WACALLS_API_KEY=${WACALLS_API_KEY}
+  #     - WACALLS_ALLOWED_ORIGINS=${WACALLS_ALLOWED_ORIGINS:-}
+  #     - WACALLS_MAX_CALLS=${WACALLS_MAX_CALLS:-8}
 
 volumes:
   storage_data:
@@ -107,4 +109,5 @@ volumes:
   caddy_data:
   caddy_config:
   # wuzapi_data:
+  # wuzapi_files:
   # wacalls_data:

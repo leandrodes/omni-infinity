@@ -255,7 +255,7 @@ ARE_PKEY=$(gen_hex 16)
 ARE_DKEY=$(gen_hex 16)
 ARE_SALT=$(gen_hex 16)
 WACALLS_API_KEY=$(gen_hex 32)
-WACALLS_PUBLIC_IP="auto"
+WUZAPI_ADMIN_TOKEN=$(gen_hex 32)
 
 # sed replacements
 sed -i "s|FRONTEND_URL=https://app.seudominio.com.br|FRONTEND_URL=https://${APP_DOMAIN}|" .env
@@ -269,12 +269,19 @@ sed -i "s|SMTP_DOMAIN=app.seudominio.com.br|SMTP_DOMAIN=${APP_DOMAIN}|" .env
 sed -i "s|MAILER_SENDER_EMAIL=Omni <no-reply@seudominio.com.br|MAILER_SENDER_EMAIL=Omni <no-reply@${APP_DOMAIN}|g" .env
 
 # Adiciona variáveis opcionais
+if [[ "$CFG_WUZAPI" =~ ^[Ss]$ ]]; then
+  {
+    echo ""
+    echo "# WuzAPI"
+    echo "WUZAPI_ADMIN_TOKEN=${WUZAPI_ADMIN_TOKEN}"
+  } >> .env
+fi
 if [[ "$CFG_WACALLS" =~ ^[Ss]$ ]]; then
   {
     echo ""
     echo "# WaCalls"
     echo "WACALLS_API_KEY=${WACALLS_API_KEY}"
-    echo "WACALLS_PUBLIC_IP=${WACALLS_PUBLIC_IP}"
+    echo "WACALLS_MAX_CALLS=8"
   } >> .env
 fi
 
@@ -321,12 +328,24 @@ if [[ "$ACT_SVC" =~ ^[Ss]$ ]]; then
   if [[ "$CFG_WUZAPI" =~ ^[Ss]$ ]]; then
     sed -i '/^  # wuzapi:/,/^$/ s/^  # /  /' docker-compose.prod.yaml
     sed -i 's/^  # wuzapi_data:/  wuzapi_data:/' docker-compose.prod.yaml
+    sed -i 's/^  # wuzapi_files:/  wuzapi_files:/' docker-compose.prod.yaml
   fi
   if [[ "$CFG_WACALLS" =~ ^[Ss]$ ]]; then
     sed -i '/^  # wacalls:/,/^$/ s/^  # /  /' docker-compose.prod.yaml
     sed -i 's/^  # wacalls_data:/  wacalls_data:/' docker-compose.prod.yaml
   fi
   say "Serviços opcionais ativados no docker-compose.prod.yaml"
+fi
+
+# Clona forks públicos para build local (se ainda não existirem)
+mkdir -p "$PROJECT_DIR/deploy"
+if [[ "$CFG_WUZAPI" =~ ^[Ss]$ ]] && [ ! -d "$PROJECT_DIR/deploy/wuzapi/.git" ]; then
+  say "Clonando WuzAPI (fork público)..."
+  git clone --depth 1 https://github.com/leandrodes/wuzapi.git "$PROJECT_DIR/deploy/wuzapi" || warn "Não foi possível clonar leandrodes/wuzapi"
+fi
+if [[ "$CFG_WACALLS" =~ ^[Ss]$ ]] && [ ! -d "$PROJECT_DIR/deploy/wacalls/.git" ]; then
+  say "Clonando WaCalls (fork público)..."
+  git clone --depth 1 https://github.com/leandrodes/wacalls.git "$PROJECT_DIR/deploy/wacalls" || warn "Não foi possível clonar leandrodes/wacalls"
 fi
 
 echo
@@ -342,7 +361,23 @@ fi
 if [[ "$UP" =~ ^[Ss]$ ]]; then
   say "Subindo containers em modo produção..."
   cd "$PROJECT_DIR/deploy"
-  docker compose -f docker-compose.prod.yaml up -d
+  # Sobe o núcleo primeiro (não depende de imagens opcionais)
+  docker compose -f docker-compose.prod.yaml up -d postgres redis caddy rails sidekiq
+  # Serviços opcionais: falha em um não derruba o restante
+  if [[ "$CFG_WUZAPI" =~ ^[Ss]$ ]]; then
+    if docker compose -f docker-compose.prod.yaml up -d wuzapi; then
+      say "✓ WuzAPI ativo"
+    else
+      warn "Falha ao subir WuzAPI (verifique a imagem/porta). O restante segue funcionando."
+    fi
+  fi
+  if [[ "$CFG_WACALLS" =~ ^[Ss]$ ]]; then
+    if docker compose -f docker-compose.prod.yaml up -d wacalls; then
+      say "✓ WaCalls ativo"
+    else
+      warn "Falha ao subir WaCalls. Verifique build e logs: docker compose -f docker-compose.prod.yaml logs --tail=40 wacalls"
+    fi
+  fi
   say "Concluído. Aguarde ~60s para inicialização completa."
   echo
   say "URLs:"
@@ -350,7 +385,8 @@ if [[ "$UP" =~ ^[Ss]$ ]]; then
   [ -n "$WUZAPI_DOMAIN" ] && echo "  WuzAPI: https://${WUZAPI_DOMAIN}"
   [ -n "$WACALLS_DOMAIN" ] && echo "  WaCalls: https://${WACALLS_DOMAIN}"
   echo
-  say "Primeiro login (Chatwoot): john@acme.inc / Password1!"
+  say "Verifique o estado com: docker compose -f docker-compose.prod.yaml ps"
+  say "Primeiro acesso ao Chatwoot: crie a conta de administrador em https://${APP_DOMAIN}"
 else
   say "Instalação preparada. Para subir: cd ${PROJECT_DIR}/deploy && docker compose -f docker-compose.prod.yaml up -d"
 fi
