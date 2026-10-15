@@ -1,5 +1,5 @@
 services:
-  base:
+  base: &base
     image: chatwoot/chatwoot:latest
     env_file: .env
     volumes:
