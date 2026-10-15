@@ -67,6 +67,60 @@ check_dns() {
   fi
 }
 
+
+setup_ufw() {
+  if ! command -v ufw >/dev/null 2>&1; then
+    warn "UFW não encontrado. Tentando instalar..."
+    apt-get update -y && apt-get install -y ufw || true
+  fi
+  if ! command -v ufw >/dev/null 2>&1; then
+    warn "Não foi possível instalar UFW. Pulando."
+    return 0
+  fi
+  ufw default deny incoming >/dev/null 2>&1 || true
+  ufw default allow outgoing >/dev/null 2>&1 || true
+  ufw allow 22/tcp >/dev/null 2>&1 || true
+  ufw allow 80/tcp >/dev/null 2>&1 || true
+  ufw allow 443/tcp >/dev/null 2>&1 || true
+  if [[ "$CFG_WACALLS" =~ ^[Ss]$ ]]; then
+    ufw allow 5000/tcp >/dev/null 2>&1 || true
+    ufw allow 5000/udp >/dev/null 2>&1 || true
+  fi
+  echo "y" | ufw enable >/dev/null 2>&1 || true
+  say "✓ UFW configurado"
+}
+
+setup_fail2ban() {
+  if ! command -v fail2ban-client >/dev/null 2>&1; then
+    warn "Fail2Ban não encontrado. Tentando instalar..."
+    apt-get update -y && apt-get install -y fail2ban >/dev/null 2>&1 || true
+  fi
+  if ! command -v fail2ban-client >/dev/null 2>&1; then
+    warn "Não foi possível instalar Fail2Ban. Pulando."
+    return 0
+  fi
+  mkdir -p /etc/fail2ban/jail.d
+  mkdir -p ./logs/caddy
+  cat > /etc/fail2ban/jail.d/omni-infinity.conf << "EOF"
+[sshd]
+enabled = true
+port = ssh
+maxretry = 5
+bantime = 1h
+findtime = 10m
+
+[caddy-auth]
+enabled = true
+port = http,https
+logpath = /opt/omni-infinity/deploy/logs/caddy/*.log
+maxretry = 5
+bantime = 1h
+findtime = 10m
+EOF
+  sed -i "s|/opt/omni-infinity|${PROJECT_DIR}|g" /etc/fail2ban/jail.d/omni-infinity.conf 2>/dev/null || true
+  systemctl enable --now fail2ban >/dev/null 2>&1 || fail2ban-client start >/dev/null 2>&1 || true
+  say "✓ Fail2Ban configurado"
+}
 gen_hex() {
   openssl rand -hex "$1" 2>/dev/null || head -c "$(( $1 * 2 ))" /dev/urandom | xxd -p -c 256 | head -c "$(( $1 * 2 ))" || true
 }
