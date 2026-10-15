@@ -1,0 +1,54 @@
+#!/bin/bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+
+say() { echo -e "\e[1;36m[Omni-Infinity-Reconfigure]\e[0m $*"; }
+
+say "Reconfigurando firewall/Fail2Ban (preserva domínios/.env/Caddyfile existentes)"
+cd "$PROJECT_DIR/deploy"
+
+read -rp "Configurar UFW? [s/N]: " CFG_UFW
+CFG_UFW=${CFG_UFW:-N}
+read -rp "Configurar Fail2Ban? [s/N]: " CFG_FAIL2BAN
+CFG_FAIL2BAN=${CFG_FAIL2BAN:-N}
+
+CFG_WACALLS=N
+[ -f .env ] && grep -q "WACALLS_API_KEY" .env && CFG_WACALLS=S
+
+if [[ "$CFG_UFW" =~ ^[Ss]$ ]]; then
+  if ! command -v ufw >/dev/null 2>&1; then apt-get update -y && apt-get install -y ufw || true; fi
+  if command -v ufw >/dev/null 2>&1; then
+    ufw default deny incoming >/dev/null 2>&1 || true
+    ufw default allow outgoing >/dev/null 2>&1 || true
+    ufw allow 22/tcp >/dev/null 2>&1 || true
+    ufw allow 80/tcp >/dev/null 2>&1 || true
+    ufw allow 443/tcp >/dev/null 2>&1 || true
+    if [[ "$CFG_WACALLS" =~ ^[Ss]$ ]]; then
+      ufw allow 5000/tcp >/dev/null 2>&1 || true
+      ufw allow 5000/udp >/dev/null 2>&1 || true
+    fi
+    echo "y" | ufw enable >/dev/null 2>&1 || true
+    say "✓ UFW configurado"
+  fi
+fi
+
+if [[ "$CFG_FAIL2BAN" =~ ^[Ss]$ ]]; then
+  if ! command -v fail2ban-client >/dev/null 2>&1; then apt-get update -y && apt-get install -y fail2ban >/dev/null 2>&1 || true; fi
+  mkdir -p /etc/fail2ban/jail.d ./logs/caddy
+  cat > /etc/fail2ban/jail.d/omni-infinity.conf << EOF
+[sshd]
+enabled = true
+port = ssh
+maxretry = 5
+bantime = 1h
+findtime = 10m
+
+[caddy-auth]
+enabled = true
+port = http,https
+logpath = ${PROJECT_DIR}/deploy/logs/caddy/*.log
+maxretry = 5
+bantime = 1h
+findtime = 10m
