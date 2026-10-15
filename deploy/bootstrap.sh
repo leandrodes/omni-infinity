@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 if [ "$(id -u)" -ne 0 ]; then
-  echo "Execute como root: curl ... | sudo bash OU su -; wget ... | bash"
+  echo "Execute como root (su -)."
   exit 1
 fi
 if ! command -v curl >/dev/null 2>&1 && ! command -v wget >/dev/null 2>&1; then
@@ -18,7 +18,7 @@ if ! command -v git >/dev/null 2>&1; then
 fi
 mkdir -p /opt
 cd /opt
-rm -rf omni-infinity
-git clone https://github.com/leandrodes/omni-infinity.git
-cd omni-infinity/deploy
+rm -rf /opt/omni-infinity
+git clone https://github.com/leandrodes/omni-infinity.git /opt/omni-infinity
+cd /opt/omni-infinity/deploy
 exec bash install.sh
