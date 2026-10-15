@@ -124,6 +124,21 @@ if [ "$INSTALL_MODE" = "1" ]; then
   fi
 fi
 
+# Firewall e Fail2Ban
+CFG_UFW=N
+CFG_FAIL2BAN=N
+if [ "$INSTALL_MODE" = "1" ]; then
+  read -rp "Configurar firewall UFW (22,80,443 [+5000])? [S/n]: " CFG_UFW
+  CFG_UFW=${CFG_UFW:-S}
+  read -rp "Instalar/configurar Fail2Ban (protecao contra brute force)? [S/n]: " CFG_FAIL2BAN
+  CFG_FAIL2BAN=${CFG_FAIL2BAN:-S}
+else
+  read -rp "Configurar firewall UFW (22,80,443 [+5000])? [s/N]: " CFG_UFW
+  CFG_UFW=${CFG_UFW:-N}
+  read -rp "Instalar/configurar Fail2Ban (protecao contra brute force)? [s/N]: " CFG_FAIL2BAN
+  CFG_FAIL2BAN=${CFG_FAIL2BAN:-N}
+fi
+
 # Gera .env
 cd "$PROJECT_DIR/deploy"
 if [ -f .env ]; then
