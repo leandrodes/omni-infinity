@@ -4,9 +4,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 
-say() { echo -e "\e[1;36m[Omni-Infinity-Reconfigure]\e[0m $*"; }
+say_r() { echo -e "\e[1;36m[Omni-Infinity-Reconfigure]\e[0m $*"; }
 
-say "Reconfigurando firewall/Fail2Ban (preserva domínios/.env/Caddyfile existentes)"
+say_r "Reconfigurando firewall/Fail2Ban (preserva domínios/.env/Caddyfile existentes)"
 cd "$PROJECT_DIR/deploy"
 
 read -rp "Configurar UFW? [s/N]: " CFG_UFW
@@ -30,7 +30,7 @@ if [[ "$CFG_UFW" =~ ^[Ss]$ ]]; then
       ufw allow 5000/udp >/dev/null 2>&1 || true
     fi
     echo "y" | ufw enable >/dev/null 2>&1 || true
-    say "✓ UFW configurado"
+    say_r "✓ UFW configurado"
   fi
 fi
 
