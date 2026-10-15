@@ -51,24 +51,19 @@ check_prereqs() {
   say "✓ Docker e Docker Compose OK"
 }
 
+# Compara o DNS do domínio com o IP esperado (parâmetro 2).
+# Se IP esperado vazio, apenas verifica se o domínio resolve.
 check_dns() {
   local domain=$1
-  local ip
-  ip=$(curl -s --connect-timeout 5 https://api.ipify.org 2>/dev/null || curl -s --connect-timeout 5 https://ifconfig.me 2>/dev/null || true)
-  if [ -z "$ip" ]; then
-    warn "Não foi possível obter IP público. Pulando validação DNS para $domain"
-    return 0
+  local expected=${2:-}
+  local resolved_all resolved
+  resolved_all=$(getent ahostsv4 "$domain" 2>/dev/null | awk '{print $1}' | sort -u | paste -sd' ' - || true)
+  if [ -z "$resolved_all" ]; then
+    resolved_all=$(nslookup "$domain" 2>/dev/null | awk '/^Address: / {print $2}' | paste -sd' ' - || true)
   fi
-  local resolved
-  resolved=$(getent hosts "$domain" 2>/dev/null | awk '{print $1}' | head -1 || true)
+  resolved=$(echo "$resolved_all" | awk '{print $1}')
   if [ -z "$resolved" ]; then
-    resolved=$(nslookup "$domain" 2>/dev/null | grep -A1 "Name:" | grep "Address:" | awk '{print $NF}' | head -1 || true)
-  fi
-  if [ "$resolved" = "$ip" ]; then
-    say "✓ DNS $domain aponta para $ip"
-    return 0
-  else
-    warn "DNS $domain não aponta para IP atual ($ip). Resolução atual: ${resolved:-desconhecido}"
+    warn "DNS $domain não resolve (nenhum registro A encontrado)"
     read -rp "Continuar mesmo assim? [s/N]: " cont
     if ! [[ "$cont" =~ ^[Ss]$ ]]; then
       err "Validação DNS falhou para $domain"
@@ -76,6 +71,21 @@ check_dns() {
     fi
     return 0
   fi
+  if [ -z "$expected" ]; then
+    say "✓ DNS $domain resolve para: ${resolved_all}"
+    return 0
+  fi
+  if echo " $resolved_all " | grep -q " $expected "; then
+    say "✓ DNS $domain aponta para $expected"
+    return 0
+  fi
+  warn "DNS $domain aponta para [$resolved_all], esperado: $expected"
+  read -rp "Continuar mesmo assim? [s/N]: " cont
+  if ! [[ "$cont" =~ ^[Ss]$ ]]; then
+    err "Validação DNS falhou para $domain"
+    exit 1
+  fi
+  return 0
 }
 
 
@@ -179,10 +189,25 @@ if [[ "$CFG_WACALLS" =~ ^[Ss]$ ]]; then
   read -rp "Domínio do WaCalls (ex.: wacalls.seudominio.com.br): " WACALLS_DOMAIN
 fi
 
+# IP esperado para validar o DNS (varia por modo):
+# - Modo 1 (VPS direta): sai o IP público da própria máquina (normalmente é o mesmo de entrada).
+# - Modo 2 (atrás de firewall/NAT): o IP de saída (NAT) DIFERE do IP público de entrada do
+#   firewall, então pedimos o IP público do firewall (aquele apontado no DNS).
+EXPECTED_IP=""
+if [ "$INSTALL_MODE" = "1" ]; then
+  EXPECTED_IP=$(curl -s --connect-timeout 5 https://api.ipify.org 2>/dev/null || curl -s --connect-timeout 5 https://ifconfig.me 2>/dev/null || true)
+else
+  echo
+  say "Modo 2 (atrás de firewall): informe o IP público do FIREWALL (entrada)."
+  echo "  DNS desses domínios deve apontar para esse IP (ex.: 201.6.103.229)."
+  read -rp "IP público do firewall (Enter = apenas verificar se resolve): " EXPECTED_IP
+  EXPECTED_IP=${EXPECTED_IP:-}
+fi
+
 say "Validando DNS dos domínios..."
-check_dns "$APP_DOMAIN"
-[ -n "$WUZAPI_DOMAIN" ] && check_dns "$WUZAPI_DOMAIN"
-[ -n "$WACALLS_DOMAIN" ] && check_dns "$WACALLS_DOMAIN"
+check_dns "$APP_DOMAIN" "$EXPECTED_IP"
+[ -n "$WUZAPI_DOMAIN" ] && check_dns "$WUZAPI_DOMAIN" "$EXPECTED_IP"
+[ -n "$WACALLS_DOMAIN" ] && check_dns "$WACALLS_DOMAIN" "$EXPECTED_IP"
 
 # Email para Let's Encrypt (Modo 2 precisa)
 LE_EMAIL=""
