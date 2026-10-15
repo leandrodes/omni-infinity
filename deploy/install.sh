@@ -1,6 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+
 REQUIRED_DISK_GB=15
 REQUIRED_RAM_GB=4
 REQUIRED_CPU=2
@@ -49,9 +52,9 @@ check_dns() {
     return 0
   fi
   local resolved
-  resolved=$(getent hosts "$domain" 2>/dev/null | awk '{print $1}' | head -1)
+  resolved=$(getent hosts "$domain" 2>/dev/null | awk '{print $1}' | head -1 || true)
   if [ -z "$resolved" ]; then
-    resolved=$(nslookup "$domain" 2>/dev/null | grep -A1 "Name:" | grep "Address:" | awk '{print $NF}' | head -1)
+    resolved=$(nslookup "$domain" 2>/dev/null | grep -A1 "Name:" | grep "Address:" | awk '{print $NF}' | head -1 || true)
   fi
   if [ "$resolved" = "$ip" ]; then
     say "✓ DNS $domain aponta para $ip"
@@ -100,8 +103,13 @@ setup_fail2ban() {
     return 0
   fi
   mkdir -p /etc/fail2ban/jail.d
+  mkdir -p /etc/fail2ban/filter.d
   mkdir -p ./logs/caddy
-  cat > /etc/fail2ban/jail.d/omni-infinity.conf << "EOF"
+  if [ -f "$SCRIPT_DIR/fail2ban/filter.d/caddy-auth.conf" ]; then
+    cp "$SCRIPT_DIR/fail2ban/filter.d/caddy-auth.conf" /etc/fail2ban/filter.d/caddy-auth.conf
+    chmod 644 /etc/fail2ban/filter.d/caddy-auth.conf
+  fi
+  cat > /etc/fail2ban/jail.d/omni-infinity.conf << EOF
 [sshd]
 enabled = true
 port = ssh
@@ -111,13 +119,13 @@ findtime = 10m
 
 [caddy-auth]
 enabled = true
+filter = caddy-auth
 port = http,https
-logpath = /opt/omni-infinity/deploy/logs/caddy/*.log
+logpath = ${PROJECT_DIR}/deploy/logs/caddy/*.log
 maxretry = 5
 bantime = 1h
 findtime = 10m
 EOF
-  sed -i "s|/opt/omni-infinity|${PROJECT_DIR}|g" /etc/fail2ban/jail.d/omni-infinity.conf 2>/dev/null || true
   systemctl enable --now fail2ban >/dev/null 2>&1 || fail2ban-client start >/dev/null 2>&1 || true
   say "✓ Fail2Ban configurado"
 }
@@ -278,26 +286,11 @@ read -rp "Deseja atualizar docker-compose.prod.yaml para ativar serviços opcion
 ACT_SVC=${ACT_SVC:-S}
 if [[ "$ACT_SVC" =~ ^[Ss]$ ]]; then
   if [[ "$CFG_WUZAPI" =~ ^[Ss]$ ]]; then
-    sed -i 's/^  # wuzapi:/  wuzapi:/' docker-compose.prod.yaml
-    sed -i 's/^  #     image:/      image:/' docker-compose.prod.yaml
-    sed -i 's/^  #     restart:/      restart:/' docker-compose.prod.yaml
-    sed -i 's/^  #     volumes:/      volumes:/' docker-compose.prod.yaml
-    sed -i 's/^  #     env_file:/      env_file:/' docker-compose.prod.yaml
-    sed -i 's/^  #     ports:/      ports:/' docker-compose.prod.yaml
+    sed -i '/^  # wuzapi:/,/^$/ s/^  # /  /' docker-compose.prod.yaml
     sed -i 's/^  # wuzapi_data:/  wuzapi_data:/' docker-compose.prod.yaml
   fi
   if [[ "$CFG_WACALLS" =~ ^[Ss]$ ]]; then
-    sed -i 's/^  # wacalls:/  wacalls:/' docker-compose.prod.yaml
-    sed -i 's/^  #     image:/      image:/' docker-compose.prod.yaml
-    sed -i 's/^  #     restart:/      restart:/' docker-compose.prod.yaml
-    sed -i 's/^  #     ports:/      ports:/' docker-compose.prod.yaml
-    sed -i 's/^  #     volumes:/      volumes:/' docker-compose.prod.yaml
-    sed -i 's/^  #     env_file:/      env_file:/' docker-compose.prod.yaml
-    sed -i 's/^  #     environment:/      environment:/' docker-compose.prod.yaml
-    sed -i 's/^  #       - WACALLS_PUBLIC_IP=/        - WACALLS_PUBLIC_IP=/' docker-compose.prod.yaml
-    sed -i 's/^  #       - WACALLS_UDP_PORT=/        - WACALLS_UDP_PORT=/' docker-compose.prod.yaml
-    sed -i 's/^  #       - WACALLS_MAX_CALLS=/        - WACALLS_MAX_CALLS=/' docker-compose.prod.yaml
-    sed -i 's/^  #       - WACALLS_API_KEY=/        - WACALLS_API_KEY=/' docker-compose.prod.yaml
+    sed -i '/^  # wacalls:/,/^$/ s/^  # /  /' docker-compose.prod.yaml
     sed -i 's/^  # wacalls_data:/  wacalls_data:/' docker-compose.prod.yaml
   fi
   say "Serviços opcionais ativados no docker-compose.prod.yaml"

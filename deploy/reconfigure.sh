@@ -15,10 +15,14 @@ read -rp "Configurar Fail2Ban? [s/N]: " CFG_FAIL2BAN
 CFG_FAIL2BAN=${CFG_FAIL2BAN:-N}
 
 CFG_WACALLS=N
-[ -f .env ] && grep -q "WACALLS_API_KEY" .env && CFG_WACALLS=S
+if [ -f .env ] && grep -q "WACALLS_API_KEY" .env; then
+  CFG_WACALLS=S
+fi
 
 if [[ "$CFG_UFW" =~ ^[Ss]$ ]]; then
-  if ! command -v ufw >/dev/null 2>&1; then apt-get update -y && apt-get install -y ufw || true; fi
+  if ! command -v ufw >/dev/null 2>&1; then
+    apt-get update -y && apt-get install -y ufw || true
+  fi
   if command -v ufw >/dev/null 2>&1; then
     ufw default deny incoming >/dev/null 2>&1 || true
     ufw default allow outgoing >/dev/null 2>&1 || true
@@ -35,9 +39,17 @@ if [[ "$CFG_UFW" =~ ^[Ss]$ ]]; then
 fi
 
 if [[ "$CFG_FAIL2BAN" =~ ^[Ss]$ ]]; then
-  if ! command -v fail2ban-client >/dev/null 2>&1; then apt-get update -y && apt-get install -y fail2ban >/dev/null 2>&1 || true; fi
-  mkdir -p /etc/fail2ban/jail.d ./logs/caddy
-  cat > /etc/fail2ban/jail.d/omni-infinity.conf << EOF
+  if ! command -v fail2ban-client >/dev/null 2>&1; then
+    apt-get update -y && apt-get install -y fail2ban >/dev/null 2>&1 || true
+  fi
+  mkdir -p /etc/fail2ban/jail.d
+  mkdir -p /etc/fail2ban/filter.d
+  mkdir -p "$PROJECT_DIR/deploy/logs/caddy"
+  if [ -f "$SCRIPT_DIR/fail2ban/filter.d/caddy-auth.conf" ]; then
+    cp "$SCRIPT_DIR/fail2ban/filter.d/caddy-auth.conf" /etc/fail2ban/filter.d/caddy-auth.conf
+    chmod 644 /etc/fail2ban/filter.d/caddy-auth.conf
+  fi
+  cat > /etc/fail2ban/jail.d/omni-infinity.conf << JAIL
 [sshd]
 enabled = true
 port = ssh
@@ -47,8 +59,15 @@ findtime = 10m
 
 [caddy-auth]
 enabled = true
+filter = caddy-auth
 port = http,https
 logpath = ${PROJECT_DIR}/deploy/logs/caddy/*.log
 maxretry = 5
 bantime = 1h
 findtime = 10m
+JAIL
+  systemctl enable --now fail2ban >/dev/null 2>&1 || fail2ban-client start >/dev/null 2>&1 || true
+  say_r "✓ Fail2Ban configurado"
+fi
+
+say_r "Finalizado."
