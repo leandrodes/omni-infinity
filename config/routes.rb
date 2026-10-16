@@ -392,6 +392,13 @@ Rails.application.routes.draw do
             post 'manual/:inbox_id/setup_webhook', to: 'manual_setup#setup_webhook'
           end
 
+          namespace :unofficial_whatsapp do
+            post 'instances/:inbox_id', to: 'instances#create'
+            get 'instances/:inbox_id/qrcode', to: 'instances#qrcode'
+            get 'instances/:inbox_id/status', to: 'instances#status'
+            post 'instances/:inbox_id/logout', to: 'instances#logout'
+          end
+
           resources :webhooks, only: [:index, :create, :update, :destroy]
           namespace :integrations do
             resources :apps, only: [:index, :show]
@@ -676,6 +683,7 @@ Rails.application.routes.draw do
   post 'webhooks/sms/:phone_number', to: 'webhooks/sms#process_payload'
   get 'webhooks/whatsapp/:phone_number', to: 'webhooks/whatsapp#verify'
   post 'webhooks/whatsapp/:phone_number', to: 'webhooks/whatsapp#process_payload'
+  post 'webhooks/unofficial_whatsapp/:identifier', to: 'webhooks/unofficial_whatsapp#process_payload'
   get 'webhooks/instagram', to: 'webhooks/instagram#verify'
   post 'webhooks/instagram', to: 'webhooks/instagram#events'
   post 'webhooks/tiktok', to: 'webhooks/tiktok#events'

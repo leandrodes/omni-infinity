@@ -111,7 +111,8 @@ module Api::V1::InboxesHelper
       'line' => Current.account.line_channels,
       'telegram' => Current.account.telegram_channels,
       'whatsapp' => Current.account.whatsapp_channels,
-      'sms' => Current.account.sms_channels
+      'sms' => Current.account.sms_channels,
+      'unofficial_whatsapp' => Current.account.unofficial_whatsapp_channels
     }[permitted_params[:channel][:type]]
   end
 end

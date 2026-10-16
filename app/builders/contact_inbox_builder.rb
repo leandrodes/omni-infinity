@@ -17,6 +17,8 @@ class ContactInboxBuilder
       twilio_source_id
     when 'Channel::Whatsapp'
       wa_source_id
+    when 'Channel::UnofficialWhatsapp'
+      wa_source_id
     when 'Channel::Email'
       email_source_id
     when 'Channel::Sms'
@@ -100,7 +102,7 @@ class ContactInboxBuilder
   end
 
   def allowed_channels?
-    @inbox.email? || @inbox.sms? || @inbox.twilio? || @inbox.whatsapp?
+    @inbox.email? || @inbox.sms? || @inbox.twilio? || @inbox.whatsapp? || @inbox.unofficial_whatsapp?
   end
 end
 

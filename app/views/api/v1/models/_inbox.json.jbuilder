@@ -157,6 +157,12 @@ if resource.whatsapp?
   )
 end
 
+### Unofficial WhatsApp Channel
+if resource.unofficial_whatsapp?
+  json.connection_status resource.channel.try(:connection_status)
+  json.provider_config resource.channel.try(:provider_config) if Current.account_user&.administrator?
+end
+
 ## Voice attributes for TwilioSms
 if resource.twilio? && resource.channel.respond_to?(:voice_enabled?)
   json.voice_enabled resource.channel.voice_enabled?

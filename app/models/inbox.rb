@@ -167,6 +167,10 @@ class Inbox < ApplicationRecord
     channel_type == 'Channel::Whatsapp'
   end
 
+  def unofficial_whatsapp?
+    channel_type == 'Channel::UnofficialWhatsapp'
+  end
+
   def twilio_whatsapp?
     channel_type == 'Channel::TwilioSms' && channel.medium == 'whatsapp'
   end
@@ -196,6 +200,8 @@ class Inbox < ApplicationRecord
       "#{ENV.fetch('FRONTEND_URL', nil)}/webhooks/line/#{channel.line_channel_id}"
     when 'Channel::Whatsapp'
       "#{ENV.fetch('FRONTEND_URL', nil)}/webhooks/whatsapp/#{channel.phone_number}"
+    when 'Channel::UnofficialWhatsapp'
+      "#{ENV.fetch('WUZAPI_WEBHOOK_BASE_URL', 'http://rails:3000')}/webhooks/unofficial_whatsapp/#{channel.identifier}"
     end
   end
 
