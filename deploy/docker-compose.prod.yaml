@@ -1,10 +1,10 @@
-services:
-  base: &base
-    image: ghcr.io/leandrodes/omni-infinity:${OMNI_IMAGE_TAG:-latest}
-    env_file: .env
-    volumes:
-      - storage_data:/app/storage
+x-base: &base
+  image: ghcr.io/leandrodes/omni-infinity:${OMNI_IMAGE_TAG:-latest}
+  env_file: .env
+  volumes:
+    - storage_data:/app/storage
 
+services:
   rails:
     <<: *base
     depends_on:
@@ -74,42 +74,45 @@ services:
     depends_on:
       - rails
 
-  # OPCIONAIS - gerenciados pelo install.sh
-  # wuzapi:
-  #   build:
-  #     context: ./wuzapi
-  #   restart: always
-  #   volumes:
-  #     - wuzapi_data:/app/dbdata
-  #     - wuzapi_files:/app/files
-  #   env_file: .env
-  #   environment:
-  #     - WUZAPI_ADMIN_TOKEN=${WUZAPI_ADMIN_TOKEN:-changeme}
-  #   ports:
-  #     - '127.0.0.1:8080:8080'
+  # OPCIONAIS - ativados via Docker Compose profiles (definidos em .env: COMPOSE_PROFILES)
+  wuzapi:
+    profiles: ["wuzapi"]
+    build:
+      context: ./wuzapi
+    restart: always
+    volumes:
+      - wuzapi_data:/app/dbdata
+      - wuzapi_files:/app/files
+    env_file: .env
+    environment:
+      - WUZAPI_ADMIN_TOKEN=${WUZAPI_ADMIN_TOKEN:-changeme}
+    ports:
+      - '127.0.0.1:8080:8080'
 
-  # wacalls:
-  #   build:
-  #     context: ./wacalls
-  #   restart: always
-  #   ports:
-  #     - '127.0.0.1:8082:8080'
-  #   volumes:
-  #     - wacalls_data:/data
-  #   env_file: .env
-  #   environment:
-  #     - WACALLS_API_KEY=${WACALLS_API_KEY}
-  #     - WACALLS_ALLOWED_ORIGINS=${WACALLS_ALLOWED_ORIGINS:-}
-  #     - WACALLS_MAX_CALLS=${WACALLS_MAX_CALLS:-8}
+  wacalls:
+    profiles: ["wacalls"]
+    build:
+      context: ./wacalls
+    restart: always
+    ports:
+      - '127.0.0.1:8082:8080'
+    volumes:
+      - wacalls_data:/data
+    env_file: .env
+    environment:
+      - WACALLS_API_KEY=${WACALLS_API_KEY}
+      - WACALLS_ALLOWED_ORIGINS=${WACALLS_ALLOWED_ORIGINS:-}
+      - WACALLS_MAX_CALLS=${WACALLS_MAX_CALLS:-8}
 
-  # portainer:
-  #   image: portainer/portainer-ce:latest
-  #   restart: always
-  #   volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  #     - portainer_data:/data
-  #   ports:
-  #     - '127.0.0.1:9000:9000'
+  portainer:
+    profiles: ["portainer"]
+    image: portainer/portainer-ce:latest
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    ports:
+      - '127.0.0.1:9000:9000'
 
 volumes:
   storage_data:
@@ -117,7 +120,7 @@ volumes:
   redis_data:
   caddy_data:
   caddy_config:
-  # wuzapi_data:
-  # wuzapi_files:
-  # wacalls_data:
-  # portainer_data:
+  wuzapi_data:
+  wuzapi_files:
+  wacalls_data:
+  portainer_data:

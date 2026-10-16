@@ -6,6 +6,11 @@ on:
       - main
     tags:
       - 'v*'
+    paths-ignore:
+      - 'deploy/**'
+      - '.github/**'
+      - '**.md'
+      - 'LICENSE'
   workflow_dispatch:
 
 env:

@@ -293,6 +293,26 @@ if [[ "$CFG_WACALLS" =~ ^[Ss]$ ]]; then
   } >> .env
 fi
 
+# Profiles do Docker Compose ativam os serviços opcionais sem editar o compose.
+# O update.sh respeita esta variável automaticamente.
+COMPOSE_PROFILES_LIST=""
+if [[ "$CFG_WUZAPI" =~ ^[Ss]$ ]]; then
+  COMPOSE_PROFILES_LIST="${COMPOSE_PROFILES_LIST:+${COMPOSE_PROFILES_LIST},}wuzapi"
+fi
+if [[ "$CFG_WACALLS" =~ ^[Ss]$ ]]; then
+  COMPOSE_PROFILES_LIST="${COMPOSE_PROFILES_LIST:+${COMPOSE_PROFILES_LIST},}wacalls"
+fi
+if [[ "$CFG_PORTAINER" =~ ^[Ss]$ ]]; then
+  COMPOSE_PROFILES_LIST="${COMPOSE_PROFILES_LIST:+${COMPOSE_PROFILES_LIST},}portainer"
+fi
+if [ -n "$COMPOSE_PROFILES_LIST" ]; then
+  {
+    echo ""
+    echo "# Serviços opcionais ativos (Docker Compose profiles)"
+    echo "COMPOSE_PROFILES=${COMPOSE_PROFILES_LIST}"
+  } >> .env
+fi
+
 # Caddyfile (esquema e global variam por modo)
 # Modo 1 (VPS direta): Caddy faz TLS/Let's Encrypt na 443 (auto_https ligado).
 # Modo 2 (atrás de firewall/Sophos): firewall faz TLS e encaminha HTTP:80 para a VM.
@@ -343,26 +363,6 @@ envsubst < Caddyfile.template > Caddyfile
 
 say "Arquivos gerados:"
 ls -1 .env Caddyfile 2>/dev/null
-
-echo
-read -rp "Deseja atualizar docker-compose.prod.yaml para ativar serviços opcionais (WuzAPI/WaCalls)? [S/n]: " ACT_SVC
-ACT_SVC=${ACT_SVC:-S}
-if [[ "$ACT_SVC" =~ ^[Ss]$ ]]; then
-  if [[ "$CFG_WUZAPI" =~ ^[Ss]$ ]]; then
-    sed -i '/^  # wuzapi:/,/^$/ s/^  # /  /' docker-compose.prod.yaml
-    sed -i 's/^  # wuzapi_data:/  wuzapi_data:/' docker-compose.prod.yaml
-    sed -i 's/^  # wuzapi_files:/  wuzapi_files:/' docker-compose.prod.yaml
-  fi
-  if [[ "$CFG_WACALLS" =~ ^[Ss]$ ]]; then
-    sed -i '/^  # wacalls:/,/^$/ s/^  # /  /' docker-compose.prod.yaml
-    sed -i 's/^  # wacalls_data:/  wacalls_data:/' docker-compose.prod.yaml
-  fi
-  if [[ "$CFG_PORTAINER" =~ ^[Ss]$ ]]; then
-    sed -i '/^  # portainer:/,/^$/ s/^  # /  /' docker-compose.prod.yaml
-    sed -i 's/^  # portainer_data:/  portainer_data:/' docker-compose.prod.yaml
-  fi
-  say "Serviços opcionais ativados no docker-compose.prod.yaml"
-fi
 
 # Clona forks públicos para build local (se ainda não existirem)
 mkdir -p "$PROJECT_DIR/deploy"

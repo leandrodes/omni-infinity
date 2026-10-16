@@ -9,6 +9,9 @@ warn() { echo -e "\e[1;33m[AVISO]\e[0m $*"; }
 
 say "Atualizando Omni-Infinity (Chatwoot personalizado)"
 cd "$PROJECT_DIR"
+# Versões antigas do instalador editavam o compose e quebravam o `git pull`.
+# Descarta alterações locais em arquivos rastreados do deploy (não toca em .env/Caddyfile/wuzapi/wacalls).
+git checkout -- deploy/ 2>/dev/null || true
 git pull origin main
 cd "$PROJECT_DIR/deploy"
 
