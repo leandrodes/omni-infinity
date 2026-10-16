@@ -4,7 +4,7 @@ class UnofficialWhatsapp::Providers::WuzapiService < UnofficialWhatsapp::Provide
     response = admin_post('/admin/users', { name: name, token: remote_token, webhook: webhook, events: events })
     raise WuzapiError, "WuzAPI: failed to create user (#{response.code}) #{response.body}" unless response.success?
 
-    remote_id = response.parsed_response['id']
+    remote_id = response.parsed_response.dig('data', 'id') || response.parsed_response['id']
     { token: remote_token, id: remote_id }
   end
 
@@ -51,14 +51,23 @@ class UnofficialWhatsapp::Providers::WuzapiService < UnofficialWhatsapp::Provide
   end
 
   def endpoint
-    @endpoint ||= GlobalConfigService.load('WUZAPI_ENDPOINT', 'http://wuzapi:8080').to_s.chomp('/')
+    @endpoint ||= config_for('WUZAPI_ENDPOINT', 'http://wuzapi:8080').to_s.chomp('/')
   end
 
   def admin_token
-    @admin_token ||= GlobalConfigService.load('WUZAPI_ADMIN_TOKEN', nil).to_s
+    @admin_token ||= config_for('WUZAPI_ADMIN_TOKEN', nil).to_s
   end
 
   private
+
+  # Prefer the value set in the Super-Admin screen (InstallationConfig/GlobalConfig)
+  # and fall back to the environment variable. A plain GlobalConfigService.load
+  # would not fall back correctly here, because ConfigLoader pre-creates a blank
+  # record for WUZAPI_ADMIN_TOKEN (no default in installation_config.yml), which
+  # then shadows the ENV value.
+  def config_for(key, default = nil)
+    GlobalConfig.get(key)[key].presence || ENV.fetch(key, default)
+  end
 
   def send_text_message(phone_number, message)
     id = outbound_message_id(message)

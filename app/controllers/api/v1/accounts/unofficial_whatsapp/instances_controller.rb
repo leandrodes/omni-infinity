@@ -37,8 +37,8 @@ class Api::V1::Accounts::UnofficialWhatsapp::InstancesController < Api::V1::Acco
     data = response.parsed_response['data'] || {}
 
     if response.success?
-      logged_in = truthy?(data['LoggedIn'])
-      connected = truthy?(data['Connected'])
+      logged_in = truthy?(data['loggedIn'])
+      connected = truthy?(data['connected'])
       new_status = logged_in ? 'connected' : (connected ? 'connecting' : channel.connection_status)
       channel.update!(connection_status: new_status) if channel.connection_status != new_status
 
