@@ -15,11 +15,14 @@ class UnofficialWhatsapp::IncomingMessageService
     return unless message_event?
     return if echo? || group_message?
 
+    content = message_content
+    return if content.blank? && media.blank?
+
     set_contact
     set_conversation
 
     @message = @conversation.messages.build(
-      content: message_content,
+      content: content,
       account_id: @inbox.account_id,
       inbox_id: @inbox.id,
       message_type: :incoming,
@@ -34,8 +37,25 @@ class UnofficialWhatsapp::IncomingMessageService
 
   private
 
+  # WuzAPI posts the actual event as a JSON *string* under `jsonData`:
+  #   { "instanceName": "...", "userID": "...",
+  #     "jsonData": "{\"event\":{...},\"type\":\"Message\"}" }
+  # Fall back to the raw params so the service also accepts unwrapped payloads.
+  def root
+    @root ||= begin
+      raw = params['jsonData'] || params[:jsonData] || params['payload'] || params[:payload]
+      raw = raw.is_a?(String) ? JSON.parse(raw) : raw if raw.present?
+      raw = params if raw.blank?
+      # Some WuzAPI versions might embed the full event under another key
+      raw = raw['data'] if raw.is_a?(Hash) && raw.key?('data') && raw['data'].is_a?(Hash) && (raw['data'].key?('event') || raw['data'].key?(:event))
+      raw
+    rescue JSON::ParserError
+      params
+    end
+  end
+
   def event
-    @event ||= params['event'] || params[:event] || {}
+    @event ||= root['event'] || root[:event] || {}
   end
 
   def info
@@ -47,7 +67,7 @@ class UnofficialWhatsapp::IncomingMessageService
   end
 
   def message_event?
-    (params['type'] || params[:type]).to_s == 'Message'
+    (root['type'] || root[:type]).to_s == 'Message'
   end
 
   def echo?
@@ -58,8 +78,10 @@ class UnofficialWhatsapp::IncomingMessageService
     truthy?(info['IsGroup'] || info[:IsGroup])
   end
 
+  # Contacts that use a LID only expose the real phone number in SenderAlt
+  # ("551199...:50@s.whatsapp.net"); Sender carries the "@lid" form.
   def sender_jid
-    (info['Sender'] || info[:Sender]).to_s
+    ((info['SenderAlt'] || info[:SenderAlt]).presence || (info['Sender'] || info[:Sender])).to_s
   end
 
   def source_id
