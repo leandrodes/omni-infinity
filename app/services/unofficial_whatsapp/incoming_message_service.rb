@@ -220,10 +220,10 @@ class UnofficialWhatsapp::IncomingMessageService
 
   def file_type_for_mime(mime)
     case mime
-    when %r{\Aimage/} then 'image'
-    when %r{\Avideo/} then 'video'
-    when %r{\Aaudio/} then 'audio'
-    else 'file'
+    when %r{\Aimage/} then :image
+    when %r{\Avideo/} then :video
+    when %r{\Aaudio/} then :audio
+    else :file
     end
   end
 
