@@ -190,15 +190,15 @@ class UnofficialWhatsapp::IncomingMessageService
   end
 
   def media
-    @media ||= params['base64'] || params[:base64]
+    @media ||= root['base64'] || root[:base64] || params['base64'] || params[:base64]
   end
 
   def media_type
-    (params['mimeType'] || params[:mimeType]).to_s
+    (root['mimeType'] || root[:mimeType] || params['mimeType'] || params[:mimeType]).to_s
   end
 
   def media_filename
-    (params['fileName'] || params[:fileName]).to_s
+    (root['fileName'] || root[:fileName] || params['fileName'] || params[:fileName]).to_s
   end
 
   def attach_media
@@ -232,7 +232,7 @@ class UnofficialWhatsapp::IncomingMessageService
   end
 
   def caption_from_message
-    %w[imageMessage videoMessage documentMessage].each do |key|
+    %w[imageMessage videoMessage documentMessage audioMessage].each do |key|
       node = wa_message[key] || wa_message[key.underscore.to_sym]
       caption = node&.dig('caption') || node&.dig(:caption)
       return caption if caption.present?
