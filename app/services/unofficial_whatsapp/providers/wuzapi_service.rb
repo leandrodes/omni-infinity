@@ -2,6 +2,7 @@ class UnofficialWhatsapp::Providers::WuzapiService < UnofficialWhatsapp::Provide
   def create_session(name:, webhook:, events: 'Message', proxy_url: nil)
     remote_token = SecureRandom.hex(24)
     payload = { name: name, token: remote_token, webhook: webhook, events: events }
+    payload[:s3Config] = { enabled: false, mediaDelivery: 'base64' }
     if proxy_url.present?
       payload[:proxyConfig] = { enabled: true, proxyURL: proxy_url, webhookUseProxy: true }
     end
