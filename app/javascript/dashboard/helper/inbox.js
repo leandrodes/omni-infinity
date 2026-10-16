@@ -6,6 +6,7 @@ export const INBOX_TYPES = {
   TWITTER: 'Channel::TwitterProfile',
   TWILIO: 'Channel::TwilioSms',
   WHATSAPP: 'Channel::Whatsapp',
+  UNOFFICIAL_WHATSAPP: 'Channel::UnofficialWhatsapp',
   API: 'Channel::Api',
   EMAIL: 'Channel::Email',
   TELEGRAM: 'Channel::Telegram',
@@ -86,6 +87,7 @@ const INBOX_ICON_MAP_FILL = {
   [INBOX_TYPES.FB]: 'i-ri-messenger-fill',
   [INBOX_TYPES.TWITTER]: 'i-ri-twitter-x-fill',
   [INBOX_TYPES.WHATSAPP]: 'i-ri-whatsapp-fill',
+  [INBOX_TYPES.UNOFFICIAL_WHATSAPP]: 'i-ri-whatsapp-fill',
   [INBOX_TYPES.API]: 'i-ri-cloudy-fill',
   [INBOX_TYPES.EMAIL]: 'i-ri-mail-fill',
   [INBOX_TYPES.TELEGRAM]: 'i-ri-telegram-fill',
@@ -101,6 +103,7 @@ const INBOX_ICON_MAP_LINE = {
   [INBOX_TYPES.FB]: 'i-woot-messenger',
   [INBOX_TYPES.TWITTER]: 'i-woot-x',
   [INBOX_TYPES.WHATSAPP]: 'i-woot-whatsapp',
+  [INBOX_TYPES.UNOFFICIAL_WHATSAPP]: 'i-woot-whatsapp',
   [INBOX_TYPES.API]: 'i-woot-api',
   [INBOX_TYPES.EMAIL]: 'i-woot-mail',
   [INBOX_TYPES.TELEGRAM]: 'i-woot-telegram',
@@ -117,6 +120,7 @@ const INBOX_IDENTIFIER_RESOLVERS = {
   [INBOX_TYPES.WEB]: inbox => inbox.website_url,
   [INBOX_TYPES.EMAIL]: inbox => inbox.email,
   [INBOX_TYPES.WHATSAPP]: inbox => inbox.phone_number,
+  [INBOX_TYPES.UNOFFICIAL_WHATSAPP]: inbox => inbox.phone_number,
   [INBOX_TYPES.SMS]: inbox => inbox.phone_number,
   [INBOX_TYPES.LINE]: inbox => inbox.line_channel_id,
   [INBOX_TYPES.API]: inbox => inbox.inbox_identifier,
@@ -163,6 +167,9 @@ export const getReadableInboxByType = (type, phoneNumber) => {
     case INBOX_TYPES.WHATSAPP:
       return 'whatsapp';
 
+    case INBOX_TYPES.UNOFFICIAL_WHATSAPP:
+      return 'whatsapp';
+
     case INBOX_TYPES.API:
       return 'api';
 
@@ -197,6 +204,9 @@ export const getInboxClassByType = (type, phoneNumber) => {
         : 'brand-sms';
 
     case INBOX_TYPES.WHATSAPP:
+      return 'brand-whatsapp';
+
+    case INBOX_TYPES.UNOFFICIAL_WHATSAPP:
       return 'brand-whatsapp';
 
     case INBOX_TYPES.API:

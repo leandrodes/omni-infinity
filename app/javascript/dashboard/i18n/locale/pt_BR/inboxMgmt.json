@@ -37,6 +37,34 @@
         "PLACEHOLDER": "Digite o nome da caixa de entrada (ex: Acme Inc)",
         "ERROR": "Por favor, insira um nome completo válido"
       },
+      "UNOFFICIAL_WHATSAPP": {
+        "TITLE": "WhatsApp Não Oficial",
+        "DESCRIPTION": "Conecte um número de WhatsApp não oficial. Você escaneará um código QR com o celular para vincular a conta. Esta não é a API oficial do WhatsApp Business.",
+        "INBOX_NAME": {
+          "LABEL": "Nome da Caixa de Entrada",
+          "PLACEHOLDER": "Digite o nome da caixa de entrada (ex: Vendas)",
+          "ERROR": "Por favor, insira um nome completo válido"
+        },
+        "PHONE_NUMBER": {
+          "LABEL": "Número do WhatsApp (opcional)",
+          "PLACEHOLDER": "Digite o número no formato E.164 (ex: +5511999999999)",
+          "ERROR": "Por favor, insira um número de telefone válido"
+        },
+        "SUBMIT_BUTTON": "Criar e conectar",
+        "CONNECTING": "Conectando ao WhatsApp...",
+        "SCAN_TITLE": "Escaneie o código QR",
+        "SCAN_DESCRIPTION": "Abra o WhatsApp no celular, vá em Aparelhos vinculados e escaneie este código para vincular sua conta.",
+        "WAITING": "Aguardando o celular conectar...",
+        "CONNECTED": "WhatsApp conectado com sucesso!",
+        "FAILED": "Não foi possível conectar ao WhatsApp. Tente novamente.",
+        "CONTINUE": "Continuar",
+        "LOGOUT": "Desconectar",
+        "STATUS_CONNECTED": "Conectado",
+        "STATUS_CONNECTING": "Conectando",
+        "STATUS_DISCONNECTED": "Desconectado",
+        "STATUS_FAILED": "Falha na conexão",
+        "STATUS_INITIAL": "Não conectado"
+      },
       "WEBSITE_NAME": {
         "LABEL": "Nome do site",
         "PLACEHOLDER": "Informe o nome do seu site (por exemplo: Acme Inc)"
@@ -579,8 +607,12 @@
             "DESCRIPTION": "Conectar sua página do Facebook"
           },
           "WHATSAPP": {
-            "TITLE": "WhatsApp",
+            "TITLE": "WhatsApp API Oficial",
             "DESCRIPTION": "Atenda seus clientes no WhatsApp"
+          },
+          "UNOFFICIAL_WHATSAPP": {
+            "TITLE": "WhatsApp Não Oficial",
+            "DESCRIPTION": "Conecte um número de WhatsApp não oficial via WuzAPI"
           },
           "WHATSAPP_CALL": {
             "TITLE": "Chamada do WhatsApp",
@@ -1503,6 +1535,7 @@
       "TWITTER_PROFILE": "Twitter",
       "TWILIO_SMS": "SMS Twilio",
       "WHATSAPP": "WhatsApp",
+      "UNOFFICIAL_WHATSAPP": "WhatsApp Não Oficial",
       "SMS": "SMS",
       "EMAIL": "E-mail",
       "TELEGRAM": "Telegram",

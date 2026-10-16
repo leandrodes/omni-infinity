@@ -42,6 +42,14 @@ const channelList = computed(() => {
       icon: 'i-woot-whatsapp',
     },
     {
+      key: 'unofficial_whatsapp',
+      title: t('INBOX_MGMT.ADD.AUTH.CHANNEL.UNOFFICIAL_WHATSAPP.TITLE'),
+      description: t(
+        'INBOX_MGMT.ADD.AUTH.CHANNEL.UNOFFICIAL_WHATSAPP.DESCRIPTION'
+      ),
+      icon: 'i-woot-whatsapp',
+    },
+    {
       key: 'sms',
       title: t('INBOX_MGMT.ADD.AUTH.CHANNEL.SMS.TITLE'),
       description: t('INBOX_MGMT.ADD.AUTH.CHANNEL.SMS.DESCRIPTION'),
@@ -64,12 +72,6 @@ const channelList = computed(() => {
       title: t('INBOX_MGMT.ADD.AUTH.CHANNEL.TELEGRAM.TITLE'),
       description: t('INBOX_MGMT.ADD.AUTH.CHANNEL.TELEGRAM.DESCRIPTION'),
       icon: 'i-woot-telegram',
-    },
-    {
-      key: 'line',
-      title: t('INBOX_MGMT.ADD.AUTH.CHANNEL.LINE.TITLE'),
-      description: t('INBOX_MGMT.ADD.AUTH.CHANNEL.LINE.DESCRIPTION'),
-      icon: 'i-woot-line',
     },
     {
       key: 'instagram',

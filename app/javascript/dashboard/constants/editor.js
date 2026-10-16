@@ -86,6 +86,21 @@ export const FORMATTING = {
       'redo',
     ],
   },
+  'Channel::UnofficialWhatsapp': {
+    marks: ['strong', 'em', 'code', 'strike'],
+    nodes: ['bulletList', 'orderedList', 'codeBlock'],
+    menu: [
+      'copilot',
+      'strong',
+      'em',
+      'code',
+      'strike',
+      'bulletList',
+      'orderedList',
+      'undo',
+      'redo',
+    ],
+  },
   'Channel::Line': {
     marks: ['strong', 'em', 'code', 'strike'],
     nodes: ['codeBlock'],
