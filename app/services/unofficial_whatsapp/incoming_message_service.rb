@@ -12,8 +12,19 @@ class UnofficialWhatsapp::IncomingMessageService
   pattr_initialize [:inbox!, :params!]
 
   def perform
-    return unless message_event?
-    return if echo? || group_message?
+    type = (root['type'] || root[:type]).to_s
+    case type
+    when 'CallOffer', 'CallOfferNotice'
+      return handle_call_offer unless type == 'CallOfferNotice'
+      return
+    when 'Message'
+      nil
+    else
+      return
+    end
+
+    return if echo?
+    return if group_message? && channel.ignore_groups
 
     content = message_content
     return if content.blank? && media.blank?
@@ -35,7 +46,42 @@ class UnofficialWhatsapp::IncomingMessageService
     @message.save!
   end
 
+  def handle_call_offer
+    return unless channel.block_calls
+
+    reject_call!
+    text = channel.call_block_message.presence || 'Este número está bloqueado para receber chamadas'
+
+    set_contact
+    set_conversation
+
+    @message = @conversation.messages.build(
+      content: text,
+      account_id: @inbox.account_id,
+      inbox_id: @inbox.id,
+      message_type: :incoming,
+      sender: @contact,
+      source_id: source_id,
+      content_attributes: {}
+    )
+    @message.save!
+  end
+
   private
+
+  def channel
+    @channel ||= @inbox.channel
+  end
+
+  def reject_call!
+    @inbox.channel.provider_service.reject_call(call_from: sender_jid, call_id: call_identifier)
+  rescue StandardError => e
+    Rails.logger.warn("WuzAPI inbound call reject failed: #{e.class}: #{e.message}")
+  end
+
+  def call_identifier
+    (info['CallID'] || info[:CallID] || info['ID'] || info[:ID] || root['call_id'] || root[:call_id]).to_s
+  end
 
   # WuzAPI posts the actual event as a JSON *string* under `jsonData`:
   #   { "instanceName": "...", "userID": "...",

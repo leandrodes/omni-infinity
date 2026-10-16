@@ -1,7 +1,11 @@
 class UnofficialWhatsapp::Providers::WuzapiService < UnofficialWhatsapp::Providers::BaseService
-  def create_session(name:, webhook:, events: 'Message')
+  def create_session(name:, webhook:, events: 'Message', proxy_url: nil)
     remote_token = SecureRandom.hex(24)
-    response = admin_post('/admin/users', { name: name, token: remote_token, webhook: webhook, events: events })
+    payload = { name: name, token: remote_token, webhook: webhook, events: events }
+    if proxy_url.present?
+      payload[:proxyConfig] = { enabled: true, proxyURL: proxy_url, webhookUseProxy: true }
+    end
+    response = admin_post('/admin/users', payload)
     raise WuzapiError, "WuzAPI: failed to create user (#{response.code}) #{response.body}" unless response.success?
 
     remote_id = response.parsed_response.dig('data', 'id') || response.parsed_response['id']
@@ -12,10 +16,6 @@ class UnofficialWhatsapp::Providers::WuzapiService < UnofficialWhatsapp::Provide
     admin_delete("/admin/users/#{remote_id}")
   end
 
-  def connect(events: 'Message')
-    response = user_post('/session/connect', { 'Subscribe' => Array(events), 'Immediate' => true })
-    response
-  end
 
   def disconnect
     user_post('/session/disconnect', {})
@@ -35,6 +35,33 @@ class UnofficialWhatsapp::Providers::WuzapiService < UnofficialWhatsapp::Provide
 
   def logout
     user_post('/session/logout', {})
+  end
+
+  def reject_call(call_from:, call_id:)
+    return if call_from.blank? || call_id.blank?
+
+    user_post('/call/reject', { 'CallFrom' => call_from, 'CallID' => call_id })
+  rescue StandardError => e
+    Rails.logger.warn("WuzAPI reject call failed: #{e.class}: #{e.message}")
+  end
+
+  def apply_proxy(enabled, proxy_url)
+    remote_id = channel.provider_config['wuzapi_user_id']
+    return if remote_id.blank?
+
+    proxy_payload = {
+      enabled: enabled,
+      proxyURL: enabled ? proxy_url : '',
+      webhookUseProxy: true
+    }
+    admin_put("/admin/users/#{remote_id}", { proxyConfig: proxy_payload })
+  rescue StandardError => e
+    Rails.logger.warn("WuzAPI apply proxy failed: #{e.class}: #{e.message}")
+  end
+
+  def connect(events: 'Message,CallOffer,CallTerminate')
+    response = user_post('/session/connect', { 'Subscribe' => Array(events.split(',')).map(&:strip), 'Immediate' => true })
+    response
   end
 
   def validate_provider_config?
@@ -153,6 +180,10 @@ class UnofficialWhatsapp::Providers::WuzapiService < UnofficialWhatsapp::Provide
 
   def admin_delete(path)
     HTTParty.delete("#{endpoint}#{path}", headers: admin_headers)
+  end
+
+  def admin_put(path, body)
+    HTTParty.put("#{endpoint}#{path}", headers: admin_headers, body: body.to_json)
   end
 
   class WuzapiError < StandardError; end

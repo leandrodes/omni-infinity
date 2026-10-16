@@ -38,6 +38,8 @@ class Channel::UnofficialWhatsapp < ApplicationRecord
   validates :provider, inclusion: { in: PROVIDERS }
   validates :connection_status, inclusion: { in: CONNECTION_STATUSES }
 
+  after_update_commit :sync_proxy_to_provider, if: :saved_change_to_proxy_settings?
+
   def name
     'WhatsApp Não Oficial'
   end
@@ -52,4 +54,16 @@ class Channel::UnofficialWhatsapp < ApplicationRecord
   end
 
   delegate :send_message, to: :provider_service
+
+  def saved_change_to_proxy_settings?
+    saved_change_to_proxy_enabled? || saved_change_to_proxy_url?
+  end
+
+  def sync_proxy_to_provider
+    return unless instance_token.present?
+
+    provider_service.apply_proxy(proxy_enabled, proxy_url)
+  rescue StandardError => e
+    Rails.logger.warn("UnofficialWhatsapp proxy sync failed: #{e.class}: #{e.message}")
+  end
 end
