@@ -158,7 +158,7 @@ echo
 # Modo
 read -rp "Selecione o modo de instalação: 
 1) VPS direta (Caddy gera certificado Let's Encrypt)
-2) Atrás de firewall/Sophos (certificado externo, Caddy proxy HTTP)
+2) Atrás de um firewall WAF (Certificado externo, caddy proxy HTTP)
 
 Opção [1/2]: " INSTALL_MODE
 INSTALL_MODE=${INSTALL_MODE:-1}
@@ -315,7 +315,7 @@ fi
 
 # Caddyfile (esquema e global variam por modo)
 # Modo 1 (VPS direta): Caddy faz TLS/Let's Encrypt na 443 (auto_https ligado).
-# Modo 2 (atrás de firewall/Sophos): firewall faz TLS e encaminha HTTP:80 para a VM.
+# Modo 2 (atrás de um firewall WAF): o firewall faz TLS e encaminha HTTP:80 para a VM.
 #   Nesse caso é OBRIGATÓRIO `auto_https off` e prefixo `http://` no endereço do site,
 #   senão o Caddy tenta ACME/443 e não responde na 80 (o firewall devolve 503).
 SCHEME=""
@@ -325,7 +325,7 @@ if [ "$INSTALL_MODE" = "1" ]; then
 else
   SCHEME="http://"
   GLOBAL_OPTIONS=$'{\n  auto_https off\n}'
-  TLS_DIRECTIVE="  # TLS gerenciado externamente (firewall/Sophos)"
+  TLS_DIRECTIVE="  # TLS gerenciado externamente (firewall WAF)"
 fi
 
 WUZAPI_DOMAIN_BLOCK=""
