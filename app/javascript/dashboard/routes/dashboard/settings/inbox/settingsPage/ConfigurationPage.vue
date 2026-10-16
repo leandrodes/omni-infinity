@@ -15,6 +15,7 @@ import NextButton from 'dashboard/components-next/button/Button.vue';
 import TextArea from 'next/textarea/TextArea.vue';
 import { sanitizeAllowedDomains } from 'dashboard/helper/URLHelper';
 import WhatsappBusinessManagementToken from './WhatsappBusinessManagementToken.vue';
+import UnofficialWhatsappSettings from './UnofficialWhatsappSettings.vue';
 import HmacSecretKey from './components/HmacSecretKey.vue';
 
 export default {
@@ -27,6 +28,7 @@ export default {
     NextButton,
     TextArea,
     WhatsappBusinessManagementToken,
+    UnofficialWhatsappSettings,
     HmacSecretKey,
   },
   mixins: [inboxMixin],
@@ -481,6 +483,10 @@ export default {
         </NextButton>
       </SettingsFieldSection>
     </div>
+  </div>
+
+  <div v-else-if="isAUnofficialWhatsappChannel">
+    <UnofficialWhatsappSettings :inbox="inbox" />
   </div>
 </template>
 
