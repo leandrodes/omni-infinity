@@ -40,7 +40,11 @@ export default {
     },
   },
   mounted() {
-    this.fetchStatus();
+    this.fetchStatus().then(() => {
+      if (!this.isConnected) {
+        this.startPolling();
+      }
+    });
   },
   beforeUnmount() {
     this.stopPolling();
@@ -54,11 +58,11 @@ export default {
         // keep the last known status
       }
     },
-    applyStatus({ connection_status: status, connected, logged_in: loggedIn }) {
+    applyStatus({ connection_status: status, logged_in: loggedIn }) {
       if (status) {
         this.connectionStatus = status;
       }
-      if (connected || loggedIn) {
+      if (status === 'connected' || loggedIn) {
         this.connectionStatus = 'connected';
         this.stopPolling();
       }

@@ -115,7 +115,7 @@ export default {
         if (data?.connection_status) {
           this.connectionStatus = data.connection_status;
         }
-        if (data?.connected || data?.logged_in) {
+        if (data?.connection_status === 'connected' || data?.logged_in) {
           this.connectionStatus = 'connected';
           this.stopPolling();
         }

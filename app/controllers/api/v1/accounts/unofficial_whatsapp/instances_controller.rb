@@ -39,7 +39,7 @@ class Api::V1::Accounts::UnofficialWhatsapp::InstancesController < Api::V1::Acco
     if response.success?
       logged_in = truthy?(data['loggedIn'])
       connected = truthy?(data['connected'])
-      new_status = logged_in ? 'connected' : (connected ? 'connecting' : channel.connection_status)
+      new_status = compute_status(channel, logged_in, connected)
       channel.update!(connection_status: new_status) if channel.connection_status != new_status
 
       render json: status_payload(channel).merge(connected: connected, logged_in: logged_in)
@@ -95,5 +95,16 @@ class Api::V1::Accounts::UnofficialWhatsapp::InstancesController < Api::V1::Acco
 
   def truthy?(value)
     value == true || value.to_s == 'true'
+  end
+
+  # WuzAPI reports `connected` once the socket is up, even before the phone is
+  # paired. Only `loggedIn` means the WhatsApp account is actually linked, so
+  # that is what maps to our 'connected' status.
+  def compute_status(channel, logged_in, connected)
+    return 'connected' if logged_in
+    return 'connecting' if connected
+    return 'disconnected' if channel.connection_status == 'connected'
+
+    channel.connection_status
   end
 end
