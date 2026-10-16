@@ -60,7 +60,17 @@ class UnofficialWhatsapp::Providers::WuzapiService < UnofficialWhatsapp::Provide
     Rails.logger.warn("WuzAPI apply proxy failed: #{e.class}: #{e.message}")
   end
 
+  def apply_media_delivery
+    remote_id = channel.provider_config['wuzapi_user_id']
+    return unless remote_id.present?
+
+    admin_put("/admin/users/#{remote_id}", { s3Config: { enabled: false, mediaDelivery: 'base64' } })
+  rescue StandardError => e
+    Rails.logger.warn("WuzAPI apply media delivery failed: #{e.class}: #{e.message}")
+  end
+
   def connect(events: 'Message,CallOffer,CallTerminate')
+    apply_media_delivery
     response = user_post('/session/connect', { 'Subscribe' => Array(events.split(',')).map(&:strip), 'Immediate' => true })
     response
   end
