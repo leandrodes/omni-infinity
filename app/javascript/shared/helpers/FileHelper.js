@@ -63,7 +63,9 @@ export const isFileTypeAllowedForChannel = (file, options = {}) => {
         channelType:
           isInstagramChannel || conversationType === 'instagram_direct_message'
             ? INBOX_TYPES.INSTAGRAM
-            : originalChannelType,
+            : originalChannelType === INBOX_TYPES.UNOFFICIAL_WHATSAPP
+              ? INBOX_TYPES.WHATSAPP
+              : originalChannelType,
         medium,
       });
 
