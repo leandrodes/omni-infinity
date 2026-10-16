@@ -14,4 +14,6 @@ cd "$PROJECT_DIR/deploy"
 say "Reconstruindo e atualizando containers..."
 docker compose -f docker-compose.prod.yaml pull
 docker compose -f docker-compose.prod.yaml up -d --build
+say "Aplicando migrations do banco (db:chatwoot_prepare)..."
+docker compose -f docker-compose.prod.yaml run --rm rails bundle exec rails db:chatwoot_prepare
 say "Concluído. Containers atualizados."

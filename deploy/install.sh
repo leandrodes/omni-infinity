@@ -103,10 +103,6 @@ setup_ufw() {
   ufw allow 22/tcp >/dev/null 2>&1 || true
   ufw allow 80/tcp >/dev/null 2>&1 || true
   ufw allow 443/tcp >/dev/null 2>&1 || true
-  if [[ "$CFG_WACALLS" =~ ^[Ss]$ ]]; then
-    ufw allow 5000/tcp >/dev/null 2>&1 || true
-    ufw allow 5000/udp >/dev/null 2>&1 || true
-  fi
   echo "y" | ufw enable >/dev/null 2>&1 || true
   say "✓ UFW configurado"
 }
@@ -123,6 +119,7 @@ setup_fail2ban() {
   mkdir -p /etc/fail2ban/jail.d
   mkdir -p /etc/fail2ban/filter.d
   mkdir -p ./logs/caddy
+  touch ./logs/caddy/access.log
   if [ -f "$SCRIPT_DIR/fail2ban/filter.d/caddy-auth.conf" ]; then
     cp "$SCRIPT_DIR/fail2ban/filter.d/caddy-auth.conf" /etc/fail2ban/filter.d/caddy-auth.conf
     chmod 644 /etc/fail2ban/filter.d/caddy-auth.conf
@@ -130,6 +127,8 @@ setup_fail2ban() {
   cat > /etc/fail2ban/jail.d/omni-infinity.conf << EOF
 [sshd]
 enabled = true
+backend = systemd
+journalmatch = _COMM=sshd
 port = ssh
 maxretry = 5
 bantime = 1h
@@ -189,6 +188,14 @@ if [[ "$CFG_WACALLS" =~ ^[Ss]$ ]]; then
   read -rp "Domínio do WaCalls (ex.: wacalls.seudominio.com.br): " WACALLS_DOMAIN
 fi
 
+# Portainer
+read -rp "Configurar Portainer (painel de gerenciamento de containers)? [s/N]: " CFG_PORTAINER
+CFG_PORTAINER=${CFG_PORTAINER:-N}
+PORTAINER_DOMAIN=""
+if [[ "$CFG_PORTAINER" =~ ^[Ss]$ ]]; then
+  read -rp "Domínio do Portainer (ex.: painel.seudominio.com.br): " PORTAINER_DOMAIN
+fi
+
 # IP esperado para validar o DNS (varia por modo):
 # - Modo 1 (VPS direta): sai o IP público da própria máquina (normalmente é o mesmo de entrada).
 # - Modo 2 (atrás de firewall/NAT): o IP de saída (NAT) DIFERE do IP público de entrada do
@@ -208,6 +215,7 @@ say "Validando DNS dos domínios..."
 check_dns "$APP_DOMAIN" "$EXPECTED_IP"
 [ -n "$WUZAPI_DOMAIN" ] && check_dns "$WUZAPI_DOMAIN" "$EXPECTED_IP"
 [ -n "$WACALLS_DOMAIN" ] && check_dns "$WACALLS_DOMAIN" "$EXPECTED_IP"
+[ -n "$PORTAINER_DOMAIN" ] && check_dns "$PORTAINER_DOMAIN" "$EXPECTED_IP"
 
 # Email para Let's Encrypt (Modo 2 precisa)
 LE_EMAIL=""
@@ -223,12 +231,12 @@ fi
 CFG_UFW=N
 CFG_FAIL2BAN=N
 if [ "$INSTALL_MODE" = "1" ]; then
-  read -rp "Configurar firewall UFW (22,80,443 [+5000])? [S/n]: " CFG_UFW
+  read -rp "Configurar firewall UFW (22,80,443)? [S/n]: " CFG_UFW
   CFG_UFW=${CFG_UFW:-S}
   read -rp "Instalar/configurar Fail2Ban (protecao contra brute force)? [S/n]: " CFG_FAIL2BAN
   CFG_FAIL2BAN=${CFG_FAIL2BAN:-S}
 else
-  read -rp "Configurar firewall UFW (22,80,443 [+5000])? [s/N]: " CFG_UFW
+  read -rp "Configurar firewall UFW (22,80,443)? [s/N]: " CFG_UFW
   CFG_UFW=${CFG_UFW:-N}
   read -rp "Instalar/configurar Fail2Ban (protecao contra brute force)? [s/N]: " CFG_FAIL2BAN
   CFG_FAIL2BAN=${CFG_FAIL2BAN:-N}
@@ -285,19 +293,24 @@ if [[ "$CFG_WACALLS" =~ ^[Ss]$ ]]; then
   } >> .env
 fi
 
-# Caddyfile
-TLS_DIRECTIVE=""
+# Caddyfile (esquema e global variam por modo)
+# Modo 1 (VPS direta): Caddy faz TLS/Let's Encrypt na 443 (auto_https ligado).
+# Modo 2 (atrás de firewall/Sophos): firewall faz TLS e encaminha HTTP:80 para a VM.
+#   Nesse caso é OBRIGATÓRIO `auto_https off` e prefixo `http://` no endereço do site,
+#   senão o Caddy tenta ACME/443 e não responde na 80 (o firewall devolve 503).
+SCHEME=""
+GLOBAL_OPTIONS=""
 if [ "$INSTALL_MODE" = "1" ]; then
-  # Modo 2: Caddy gera Let's Encrypt
   TLS_DIRECTIVE="  tls ${LE_EMAIL}"
 else
-  # Modo 1: Sophos termina TLS
+  SCHEME="http://"
+  GLOBAL_OPTIONS=$'{\n  auto_https off\n}'
   TLS_DIRECTIVE="  # TLS gerenciado externamente (firewall/Sophos)"
 fi
 
 WUZAPI_DOMAIN_BLOCK=""
 if [[ "$CFG_WUZAPI" =~ ^[Ss]$ ]] && [ -n "$WUZAPI_DOMAIN" ]; then
-  WUZAPI_DOMAIN_BLOCK="${WUZAPI_DOMAIN} {
+  WUZAPI_DOMAIN_BLOCK="${SCHEME}${WUZAPI_DOMAIN} {
 ${TLS_DIRECTIVE}
 
   encode gzip zstd
@@ -307,7 +320,7 @@ fi
 
 WACALLS_DOMAIN_BLOCK=""
 if [[ "$CFG_WACALLS" =~ ^[Ss]$ ]] && [ -n "$WACALLS_DOMAIN" ]; then
-  WACALLS_DOMAIN_BLOCK="${WACALLS_DOMAIN} {
+  WACALLS_DOMAIN_BLOCK="${SCHEME}${WACALLS_DOMAIN} {
 ${TLS_DIRECTIVE}
 
   encode gzip zstd
@@ -315,7 +328,17 @@ ${TLS_DIRECTIVE}
 }"
 fi
 
-export APP_DOMAIN TLS_DIRECTIVE WUZAPI_DOMAIN_BLOCK WACALLS_DOMAIN_BLOCK
+PORTAINER_DOMAIN_BLOCK=""
+if [[ "$CFG_PORTAINER" =~ ^[Ss]$ ]] && [ -n "$PORTAINER_DOMAIN" ]; then
+  PORTAINER_DOMAIN_BLOCK="${SCHEME}${PORTAINER_DOMAIN} {
+${TLS_DIRECTIVE}
+
+  encode gzip zstd
+  reverse_proxy portainer:9000
+}"
+fi
+
+export APP_DOMAIN TLS_DIRECTIVE WUZAPI_DOMAIN_BLOCK WACALLS_DOMAIN_BLOCK PORTAINER_DOMAIN_BLOCK SCHEME GLOBAL_OPTIONS
 envsubst < Caddyfile.template > Caddyfile
 
 say "Arquivos gerados:"
@@ -333,6 +356,10 @@ if [[ "$ACT_SVC" =~ ^[Ss]$ ]]; then
   if [[ "$CFG_WACALLS" =~ ^[Ss]$ ]]; then
     sed -i '/^  # wacalls:/,/^$/ s/^  # /  /' docker-compose.prod.yaml
     sed -i 's/^  # wacalls_data:/  wacalls_data:/' docker-compose.prod.yaml
+  fi
+  if [[ "$CFG_PORTAINER" =~ ^[Ss]$ ]]; then
+    sed -i '/^  # portainer:/,/^$/ s/^  # /  /' docker-compose.prod.yaml
+    sed -i 's/^  # portainer_data:/  portainer_data:/' docker-compose.prod.yaml
   fi
   say "Serviços opcionais ativados no docker-compose.prod.yaml"
 fi
@@ -361,8 +388,25 @@ fi
 if [[ "$UP" =~ ^[Ss]$ ]]; then
   say "Subindo containers em modo produção..."
   cd "$PROJECT_DIR/deploy"
-  # Sobe o núcleo primeiro (não depende de imagens opcionais)
-  docker compose -f docker-compose.prod.yaml up -d postgres redis caddy rails sidekiq
+  # 1) Banco e cache primeiro (o app depende deles)
+  docker compose -f docker-compose.prod.yaml up -d postgres redis
+  say "Aguardando o Postgres ficar pronto..."
+  for _ in $(seq 1 30); do
+    if docker compose -f docker-compose.prod.yaml exec -T postgres pg_isready -U postgres >/dev/null 2>&1; then
+      break
+    fi
+    sleep 2
+  done
+  # 2) Migrations + seed do Chatwoot. SEM isso o Rails/Sidekiq entram em crash-loop
+  #    ("relation installation_configs does not exist") e o proxy devolve 502.
+  say "Preparando banco de dados (migrations)... isso pode levar alguns minutos."
+  if ! docker compose -f docker-compose.prod.yaml run --rm rails bundle exec rails db:chatwoot_prepare; then
+    err "Falha ao preparar o banco. Verifique os logs acima e o arquivo .env."
+    exit 1
+  fi
+  say "✓ Banco preparado"
+  # 3) App e proxy
+  docker compose -f docker-compose.prod.yaml up -d rails sidekiq caddy
   # Serviços opcionais: falha em um não derruba o restante
   if [[ "$CFG_WUZAPI" =~ ^[Ss]$ ]]; then
     if docker compose -f docker-compose.prod.yaml up -d wuzapi; then
@@ -378,12 +422,20 @@ if [[ "$UP" =~ ^[Ss]$ ]]; then
       warn "Falha ao subir WaCalls. Verifique build e logs: docker compose -f docker-compose.prod.yaml logs --tail=40 wacalls"
     fi
   fi
+  if [[ "$CFG_PORTAINER" =~ ^[Ss]$ ]]; then
+    if docker compose -f docker-compose.prod.yaml up -d portainer; then
+      say "✓ Portainer ativo"
+    else
+      warn "Falha ao subir Portainer (verifique a imagem/porta). O restante segue funcionando."
+    fi
+  fi
   say "Concluído. Aguarde ~60s para inicialização completa."
   echo
   say "URLs:"
   echo "  App: https://${APP_DOMAIN}"
   [ -n "$WUZAPI_DOMAIN" ] && echo "  WuzAPI: https://${WUZAPI_DOMAIN}"
   [ -n "$WACALLS_DOMAIN" ] && echo "  WaCalls: https://${WACALLS_DOMAIN}"
+  [ -n "$PORTAINER_DOMAIN" ] && echo "  Portainer: https://${PORTAINER_DOMAIN}"
   echo
   say "Verifique o estado com: docker compose -f docker-compose.prod.yaml ps"
   say "Primeiro acesso ao Chatwoot: crie a conta de administrador em https://${APP_DOMAIN}"

@@ -1,4 +1,5 @@
-${APP_DOMAIN} {
+${GLOBAL_OPTIONS}
+${SCHEME}${APP_DOMAIN} {
 ${TLS_DIRECTIVE}
 
   encode gzip zstd
@@ -18,10 +19,9 @@ ${TLS_DIRECTIVE}
 
   reverse_proxy rails:3000 {
     header_up X-Forwarded-Proto https
-    header_up X-Forwarded-Host {host}
-    header_up X-Forwarded-For {remote_host}
   }
 }
 
 ${WUZAPI_DOMAIN_BLOCK}
 ${WACALLS_DOMAIN_BLOCK}
+${PORTAINER_DOMAIN_BLOCK}

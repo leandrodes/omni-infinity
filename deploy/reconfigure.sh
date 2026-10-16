@@ -29,10 +29,6 @@ if [[ "$CFG_UFW" =~ ^[Ss]$ ]]; then
     ufw allow 22/tcp >/dev/null 2>&1 || true
     ufw allow 80/tcp >/dev/null 2>&1 || true
     ufw allow 443/tcp >/dev/null 2>&1 || true
-    if [[ "$CFG_WACALLS" =~ ^[Ss]$ ]]; then
-      ufw allow 5000/tcp >/dev/null 2>&1 || true
-      ufw allow 5000/udp >/dev/null 2>&1 || true
-    fi
     echo "y" | ufw enable >/dev/null 2>&1 || true
     say_r "✓ UFW configurado"
   fi
@@ -45,6 +41,7 @@ if [[ "$CFG_FAIL2BAN" =~ ^[Ss]$ ]]; then
   mkdir -p /etc/fail2ban/jail.d
   mkdir -p /etc/fail2ban/filter.d
   mkdir -p "$PROJECT_DIR/deploy/logs/caddy"
+  touch "$PROJECT_DIR/deploy/logs/caddy/access.log"
   if [ -f "$SCRIPT_DIR/fail2ban/filter.d/caddy-auth.conf" ]; then
     cp "$SCRIPT_DIR/fail2ban/filter.d/caddy-auth.conf" /etc/fail2ban/filter.d/caddy-auth.conf
     chmod 644 /etc/fail2ban/filter.d/caddy-auth.conf
@@ -52,6 +49,8 @@ if [[ "$CFG_FAIL2BAN" =~ ^[Ss]$ ]]; then
   cat > /etc/fail2ban/jail.d/omni-infinity.conf << JAIL
 [sshd]
 enabled = true
+backend = systemd
+journalmatch = _COMM=sshd
 port = ssh
 maxretry = 5
 bantime = 1h

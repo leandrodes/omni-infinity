@@ -102,6 +102,15 @@ services:
   #     - WACALLS_ALLOWED_ORIGINS=${WACALLS_ALLOWED_ORIGINS:-}
   #     - WACALLS_MAX_CALLS=${WACALLS_MAX_CALLS:-8}
 
+  # portainer:
+  #   image: portainer/portainer-ce:latest
+  #   restart: always
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #     - portainer_data:/data
+  #   ports:
+  #     - '127.0.0.1:9000:9000'
+
 volumes:
   storage_data:
   postgres_data:
@@ -111,3 +120,4 @@ volumes:
   # wuzapi_data:
   # wuzapi_files:
   # wacalls_data:
+  # portainer_data:
