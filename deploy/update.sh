@@ -29,6 +29,22 @@ git checkout -- deploy/ 2>/dev/null || true
 git pull origin main
 cd "$PROJECT_DIR/deploy"
 
+# Migra instalações antigas: os serviços opcionais agora usam Docker Compose
+# profiles. Se o .env ainda não tem COMPOSE_PROFILES, detecta o que está rodando
+# e grava, para não derrubar wuzapi/wacalls/portainer no upgrade.
+if ! grep -q '^COMPOSE_PROFILES=' .env 2>/dev/null; then
+  _profiles=""
+  for _svc in wuzapi wacalls portainer; do
+    if docker ps --format '{{.Names}}' 2>/dev/null | grep -q "$_svc"; then
+      _profiles="${_profiles:+$_profiles,}$_svc"
+    fi
+  done
+  if [ -n "$_profiles" ]; then
+    echo "COMPOSE_PROFILES=$_profiles" >> .env
+    say "COMPOSE_PROFILES gravado no .env: $_profiles"
+  fi
+fi
+
 # Forks locais (WuzAPI/WaCalls) são buildados na própria máquina: atualiza os clones.
 for d in wuzapi wacalls; do
   if [ -d "$d/.git" ]; then
