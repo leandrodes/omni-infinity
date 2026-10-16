@@ -388,6 +388,12 @@ fi
 if [[ "$UP" =~ ^[Ss]$ ]]; then
   say "Subindo containers em modo produção..."
   cd "$PROJECT_DIR/deploy"
+  # 0) Baixa a imagem customizada do Chatwoot (GHCR)
+  say "Baixando imagem do Omni-Infinity (ghcr.io/leandrodes/omni-infinity)..."
+  if ! docker compose -f docker-compose.prod.yaml pull rails sidekiq; then
+    err "Falha ao baixar a imagem. Verifique se o pacote 'omni-infinity' está PÚBLICO em GitHub > Packages."
+    exit 1
+  fi
   # 1) Banco e cache primeiro (o app depende deles)
   docker compose -f docker-compose.prod.yaml up -d postgres redis
   say "Aguardando o Postgres ficar pronto..."
@@ -436,6 +442,10 @@ if [[ "$UP" =~ ^[Ss]$ ]]; then
   [ -n "$WUZAPI_DOMAIN" ] && echo "  WuzAPI: https://${WUZAPI_DOMAIN}"
   [ -n "$WACALLS_DOMAIN" ] && echo "  WaCalls: https://${WACALLS_DOMAIN}"
   [ -n "$PORTAINER_DOMAIN" ] && echo "  Portainer: https://${PORTAINER_DOMAIN}"
+  echo
+  say "Credenciais geradas (GUARDE ESTES TOKENS! Também estão em ${PROJECT_DIR}/deploy/.env):"
+  [[ "$CFG_WUZAPI" =~ ^[Ss]$ ]] && echo "  WuzAPI  (token admin): ${WUZAPI_ADMIN_TOKEN}"
+  [[ "$CFG_WACALLS" =~ ^[Ss]$ ]] && echo "  WaCalls (X-API-Key):  ${WACALLS_API_KEY}"
   echo
   say "Verifique o estado com: docker compose -f docker-compose.prod.yaml ps"
   say "Primeiro acesso ao Chatwoot: crie a conta de administrador em https://${APP_DOMAIN}"
