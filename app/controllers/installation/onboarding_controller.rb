@@ -28,13 +28,8 @@ class Installation::OnboardingController < ApplicationController
 
   def finish_onboarding
     ::Redis::Alfred.delete(::Redis::Alfred::CHATWOOT_INSTALLATION_ONBOARDING)
-    return if onboarding_params[:subscribe_to_updates].blank?
-
-    ChatwootHub.register_instance(
-      onboarding_params.dig(:user, :company),
-      onboarding_params.dig(:user, :name),
-      onboarding_params.dig(:user, :email)
-    )
+    # Omni-Channel Infinity: NÃO registramos a instância nem enviamos dados de
+    # onboarding para o hub do Chatwoot. Nada de comunicação automática externa.
   end
 
   def ensure_installation_onboarding

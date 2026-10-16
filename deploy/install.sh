@@ -151,7 +151,7 @@ gen_hex() {
 }
 
 check_prereqs
-say "Instalador Omni-Infinity (Chatwoot personalizado)"
+say "Instalador Omni-Channel Infinity"
 say "Projeto: $PROJECT_DIR"
 echo
 
@@ -164,7 +164,7 @@ Opção [1/2]: " INSTALL_MODE
 INSTALL_MODE=${INSTALL_MODE:-1}
 
 # App domain
-read -rp "Domínio principal do Chatwoot (ex.: app.seudominio.com.br): " APP_DOMAIN
+read -rp "Domínio principal do Omni-Channel Infinity (ex.: app.seudominio.com.br): " APP_DOMAIN
 APP_DOMAIN=${APP_DOMAIN:-}
 
 if [ -z "$APP_DOMAIN" ]; then
@@ -388,7 +388,7 @@ fi
 if [[ "$UP" =~ ^[Ss]$ ]]; then
   say "Subindo containers em modo produção..."
   cd "$PROJECT_DIR/deploy"
-  # 0) Baixa a imagem customizada do Chatwoot (GHCR)
+  # 0) Baixa a imagem customizada (GHCR)
   say "Baixando imagem do Omni-Infinity (ghcr.io/leandrodes/omni-infinity)..."
   if ! docker compose -f docker-compose.prod.yaml pull rails sidekiq; then
     err "Falha ao baixar a imagem. Verifique se o pacote 'omni-infinity' está PÚBLICO em GitHub > Packages."
@@ -403,7 +403,7 @@ if [[ "$UP" =~ ^[Ss]$ ]]; then
     fi
     sleep 2
   done
-  # 2) Migrations + seed do Chatwoot. SEM isso o Rails/Sidekiq entram em crash-loop
+  # 2) Migrations + seed. SEM isso o Rails/Sidekiq entram em crash-loop
   #    ("relation installation_configs does not exist") e o proxy devolve 502.
   say "Preparando banco de dados (migrations)... isso pode levar alguns minutos."
   if ! docker compose -f docker-compose.prod.yaml run --rm rails bundle exec rails db:chatwoot_prepare; then
@@ -411,6 +411,10 @@ if [[ "$UP" =~ ^[Ss]$ ]]; then
     exit 1
   fi
   say "✓ Banco preparado"
+  # 2b) Aplica a identidade visual "Omni-Channel Infinity" (marca, logo, links).
+  say "Aplicando identidade visual (Omni-Channel Infinity)..."
+  docker compose -f docker-compose.prod.yaml run --rm rails bundle exec rails omni:rebrand \
+    || warn "Não foi possível aplicar a identidade visual (seguindo)."
   # 3) App e proxy
   docker compose -f docker-compose.prod.yaml up -d rails sidekiq caddy
   # Serviços opcionais: falha em um não derruba o restante
@@ -448,7 +452,7 @@ if [[ "$UP" =~ ^[Ss]$ ]]; then
   [[ "$CFG_WACALLS" =~ ^[Ss]$ ]] && echo "  WaCalls (X-API-Key):  ${WACALLS_API_KEY}"
   echo
   say "Verifique o estado com: docker compose -f docker-compose.prod.yaml ps"
-  say "Primeiro acesso ao Chatwoot: crie a conta de administrador em https://${APP_DOMAIN}"
+  say "Primeiro acesso ao Omni-Channel Infinity: crie a conta de administrador em https://${APP_DOMAIN}"
 else
   say "Instalação preparada. Para subir: cd ${PROJECT_DIR}/deploy && docker compose -f docker-compose.prod.yaml up -d"
 fi

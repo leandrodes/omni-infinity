@@ -1,13 +1,27 @@
 #!/bin/bash
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+# Atualização MANUAL do Omni-Channel Infinity.
+# O responsável roda:  curl -fsSL <url-do-raw>/deploy/update.sh | bash
+# Como o script pode vir por pipe (stdin), não usamos BASH_SOURCE para inferir o
+# diretório: localizamos a instalação no caminho padrão /opt/omni-infinity.
+DEFAULT_DIR="/opt/omni-infinity"
+PROJECT_DIR="$DEFAULT_DIR"
+if [ -n "${BASH_SOURCE[0]:-}" ] && [ -f "${BASH_SOURCE[0]}" ]; then
+  _cand="$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")"
+  [ -d "$_cand/deploy" ] && PROJECT_DIR="$_cand"
+fi
 
-say() { echo -e "\e[1;36m[Omni-Infinity-Update]\e[0m $*"; }
+say() { echo -e "\e[1;36m[Omni-Channel Infinity - Update]\e[0m $*"; }
 warn() { echo -e "\e[1;33m[AVISO]\e[0m $*"; }
+err() { echo -e "\e[1;31m[ERRO]\e[0m $*"; }
 
-say "Atualizando Omni-Infinity (Chatwoot personalizado)"
+if [ ! -d "$PROJECT_DIR/deploy" ]; then
+  err "Instalação não encontrada em $PROJECT_DIR (esperado: $PROJECT_DIR/deploy)."
+  exit 1
+fi
+
+say "Atualizando Omni-Channel Infinity em $PROJECT_DIR"
 cd "$PROJECT_DIR"
 # Versões antigas do instalador editavam o compose e quebravam o `git pull`.
 # Descarta alterações locais em arquivos rastreados do deploy (não toca em .env/Caddyfile/wuzapi/wacalls).
@@ -23,7 +37,7 @@ for d in wuzapi wacalls; do
   fi
 done
 
-say "Baixando imagens (Chatwoot do GHCR)..."
+say "Baixando imagens (GHCR)..."
 docker compose -f docker-compose.prod.yaml pull rails sidekiq
 
 say "Recriando containers (rebuild dos build locais: wuzapi/wacalls)..."
@@ -31,6 +45,10 @@ docker compose -f docker-compose.prod.yaml up -d --build
 
 say "Aplicando migrations do banco (db:chatwoot_prepare)..."
 docker compose -f docker-compose.prod.yaml run --rm rails bundle exec rails db:chatwoot_prepare
+
+say "Aplicando identidade visual (Omni-Channel Infinity)..."
+docker compose -f docker-compose.prod.yaml run --rm rails bundle exec rails omni:rebrand \
+  || warn "Não foi possível aplicar a identidade visual (seguindo)."
 
 say "Concluído. Containers atualizados."
 docker compose -f docker-compose.prod.yaml ps

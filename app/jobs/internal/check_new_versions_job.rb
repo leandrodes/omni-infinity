@@ -2,18 +2,10 @@ class Internal::CheckNewVersionsJob < ApplicationJob
   queue_as :scheduled_jobs
 
   def perform
-    return unless Rails.env.production?
-
-    @instance_info = ChatwootHub.sync_with_hub
-    update_version_info
-  end
-
-  private
-
-  def update_version_info
-    return if @instance_info['version'].blank?
-
-    ::Redis::Alfred.set(::Redis::Alfred::LATEST_CHATWOOT_VERSION, @instance_info['version'])
+    # Desativado no Omni-Channel Infinity: NÃO consultamos versões nem enviamos
+    # dados para o hub do Chatwoot. As atualizações são aplicadas manualmente
+    # pelo responsável e não exibimos aviso de "atualização disponível".
+    nil
   end
 end
 
