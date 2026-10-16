@@ -2,9 +2,14 @@
 set -euo pipefail
 
 # Atualização MANUAL do Omni-Channel Infinity.
-# O responsável roda:  curl -fsSL <url-do-raw>/deploy/update.sh | bash
-# Como o script pode vir por pipe (stdin), não usamos BASH_SOURCE para inferir o
-# diretório: localizamos a instalação no caminho padrão /opt/omni-infinity.
+#
+# Comando recomendado (seguro; NÃO use `curl ... | bash`, pois o `docker compose run`
+# consumiria o restante do script a partir do stdin e abortaria a atualização):
+#
+#   bash -c "$(curl -fsSL https://raw.githubusercontent.com/leandrodes/omni-infinity/main/deploy/update.sh)"
+#
+# Como o script pode ser executado de fora da pasta, localizamos a instalação no
+# caminho padrão /opt/omni-infinity.
 DEFAULT_DIR="/opt/omni-infinity"
 PROJECT_DIR="$DEFAULT_DIR"
 if [ -n "${BASH_SOURCE[0]:-}" ] && [ -f "${BASH_SOURCE[0]}" ]; then
@@ -60,10 +65,10 @@ say "Recriando containers (rebuild dos build locais: wuzapi/wacalls)..."
 docker compose -f docker-compose.prod.yaml up -d --build
 
 say "Aplicando migrations do banco (db:chatwoot_prepare)..."
-docker compose -f docker-compose.prod.yaml run --rm rails bundle exec rails db:chatwoot_prepare
+docker compose -f docker-compose.prod.yaml run --rm -T rails bundle exec rails db:chatwoot_prepare </dev/null
 
 say "Aplicando identidade visual (Omni-Channel Infinity)..."
-docker compose -f docker-compose.prod.yaml run --rm rails bundle exec rails omni:rebrand \
+docker compose -f docker-compose.prod.yaml run --rm -T rails bundle exec rails omni:rebrand </dev/null \
   || warn "Não foi possível aplicar a identidade visual (seguindo)."
 
 say "Concluído. Containers atualizados."

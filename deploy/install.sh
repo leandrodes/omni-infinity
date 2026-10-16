@@ -406,14 +406,14 @@ if [[ "$UP" =~ ^[Ss]$ ]]; then
   # 2) Migrations + seed. SEM isso o Rails/Sidekiq entram em crash-loop
   #    ("relation installation_configs does not exist") e o proxy devolve 502.
   say "Preparando banco de dados (migrations)... isso pode levar alguns minutos."
-  if ! docker compose -f docker-compose.prod.yaml run --rm rails bundle exec rails db:chatwoot_prepare; then
+  if ! docker compose -f docker-compose.prod.yaml run --rm -T rails bundle exec rails db:chatwoot_prepare </dev/null; then
     err "Falha ao preparar o banco. Verifique os logs acima e o arquivo .env."
     exit 1
   fi
   say "✓ Banco preparado"
   # 2b) Aplica a identidade visual "Omni-Channel Infinity" (marca, logo, links).
   say "Aplicando identidade visual (Omni-Channel Infinity)..."
-  docker compose -f docker-compose.prod.yaml run --rm rails bundle exec rails omni:rebrand \
+  docker compose -f docker-compose.prod.yaml run --rm -T rails bundle exec rails omni:rebrand </dev/null \
     || warn "Não foi possível aplicar a identidade visual (seguindo)."
   # 3) App e proxy
   docker compose -f docker-compose.prod.yaml up -d rails sidekiq caddy
