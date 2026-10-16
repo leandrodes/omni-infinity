@@ -282,6 +282,7 @@ if [[ "$CFG_WUZAPI" =~ ^[Ss]$ ]]; then
     echo ""
     echo "# WuzAPI"
     echo "WUZAPI_ADMIN_TOKEN=${WUZAPI_ADMIN_TOKEN}"
+    echo "WUZAPI_ENDPOINT=http://wuzapi:8080"
   } >> .env
 fi
 if [[ "$CFG_WACALLS" =~ ^[Ss]$ ]]; then

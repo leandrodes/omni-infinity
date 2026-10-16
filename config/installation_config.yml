@@ -170,6 +170,20 @@
   locked: false
 # ------- End of WhatsApp Channel Related Config ------- #
 
+# ------- Unofficial WhatsApp (WuzAPI and friends) ------- #
+- name: WUZAPI_ENDPOINT
+  display_title: 'WuzAPI Endpoint'
+  description: 'Base URL of the WuzAPI server used by the "WhatsApp Não Oficial" channel. Inside Docker use the service name (e.g. http://wuzapi:8080).'
+  value: 'http://wuzapi:8080'
+  type: text
+  locked: false
+- name: WUZAPI_ADMIN_TOKEN
+  display_title: 'WuzAPI Admin Token'
+  description: 'WUZAPI_ADMIN_TOKEN used to provision WhatsApp instances on the WuzAPI server.'
+  type: secret
+  locked: false
+# ------- End of Unofficial WhatsApp ------- #
+
 # MARK: Microsoft Email Channel Config
 - name: AZURE_APP_ID
   display_title: 'Azure App ID'

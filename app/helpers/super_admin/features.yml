@@ -94,6 +94,12 @@ whatsapp:
   description: 'Manage your WhatsApp business interactions from Chatwoot.'
   enabled: true
   icon: 'icon-whatsapp-line'
+unofficial_whatsapp:
+  name: 'WhatsApp Não Oficial'
+  description: 'Configure the WuzAPI server used by the unofficial WhatsApp channel.'
+  enabled: true
+  icon: 'icon-whatsapp-line'
+  config_key: 'unofficial_whatsapp'
 telegram:
   name: 'Telegram'
   description: 'Manage your Telegram customer interactions from Chatwoot.'
