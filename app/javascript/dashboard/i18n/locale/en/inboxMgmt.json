@@ -40,6 +40,15 @@
       "UNOFFICIAL_WHATSAPP": {
         "TITLE": "WhatsApp Unofficial",
         "DESCRIPTION": "Connect an unofficial WhatsApp number. You will scan a QR code with your phone to link the account. This is not the official WhatsApp Business API.",
+        "PROVIDER": {
+          "LABEL": "Connection provider",
+          "PLACEHOLDER": "Select a provider",
+          "ERROR": "Please select a connection provider",
+          "WUZAPI": "WuzAPI",
+          "EVOLUTION": "Evolution API",
+          "UZAPI": "UzAPI",
+          "UZAPI_NOTICE": "To purchase resources for this API, contact Infinity Telecom Support to have it enabled (this API has an additional cost of R$10.00 billed monthly)"
+        },
         "INBOX_NAME": {
           "LABEL": "Inbox Name",
           "PLACEHOLDER": "Enter your inbox name (eg: Sales)",
@@ -614,12 +623,12 @@
             "DESCRIPTION": "Support your customers on WhatsApp"
           },
           "UNOFFICIAL_WHATSAPP": {
-            "TITLE": "WhatsApp Unofficial",
-            "DESCRIPTION": "Connect an unofficial WhatsApp number via WuzAPI"
+            "TITLE": "WhatsApp via QR Code",
+            "DESCRIPTION": "Connect a WhatsApp number via QR Code"
           },
           "WHATSAPP_CALL": {
-            "TITLE": "WhatsApp Call",
-            "DESCRIPTION": "Take voice calls on your WhatsApp number"
+            "TITLE": "Unofficial WhatsApp Calls",
+            "DESCRIPTION": "Receive and make calls on your unofficial WhatsApp number"
           },
           "EMAIL": {
             "TITLE": "Email",

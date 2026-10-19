@@ -61,8 +61,12 @@ const isActive = computed(() => {
     return props.enabledFeatures.channel_tiktok && hasTiktokConfigured.value;
   }
 
-  if (key === 'voice' || key === 'whatsapp_call') {
+  if (key === 'voice') {
     return props.enabledFeatures.channel_voice;
+  }
+
+  if (key === 'whatsapp_call') {
+    return props.enabledFeatures.saas_channel_wacalls;
   }
 
   if (key === 'unofficial_whatsapp') {
@@ -106,10 +110,13 @@ const canRequestTiktokAccess = computed(() => {
 });
 
 const hasVoiceBadge = computed(() => {
-  return (
-    ['voice', 'whatsapp_call'].includes(props.channel.key) &&
-    !!props.enabledFeatures.channel_voice
-  );
+  if (props.channel.key === 'voice') {
+    return !!props.enabledFeatures.channel_voice;
+  }
+  if (props.channel.key === 'whatsapp_call') {
+    return !!props.enabledFeatures.saas_channel_wacalls;
+  }
+  return false;
 });
 
 const onItemClick = () => {

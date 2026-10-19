@@ -22,6 +22,7 @@ export default {
     return {
       inboxName: '',
       phoneNumber: '',
+      provider: 'wuzapi',
       step: 'form',
       qrCode: '',
       connectionStatus: 'initial',
@@ -42,6 +43,7 @@ export default {
   validations: {
     inboxName: { required },
     phoneNumber: { isPhoneE164OrEmpty },
+    provider: { required },
   },
   beforeUnmount() {
     this.stopPolling();
@@ -53,12 +55,19 @@ export default {
         return;
       }
 
+      if (this.provider === 'uzapi') {
+        useAlert(
+          this.$t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.PROVIDER.UZAPI_NOTICE')
+        );
+        return;
+      }
+
       try {
         const inbox = await this.$store.dispatch('inboxes/createChannel', {
           name: this.inboxName?.trim(),
           channel: {
             type: 'unofficial_whatsapp',
-            provider: 'wuzapi',
+            provider: this.provider,
             phone_number: this.phoneNumber,
           },
         });
@@ -179,6 +188,38 @@ export default {
             />
             <span v-if="v$.phoneNumber.$error" class="message">
               {{ $t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.PHONE_NUMBER.ERROR') }}
+            </span>
+          </label>
+        </div>
+
+        <div class="flex-shrink-0 flex-grow-0">
+          <label :class="{ error: v$.provider.$error }">
+            {{ $t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.PROVIDER.LABEL') }}
+            <select v-model="provider" @blur="v$.provider.$touch">
+              <option value="" disabled>
+                {{
+                  $t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.PROVIDER.PLACEHOLDER')
+                }}
+              </option>
+              <option value="wuzapi">
+                {{ $t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.PROVIDER.WUZAPI') }}
+              </option>
+              <option value="evolution">
+                {{ $t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.PROVIDER.EVOLUTION') }}
+              </option>
+              <option value="uzapi" class="text-red-600" disabled>
+                {{ $t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.PROVIDER.UZAPI') }}
+              </option>
+            </select>
+            <span v-if="v$.provider.$error" class="message">
+              {{ $t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.PROVIDER.ERROR') }}
+            </span>
+            <span class="mt-2 block text-xs text-red-600">
+              {{
+                $t(
+                  'INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.PROVIDER.UZAPI_NOTICE'
+                )
+              }}
             </span>
           </label>
         </div>

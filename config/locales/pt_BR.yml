@@ -18,6 +18,10 @@
 #available at https://guides.rubyonrails.org/i18n.html.
 pt_BR:
   hello: 'Olá, mundo'
+  activerecord:
+    attributes:
+      account:
+        transcription_allow_system: 'Permitir transcrição do sistema (cobrado à parte)'
   inbox:
     reauthorization:
       success: 'Canal reautenticado com sucesso'
@@ -158,6 +162,7 @@ pt_BR:
     openai:
       invalid_api_key: 'A chave da API da OpenAI é inválida ou revogada. Por favor, verifique sua chave no seu painel da OpenAI.'
     inboxes:
+      limit_exceeded: 'Você atingiu o número máximo de caixas de entrada permitido para esta conta. Entre em contato com o suporte.'
       unofficial_whatsapp:
         not_configured: 'A integração de WhatsApp não oficial (WuzAPI) não está configurada. Peça a um super administrador para definir o endpoint e o token de administrador do WuzAPI.'
       imap:

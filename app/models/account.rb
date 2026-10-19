@@ -160,8 +160,8 @@ class Account < ApplicationRecord
 
   def usage_limits
     {
-      agents: ChatwootApp.max_limit.to_i,
-      inboxes: ChatwootApp.max_limit.to_i
+      agents: effective_limit(:max_users, :agents),
+      inboxes: effective_limit(:max_inboxes, :inboxes)
     }
   end
 
@@ -191,6 +191,16 @@ class Account < ApplicationRecord
   end
 
   private
+
+  # Resolves a per-account limit from the `limits` jsonb, optionally falling
+  # back to a secondary key (kept for enterprise compatibility). A blank or
+  # non-positive value is treated as "unlimited" so an account can never be
+  # locked out by an empty admin field.
+  def effective_limit(*keys)
+    raw = keys.lazy.map { |key| limits.is_a?(Hash) ? (limits[key.to_s] || limits[key]) : nil }.find(&:present?)
+    value = raw.to_i
+    value.positive? ? value : ChatwootApp.max_limit.to_i
+  end
 
   def notify_creation
     Rails.configuration.dispatcher.dispatch(ACCOUNT_CREATED, Time.zone.now, account: self)

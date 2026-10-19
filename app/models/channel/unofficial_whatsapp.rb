@@ -30,7 +30,7 @@ class Channel::UnofficialWhatsapp < ApplicationRecord
 
   has_secure_token :identifier
 
-  PROVIDERS = %w[wuzapi].freeze
+  PROVIDERS = %w[wuzapi evolution uzapi].freeze
   CONNECTION_STATUSES = %w[initial connecting connected failed disconnected].freeze
 
   encrypts :instance_token if Chatwoot.encryption_configured?
@@ -48,6 +48,8 @@ class Channel::UnofficialWhatsapp < ApplicationRecord
     case provider
     when 'wuzapi'
       UnofficialWhatsapp::Providers::WuzapiService.new(channel: self)
+    when 'evolution', 'uzapi'
+      raise "#{provider.titleize} provider is not implemented yet"
     else
       raise "Unknown unofficial WhatsApp provider: #{provider}"
     end

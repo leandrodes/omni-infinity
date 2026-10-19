@@ -279,3 +279,43 @@
   enabled: false
   premium: true
   column: feature_flags_ext_1
+# ---------------------------------------------------------------------------
+# Infinity SaaS flags (per-account toggles managed in Super Admin > Accounts).
+# All default to disabled so existing accounts keep their current behaviour.
+# ---------------------------------------------------------------------------
+- name: saas_groups
+  display_name: Grupos
+  enabled: false
+  column: feature_flags_ext_1
+- name: saas_campaigns
+  display_name: Campanhas
+  enabled: false
+  column: feature_flags_ext_1
+- name: saas_channel_wuzapi
+  display_name: WuzAPI
+  enabled: false
+  column: feature_flags_ext_1
+- name: saas_channel_evolution
+  display_name: Evolution API
+  enabled: false
+  column: feature_flags_ext_1
+- name: saas_channel_uzapi
+  display_name: UzAPI
+  enabled: false
+  column: feature_flags_ext_1
+- name: saas_channel_wacalls
+  display_name: Wacalls (Chamadas de WhatsApp)
+  enabled: false
+  column: feature_flags_ext_1
+- name: saas_ai_copilot
+  display_name: Copiloto
+  enabled: false
+  column: feature_flags_ext_1
+- name: saas_ai_smart_reception
+  display_name: Recepção Inteligente
+  enabled: false
+  column: feature_flags_ext_1
+- name: saas_ai_transcription
+  display_name: Transcrição de Áudio
+  enabled: false
+  column: feature_flags_ext_1

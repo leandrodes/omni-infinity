@@ -1,0 +1,20 @@
+<div class="field-unit__label">
+  <%= f.label field.attribute %>
+</div>
+<div class="field-unit__field">
+  <%
+    labels = {
+      'max_users' => t('super_admin.accounts.max_users', default: 'Maximum users'),
+      'max_inboxes' => t('super_admin.accounts.max_inboxes', default: 'Maximum inboxes')
+    }
+  %>
+  <% JSON.parse(field.to_s).each do |key, val| %>
+    <div class="flex items-center gap-3 mb-3">
+      <label class="w-48 text-sm text-slate-700"><%= labels[key] || key %></label>
+      <%= number_field "account[limits]", key, value: val, min: 0, placeholder: t('super_admin.accounts.unlimited', default: 'Unlimited'), class: "rounded border-slate-300" %>
+    </div>
+  <% end %>
+  <p class="text-xs text-slate-500">
+    <%= t('super_admin.accounts.limits_hint', default: 'Leave blank for unlimited. 0 is also treated as unlimited.') %>
+  </p>
+</div>

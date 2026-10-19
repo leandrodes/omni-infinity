@@ -40,6 +40,15 @@
       "UNOFFICIAL_WHATSAPP": {
         "TITLE": "WhatsApp Não Oficial",
         "DESCRIPTION": "Conecte um número de WhatsApp não oficial. Você escaneará um código QR com o celular para vincular a conta. Esta não é a API oficial do WhatsApp Business.",
+        "PROVIDER": {
+          "LABEL": "Provedor de conexão",
+          "PLACEHOLDER": "Selecione o provedor",
+          "ERROR": "Selecione um provedor de conexão",
+          "WUZAPI": "WuzAPI",
+          "EVOLUTION": "Evolution API",
+          "UZAPI": "UzAPI",
+          "UZAPI_NOTICE": "Caso queira adquirir recursos desta API, contate o Suporte da Infinity Telecom para habilitar a mesma (Esta API tem custo adicional cobrado mensalmente R$10,00)"
+        },
         "INBOX_NAME": {
           "LABEL": "Nome da Caixa de Entrada",
           "PLACEHOLDER": "Digite o nome da caixa de entrada (ex: Vendas)",
@@ -611,12 +620,12 @@
             "DESCRIPTION": "Atenda seus clientes no WhatsApp"
           },
           "UNOFFICIAL_WHATSAPP": {
-            "TITLE": "WhatsApp Não Oficial",
-            "DESCRIPTION": "Conecte um número de WhatsApp não oficial via WuzAPI"
+            "TITLE": "WhatsApp via QR Code",
+            "DESCRIPTION": "Conecte um número de Whatsapp via QR Code"
           },
           "WHATSAPP_CALL": {
-            "TITLE": "Chamada do WhatsApp",
-            "DESCRIPTION": "Receba chamadas de voz no seu número do WhatsApp"
+            "TITLE": "Chamadas de Whatsapp Não Oficial",
+            "DESCRIPTION": "Receba e faça chamadas no seu número de WhatsApp não oficial"
           },
           "EMAIL": {
             "TITLE": "E-mail",

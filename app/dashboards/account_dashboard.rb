@@ -25,6 +25,17 @@ class AccountDashboard < Administrate::BaseDashboard
                                  {}
                                end
 
+  # Community edition reacts to Infinity SaaS toggles (Funcionalidades /
+  # Recursos de IA) and per-account limits directly from the admin dashboard.
+  ce_attribute_types = if ChatwootApp.enterprise?
+                         {}
+                       else
+                         {
+                           limits: SaasLimitsField,
+                           all_features: SaasFeaturesField
+                         }
+                       end
+
   ATTRIBUTE_TYPES = {
     id: Field::Number.with_options(searchable: true),
     name: Field::String.with_options(searchable: true),
@@ -32,13 +43,13 @@ class AccountDashboard < Administrate::BaseDashboard
     updated_at: Field::DateTime,
     users: CountField,
     conversations: CountField,
-    locale: Field::Select.with_options(collection: LANGUAGES_CONFIG.map { |_x, y| y[:iso_639_1_code] }),
+    locale: Field::Select.with_options(collection: LANGUAGES_CONFIG.map { |_x, y| [y[:name], y[:iso_639_1_code]] }),
     status: AccountStatusField.with_options(collection: [%w[Active active], %w[Suspended suspended]]),
     suspension_history: SuspensionHistoryField,
     account_users: Field::HasMany,
     transcription_allow_system: Field::Boolean,
     custom_attributes: Field::String
-  }.merge(enterprise_attribute_types).freeze
+  }.merge(enterprise_attribute_types).merge(ce_attribute_types).freeze
 
   # COLLECTION_ATTRIBUTES
   # an array of attributes that will be displayed on the model's index page.
@@ -65,6 +76,7 @@ class AccountDashboard < Administrate::BaseDashboard
                                     else
                                       []
                                     end
+  ce_show_page_attributes = ChatwootApp.enterprise? ? [] : %i[limits]
   SHOW_PAGE_ATTRIBUTES = (%i[
     id
     name
@@ -76,7 +88,7 @@ class AccountDashboard < Administrate::BaseDashboard
     conversations
     account_users
     transcription_allow_system
-  ] + enterprise_show_page_attributes).freeze
+  ] + enterprise_show_page_attributes + ce_show_page_attributes).freeze
 
   # FORM_ATTRIBUTES
   # an array of attributes that will be displayed
@@ -90,12 +102,13 @@ class AccountDashboard < Administrate::BaseDashboard
                                else
                                  []
                                end
+  ce_form_attributes = ChatwootApp.enterprise? ? [] : %i[limits all_features]
   FORM_ATTRIBUTES = (%i[
     name
     locale
     status
     transcription_allow_system
-  ] + enterprise_form_attributes).freeze
+  ] + enterprise_form_attributes + ce_form_attributes).freeze
 
   # COLLECTION_FILTERS
   # a hash that defines filters that can be used while searching via the search
