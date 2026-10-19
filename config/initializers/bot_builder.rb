@@ -3853,9 +3853,20 @@ Rails.application.config.after_initialize do
         end
       end
 
-      def txt(conv, t)
-        return if t.to_s.strip.empty?
-        conv.messages.create!(message_type: :outgoing, content:interp(t,conv), account_id:conv.account_id, inbox_id:conv.inbox_id, content_attributes:{'bot_response'=>true})
+      def txt(conv, t, interactive: nil)
+        return if t.to_s.strip.empty? && interactive.blank?
+        attrs={'bot_response'=>true}
+        attrs['interactive']=interactive if interactive.present?
+        conv.messages.create!(message_type: :outgoing, content:interp(t.to_s,conv), account_id:conv.account_id, inbox_id:conv.inbox_id, content_attributes:attrs)
+      end
+
+      # Canais que aceitam botoes/listas nativos. Hoje so o canal nao oficial
+      # (WuzAPI) tem o envio interativo implementado; os demais canais usam o
+      # menu numerado (texto) como fallback.
+      def native_interactive?(conv)
+        conv.inbox&.channel.is_a?(Channel::UnofficialWhatsapp)
+      rescue StandardError
+        false
       end
 
       def interp(t, conv)
@@ -3926,12 +3937,17 @@ Rails.application.config.after_initialize do
         btns_list=(1..3).map{|i|d["btn#{i}"]}.reject{|b|b.to_s.strip.empty?}
         return if btns_list.empty?
         body_text=interp(d['body'].to_s.strip, conv)
-        # Build text fallback with button labels
-        t=body_text.dup; t+="\n\n" unless t.empty?
-        btns_list.each_with_index{|b,i|t+="#{i+1}. #{b}\n"}
-        txt(conv, t)
         nid=fd.find{|_,v|v.object_id==node.object_id}&.first
         nid||=fd.find{|_,v|v['name']=='buttons'&&v['data']['body']==d['body']}&.first
+        if native_interactive?(conv)
+          # Botoes nativos: id numerico para o roteamento (choice_resp casa pelo numero)
+          buttons=btns_list.each_with_index.map{|b,i|{'title'=>b.to_s.strip[0,20],'id'=>(i+1).to_s}}
+          txt(conv, body_text, interactive:{'type'=>'buttons','body'=>body_text,'buttons'=>buttons})
+        else
+          t=body_text.dup; t+="\n\n" unless t.empty?
+          btns_list.each_with_index{|b,i|t+="#{i+1}. #{b}\n"}
+          txt(conv, t)
+        end
         conv.update!(custom_attributes:(conv.custom_attributes||{}).merge('bot_state'=>{'bot_id'=>bot['id'],'node_id'=>nid.to_s,'waiting_for'=>'button_choice','options_count'=>btns_list.length,'button_labels'=>btns_list}))
       end
 
@@ -3939,11 +3955,18 @@ Rails.application.config.after_initialize do
         d=node['data']
         opts=(1..6).map{|i|d["opt#{i}"]}.reject{|o|o.to_s.strip.empty?}
         return if opts.empty?
-        t=interp(d['title'].to_s.strip, conv); t+="\n\n" unless t.empty?
-        opts.each_with_index{|o,i|t+="#{i+1}. #{o}\n"}
-        txt(conv, t)
+        title=interp(d['title'].to_s.strip, conv)
         nid=fd.find{|_,v|v.object_id==node.object_id}&.first
         nid||=fd.find{|_,v|v['name']=='menu'&&v['data']['title']==d['title']}&.first
+        if native_interactive?(conv)
+          # Menu como lista nativa (ate 10 opcoes); id numerico para o roteamento
+          rows=opts.each_with_index.map{|o,i|{'title'=>o.to_s.strip[0,24],'description'=>'','id'=>(i+1).to_s}}
+          txt(conv, title, interactive:{'type'=>'list','body'=>title,'button'=>'Ver opções','sections'=>[{'title'=>'Opções','rows'=>rows}]})
+        else
+          t=title.dup; t+="\n\n" unless t.empty?
+          opts.each_with_index{|o,i|t+="#{i+1}. #{o}\n"}
+          txt(conv, t)
+        end
         conv.update!(custom_attributes:(conv.custom_attributes||{}).merge('bot_state'=>{'bot_id'=>bot['id'],'node_id'=>nid.to_s,'waiting_for'=>'menu_choice','options_count'=>opts.length}))
       end
 

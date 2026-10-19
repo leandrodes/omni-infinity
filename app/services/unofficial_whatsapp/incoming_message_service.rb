@@ -301,7 +301,30 @@ class UnofficialWhatsapp::IncomingMessageService
   def text_content
     (wa_message['conversation'] || wa_message[:conversation]).presence ||
       (wa_message.dig('extendedTextMessage', 'text') || wa_message.dig(:extendedTextMessage, :text)).presence ||
+      button_reply_content.presence ||
+      list_reply_content.presence ||
       ''
+  end
+
+  # Native interactive replies (flow builder buttons/list) arrive as
+  # buttonsResponseMessage/listResponseMessage. The selected id is the value we
+  # generate upstream, so the bot engine can route the choice. Fall back to the
+  # display text/title when the id is missing.
+  def button_reply_content
+    node = wa_message['buttonsResponseMessage'] || wa_message[:buttonsResponseMessage]
+    return nil if node.blank?
+
+    (node['selectedButtonId'] || node[:selectedButtonId]).presence ||
+      (node['selectedDisplayText'] || node[:selectedDisplayText])
+  end
+
+  def list_reply_content
+    node = wa_message['listResponseMessage'] || wa_message[:listResponseMessage]
+    return nil if node.blank?
+
+    reply = node['singleSelectReply'] || node[:singleSelectReply] || {}
+    (reply['selectedRowId'] || reply[:selectedRowId]).presence ||
+      (node['title'] || node[:title])
   end
 
   def media
