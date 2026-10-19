@@ -139,7 +139,10 @@ class UnofficialWhatsapp::Providers::WuzapiService < UnofficialWhatsapp::Provide
     media_type = wuzapi_media_type(attachment.file_type)
     payload = { 'Phone' => phone_number, media_type => data_url(attachment), 'Id' => id }
     payload['Caption'] = message.outgoing_content if %w[image video document].include?(media_type)
-    if media_type == 'document'
+    if media_type == 'audio'
+      payload['MimeType'] = audio_mime_type(attachment)
+      payload['PTT'] = true
+    elsif media_type == 'document'
       payload['FileName'] = attachment.file.filename.to_s
       payload['MimeType'] = attachment.file.content_type
     end
@@ -158,6 +161,13 @@ class UnofficialWhatsapp::Providers::WuzapiService < UnofficialWhatsapp::Provide
     bytes = attachment.file.download
     content_type = attachment.file.content_type
     "data:#{content_type};base64,#{Base64.strict_encode64(bytes)}"
+  end
+
+  def audio_mime_type(attachment)
+    content_type = attachment.file.content_type.to_s
+    return 'audio/ogg; codecs=opus' if %w[audio/ogg audio/opus application/ogg application/x-ogg].include?(content_type)
+
+    content_type.presence || 'audio/ogg; codecs=opus'
   end
 
   def process_response(response, message, id)
