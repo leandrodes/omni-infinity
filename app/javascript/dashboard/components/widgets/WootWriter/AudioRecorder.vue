@@ -125,9 +125,26 @@ const stopRecording = () => {
   }
 };
 
-const startRecording = () => {
-  record.value.startRecording();
-  isRecording.value = true;
+const requestMicrophoneAccess = async () => {
+  if (!navigator.mediaDevices?.getUserMedia) {
+    const error = new Error('Microphone API unavailable');
+    error.name = 'NotSupportedError';
+    throw error;
+  }
+
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  stream.getTracks().forEach(track => track.stop());
+};
+
+const startRecording = async () => {
+  try {
+    await requestMicrophoneAccess();
+    await record.value.startRecording();
+    isRecording.value = true;
+  } catch (error) {
+    isRecording.value = false;
+    emit('recordError', { error });
+  }
 };
 
 const playPause = () => {
@@ -137,9 +154,13 @@ const playPause = () => {
   }
 };
 
-onMounted(() => {
-  initWaveSurfer();
-  startRecording();
+onMounted(async () => {
+  try {
+    initWaveSurfer();
+    await startRecording();
+  } catch (error) {
+    emit('recordError', { error });
+  }
 });
 
 onUnmounted(() => {

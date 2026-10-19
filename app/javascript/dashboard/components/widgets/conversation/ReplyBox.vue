@@ -458,6 +458,9 @@ export default {
       if (this.isAWhatsAppCloudChannel) {
         return AUDIO_FORMATS.OGG;
       }
+      if (this.isAUnofficialWhatsappChannel) {
+        return AUDIO_FORMATS.OGG;
+      }
       if (this.isAWhatsAppChannel || this.isATelegramChannel) {
         return AUDIO_FORMATS.MP3;
       }
@@ -1111,9 +1114,29 @@ export default {
       };
       return file && this.onFileUpload(autoRecordedFile);
     },
-    onRecordError() {
+    onRecordError(payload) {
       this.toggleAudioRecorder();
-      useAlert(this.$t('CONVERSATION.REPLYBOX.AUDIO_CONVERSION_FAILED'));
+      const error = payload?.error || payload;
+      const permissionErrors = [
+        'NotAllowedError',
+        'PermissionDeniedError',
+        'SecurityError',
+      ];
+      const unavailableErrors = [
+        'NotFoundError',
+        'DevicesNotFoundError',
+        'NotReadableError',
+        'OverconstrainedError',
+        'NotSupportedError',
+      ];
+
+      if (permissionErrors.includes(error?.name)) {
+        useAlert(this.$t('CONVERSATION.REPLYBOX.MICROPHONE_PERMISSION_DENIED'));
+      } else if (unavailableErrors.includes(error?.name)) {
+        useAlert(this.$t('CONVERSATION.REPLYBOX.MICROPHONE_UNAVAILABLE'));
+      } else {
+        useAlert(this.$t('CONVERSATION.REPLYBOX.AUDIO_CONVERSION_FAILED'));
+      }
     },
     toggleTyping(status) {
       const conversationId = this.currentChat.id;

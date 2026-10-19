@@ -290,6 +290,8 @@
       "TIP_AUDIORECORDER_PERMISSION": "Permitir acesso ao áudio",
       "TIP_AUDIORECORDER_ERROR": "Não foi possível abrir o áudio",
       "AUDIO_CONVERSION_FAILED": "Falha na conversão do áudio. Tente novamente.",
+      "MICROPHONE_PERMISSION_DENIED": "Não foi possível acessar o microfone. Permita o uso do microfone para este site e tente novamente.",
+      "MICROPHONE_UNAVAILABLE": "Nenhum microfone disponível foi encontrado. Verifique o dispositivo e tente novamente.",
       "DRAG_DROP": "Arraste e solte aqui para anexar",
       "IMAGE_UPLOAD_SUCCESS": "Imagem enviada com sucesso",
       "START_AUDIO_RECORDING": "Iniciar gravação de áudio",
