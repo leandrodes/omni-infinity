@@ -40,7 +40,7 @@ onClickOutside(popoverRef, () => emit('close'), {
 const isActive = child => props.activeChild?.name === child.name;
 
 const getAccessibleSubChildren = children =>
-  children.filter(c => isAllowed(c.to));
+  children.filter(c => c.href || isAllowed(c.to));
 
 const renderIcon = icon => ({
   component: typeof icon === 'object' ? icon : Icon,
@@ -67,9 +67,9 @@ const transition = computed(() =>
 const accessibleChildren = computed(() => {
   return props.children.filter(child => {
     if (child.children) {
-      return child.children.some(subChild => isAllowed(subChild.to));
+      return child.children.some(subChild => subChild.href || isAllowed(subChild.to));
     }
-    return child.to && isAllowed(child.to);
+    return child.href || (child.to && isAllowed(child.to));
   });
 });
 
@@ -217,8 +217,11 @@ onMounted(async () => {
             </li>
             <!-- Direct child item -->
             <li v-else class="py-0.5">
-              <router-link
-                :to="child.to"
+              <component
+                :is="child.href ? 'a' : 'router-link'"
+                :href="child.href || undefined"
+                :to="child.href ? undefined : child.to"
+                :target="child.href ? child.target || '_self' : undefined"
                 class="flex items-center gap-2 px-2 py-1.5 w-full rounded-lg text-sm text-left rtl:text-right transition-colors duration-150 ease-out"
                 :class="{
                   'text-n-slate-12 bg-n-alpha-2': isActive(child),
@@ -246,7 +249,7 @@ onMounted(async () => {
                   <span class="flex-1 truncate">{{ child.label }}</span>
                   <SidebarUnreadBadge :count="child.badgeCount" />
                 </template>
-              </router-link>
+              </component>
             </li>
           </template>
         </ul>

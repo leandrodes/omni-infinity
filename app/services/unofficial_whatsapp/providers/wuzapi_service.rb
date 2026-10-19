@@ -189,9 +189,11 @@ class UnofficialWhatsapp::Providers::WuzapiService < UnofficialWhatsapp::Provide
     end
     return send_text_message(phone_number, message) if buttons.empty?
 
+    body = (data['body'] || message.outgoing_content).to_s.strip
+    body = 'Escolha uma opção:' if body.blank?
     payload = {
       'Phone' => phone_number,
-      'Body' => (data['body'] || message.outgoing_content).to_s,
+      'Body' => body,
       'Buttons' => buttons,
       'Id' => id
     }
@@ -215,10 +217,12 @@ class UnofficialWhatsapp::Providers::WuzapiService < UnofficialWhatsapp::Provide
     end
     return send_text_message(phone_number, message) if sections.empty?
 
+    desc = (data['body'] || message.outgoing_content).to_s.strip
+    desc = 'Selecione uma opção:' if desc.blank?
     payload = {
       'Phone' => phone_number,
       'ButtonText' => (data['button'] || 'Selecionar').to_s,
-      'Desc' => (data['body'] || message.outgoing_content).to_s,
+      'Desc' => desc,
       'Sections' => sections,
       'Id' => id
     }

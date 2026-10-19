@@ -7,7 +7,9 @@ import SidebarUnreadBadge from './SidebarUnreadBadge.vue';
 
 const props = defineProps({
   label: { type: String, required: true },
-  to: { type: [String, Object], required: true },
+  to: { type: [String, Object], default: null },
+  href: { type: String, default: null },
+  target: { type: String, default: null },
   icon: { type: [String, Object], default: null },
   active: { type: Boolean, default: false },
   component: { type: Function, default: null },
@@ -15,6 +17,10 @@ const props = defineProps({
   hideTreeLine: { type: Boolean, default: false },
   thinTreeLine: { type: Boolean, default: false },
 });
+
+const linkIs = computed(() =>
+  props.href ? 'a' : props.to ? 'router-link' : 'div'
+);
 
 const { resolvePermissions, resolveFeatureFlag } = useSidebarContext();
 
@@ -41,8 +47,10 @@ const TREE_CONNECTOR =
     }"
   >
     <component
-      :is="to ? 'router-link' : 'div'"
-      :to="to"
+      :is="linkIs"
+      :to="props.href ? undefined : to"
+      :href="href || undefined"
+      :target="href ? target || '_self' : undefined"
       :title="label"
       class="flex h-8 items-center gap-2 px-2 py-1 rounded-lg ltr:hover:bg-gradient-to-r rtl:hover:bg-gradient-to-l from-transparent via-n-slate-3/70 to-n-slate-3/70 group min-w-0"
       :class="{

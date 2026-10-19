@@ -108,10 +108,13 @@ const handleWindowBlur = () => {
   closeActivePopover();
 };
 
+const isChildAllowed = child => {
+  if (child.href) return true;
+  return child.to && isAllowed(child.to);
+};
+
 const hasAccessibleSubChildren = child => {
-  return child.children?.some(
-    subChild => subChild.to && isAllowed(subChild.to)
-  );
+  return child.children?.some(subChild => isChildAllowed(subChild));
 };
 
 const visibleChildren = computed(() => {
@@ -120,7 +123,7 @@ const visibleChildren = computed(() => {
   return props.children.filter(child => {
     if (child.children) return hasAccessibleSubChildren(child);
 
-    return child.to && isAllowed(child.to);
+    return isChildAllowed(child);
   });
 });
 
@@ -129,7 +132,7 @@ const accessibleItems = computed(() => {
 
   return visibleChildren.value
     .flatMap(child => child.children || child)
-    .filter(child => child.to && isAllowed(child.to));
+    .filter(child => isChildAllowed(child));
 });
 
 const hasAccessibleChildren = computed(() => {
@@ -319,7 +322,7 @@ watch(
             @update-sort="child.onSortChange"
           />
           <SidebarGroupLeaf
-            v-else-if="isAllowed(child.to)"
+            v-else-if="isChildAllowed(child)"
             v-show="isExpanded || activeChild?.name === child.name"
             v-bind="child"
             :active="activeChild?.name === child.name"

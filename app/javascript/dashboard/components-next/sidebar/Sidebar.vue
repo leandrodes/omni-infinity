@@ -500,6 +500,7 @@ const menuItems = computed(() => {
         },
       ],
     },
+    ...(isEnterprise ? [
     {
       name: 'Captain',
       icon: 'i-woot-captain',
@@ -582,6 +583,7 @@ const menuItems = computed(() => {
         },
       ],
     },
+    ] : []),
     ...(isCallsAvailable.value
       ? [
           {
@@ -899,6 +901,12 @@ const menuItems = computed(() => {
           icon: 'i-lucide-blocks',
           to: accountScopedRoute('settings_applications'),
         },
+        {
+          name: 'Settings Bot Builder',
+          label: 'Chatbot',
+          icon: 'i-lucide-workflow',
+          href: '/bot-builder',
+        },
         ...(hasDataImport.value
           ? [
               {
@@ -909,24 +917,28 @@ const menuItems = computed(() => {
               },
             ]
           : []),
-        {
-          name: 'Settings Audit Logs',
-          label: t('SIDEBAR.AUDIT_LOGS'),
-          icon: 'i-lucide-briefcase',
-          to: accountScopedRoute('auditlogs_list'),
-        },
-        {
-          name: 'Settings Custom Roles',
-          label: t('SIDEBAR.CUSTOM_ROLES'),
-          icon: 'i-lucide-shield-plus',
-          to: accountScopedRoute('custom_roles_list'),
-        },
-        {
-          name: 'Settings Sla',
-          label: t('SIDEBAR.SLA'),
-          icon: 'i-lucide-clock-alert',
-          to: accountScopedRoute('sla_list'),
-        },
+        ...(isEnterprise
+          ? [
+              {
+                name: 'Settings Audit Logs',
+                label: t('SIDEBAR.AUDIT_LOGS'),
+                icon: 'i-lucide-briefcase',
+                to: accountScopedRoute('auditlogs_list'),
+              },
+              {
+                name: 'Settings Custom Roles',
+                label: t('SIDEBAR.CUSTOM_ROLES'),
+                icon: 'i-lucide-shield-plus',
+                to: accountScopedRoute('custom_roles_list'),
+              },
+              {
+                name: 'Settings Sla',
+                label: t('SIDEBAR.SLA'),
+                icon: 'i-lucide-clock-alert',
+                to: accountScopedRoute('sla_list'),
+              },
+            ]
+          : []),
         {
           name: 'Conversation Workflow',
           label: t('SIDEBAR.CONVERSATION_WORKFLOW'),
@@ -939,12 +951,16 @@ const menuItems = computed(() => {
           icon: 'i-lucide-shield',
           to: accountScopedRoute('security_settings_index'),
         },
-        {
-          name: 'Settings Billing',
-          label: t('SIDEBAR.BILLING'),
-          icon: 'i-lucide-credit-card',
-          to: accountScopedRoute('billing_settings_index'),
-        },
+        ...(isOnChatwootCloud.value
+          ? [
+              {
+                name: 'Settings Billing',
+                label: t('SIDEBAR.BILLING'),
+                icon: 'i-lucide-credit-card',
+                to: accountScopedRoute('billing_settings_index'),
+              },
+            ]
+          : []),
       ],
     },
   ];

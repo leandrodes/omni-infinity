@@ -301,6 +301,7 @@ class UnofficialWhatsapp::IncomingMessageService
   def text_content
     (wa_message['conversation'] || wa_message[:conversation]).presence ||
       (wa_message.dig('extendedTextMessage', 'text') || wa_message.dig(:extendedTextMessage, :text)).presence ||
+      template_button_reply_content.presence ||
       button_reply_content.presence ||
       list_reply_content.presence ||
       ''
@@ -310,6 +311,18 @@ class UnofficialWhatsapp::IncomingMessageService
   # buttonsResponseMessage/listResponseMessage. The selected id is the value we
   # generate upstream, so the bot engine can route the choice. Fall back to the
   # display text/title when the id is missing.
+  #
+  # Real WhatsApp servers deliver a tapped reply button as
+  # templateButtonReplyMessage (with selectedID / selectedDisplayText) rather
+  # than buttonsResponseMessage, so it must be checked as well.
+  def template_button_reply_content
+    node = wa_message['templateButtonReplyMessage'] || wa_message[:templateButtonReplyMessage]
+    return nil if node.blank?
+
+    (node['selectedID'] || node[:selectedID] || node['selectedId'] || node[:selectedId]).presence ||
+      (node['selectedDisplayText'] || node[:selectedDisplayText])
+  end
+
   def button_reply_content
     node = wa_message['buttonsResponseMessage'] || wa_message[:buttonsResponseMessage]
     return nil if node.blank?

@@ -177,6 +177,299 @@ class BotBuilderMiddleware
 
   def e(t); ERB::Util.html_escape(t.to_s); end
 
+  # Lightweight client-side pt-BR translator for the (English-default) UI of the
+  # list and editor pages. The addon's own i18n only ships he/en branches, so we
+  # translate the rendered English text/attributes in the browser instead of
+  # rewriting every literal. Only injected when the account locale is Portuguese.
+  def pt_i18n_js(locale)
+    return '' unless locale.to_s.downcase.start_with?('pt')
+
+    <<~'JS'
+    <script>
+    (function(){
+      var EX={
+        'Bot Builder':'Construtor de Bots',
+        'Manage automated bots for your inboxes':'Gerencie bots automatizados para suas caixas de entrada',
+        'New Bot':'Novo Bot',
+        'No Bots Yet':'Ainda não há bots',
+        'Create your first bot with the visual drag-and-drop editor':'Crie seu primeiro bot com o editor visual de arrastar e soltar',
+        'Design your conversation flow':'Desenhe o fluxo da conversa',
+        'Connect to an inbox':'Conecte a uma caixa de entrada',
+        'Activate and watch it work':'Ative e veja funcionando',
+        'Active bots':'Bots ativos',
+        'Disabled bots':'Bots desativados',
+        'Total nodes':'Total de nós',
+        'Search bots...':'Buscar bots...',
+        'Last updated':'Última atualização',
+        'Name':'Nome',
+        'Date created':'Data de criação',
+        'Not assigned':'Não atribuído',
+        'No matching bots found':'Nenhum bot correspondente encontrado',
+        'Active':'Ativo',
+        'Disabled':'Desativado',
+        'Enable':'Ativar',
+        'Disable':'Desativar',
+        'Edit':'Editar',
+        'Delete':'Excluir',
+        'Actions':'Ações',
+        'Back to list':'Voltar à lista',
+        'Bot Settings':'Configurações do Bot',
+        'Auto-align':'Alinhar automaticamente',
+        'Validate Flow':'Validar Fluxo',
+        'Export Flow (JSON)':'Exportar Fluxo (JSON)',
+        'Import Flow (JSON)':'Importar Fluxo (JSON)',
+        'Zoom out (Ctrl+-)':'Diminuir zoom (Ctrl+-)',
+        'Zoom in (Ctrl++)':'Aumentar zoom (Ctrl++)',
+        'Fit to screen (Ctrl+0)':'Ajustar à tela (Ctrl+0)',
+        'Reset zoom (Ctrl+1)':'Redefinir zoom (Ctrl+1)',
+        'Snap to grid':'Encaixar na grade',
+        'Expand/Collapse palette':'Expandir/Recolher paleta',
+        'Undo':'Desfazer',
+        'Redo':'Refazer',
+        'Save':'Salvar',
+        'Saving...':'Salvando...',
+        'Bot saved successfully!':'Bot salvo com sucesso!',
+        'Unsaved changes':'Alterações não salvas',
+        'Draft saved':'Rascunho salvo',
+        'Trigger':'Gatilho',
+        'Incoming Message':'Mensagem Recebida',
+        'Send Message':'Enviar Mensagem',
+        'Send Image':'Enviar Imagem',
+        'Send Video':'Enviar Vídeo',
+        'Buttons':'Botões',
+        'Menu':'Menu',
+        'Condition':'Condição',
+        'Delay':'Atraso',
+        'Assign to Agent':'Atribuir a Atendente',
+        'Add Label':'Adicionar Etiqueta',
+        'Remove Label':'Remover Etiqueta',
+        'Set Attribute':'Definir Atributo',
+        'Close Conversation':'Encerrar Conversa',
+        'Internal Note':'Nota Interna',
+        'Note':'Nota',
+        'Set Priority':'Definir Prioridade',
+        'Set Status':'Definir Status',
+        'Transfer Inbox':'Transferir Caixa',
+        'Transfer':'Transferir',
+        'Wait for Reply':'Aguardar Resposta',
+        'Wait Reply':'Aguardar Resposta',
+        'Waiting for reply':'Aguardando resposta',
+        'Go to Step':'Ir para Etapa',
+        'Go to node':'Ir para nó',
+        'API Action':'Ação de API',
+        'Webhook':'Webhook',
+        'HTTP Request':'Requisição HTTP',
+        'Message':'Mensagem',
+        'Logic':'Lógica',
+        'Action':'Ação',
+        'Integration':'Integração',
+        'Conversation':'Conversa',
+        'Contact':'Contato',
+        'Customer':'Cliente',
+        'Lead':'Lead',
+        'Visitor':'Visitante',
+        'Trigger type':'Tipo de gatilho',
+        'Keyword':'Palavra-chave',
+        'Any message':'Qualquer mensagem',
+        'New conversation':'Nova conversa',
+        'Enter keyword...':'Digite a palavra-chave...',
+        'Content':'Conteúdo',
+        'Message content':'Conteúdo da mensagem',
+        'Message text':'Texto da mensagem',
+        'Type a message...':'Digite uma mensagem...',
+        'Image URL':'URL da imagem',
+        'Caption':'Legenda',
+        'Optional...':'Opcional...',
+        'Video URL':'URL do vídeo',
+        'Buttons (up to 3)':'Botões (até 3)',
+        'Button 1':'Botão 1',
+        'Button 2':'Botão 2',
+        'Button 3':'Botão 3',
+        'Title':'Título',
+        'Choose an option:':'Escolha uma opção:',
+        'Options':'Opções',
+        'Option':'Opção',
+        'Option 1':'Opção 1',
+        'Option 2':'Opção 2',
+        'Option 3':'Opção 3',
+        'Option 4':'Opção 4',
+        'Option 5':'Opção 5',
+        'Option 6':'Opção 6',
+        'Check':'Verificar',
+        'Check type':'Tipo de verificação',
+        'Contains':'Contém',
+        'Equals':'Igual a',
+        'Label exists':'Etiqueta existe',
+        'Contact type':'Tipo de contato',
+        'Conv. status':'Status da conversa',
+        'Conv. priority':'Prioridade da conversa',
+        'Conv. label':'Etiqueta da conversa',
+        'Custom attribute':'Atributo personalizado',
+        'Contact field':'Campo do contato',
+        'Value':'Valor',
+        'Seconds':'Segundos',
+        'Typing indicator':'Indicador de digitação',
+        'No':'Não',
+        'Yes':'Sim',
+        'Yes — show typing':'Sim — mostrar digitando',
+        'Agent':'Atendente',
+        'Team':'Equipe',
+        'None':'Nenhum',
+        'Label':'Etiqueta',
+        'Select...':'Selecione...',
+        'Attribute':'Atributo',
+        'Conversation will be marked as resolved':'A conversa será marcada como resolvida',
+        'Internal note':'Nota interna',
+        'Internal note...':'Nota interna...',
+        'Priority':'Prioridade',
+        'Low':'Baixa',
+        'Medium':'Média',
+        'High':'Alta',
+        'Urgent':'Urgente',
+        'Status':'Status',
+        'Open':'Aberta',
+        'Resolved':'Resolvida',
+        'Pending':'Pendente',
+        'Snoozed':'Adiada',
+        'Inbox':'Caixa de entrada',
+        'Save response to variable':'Salvar resposta em variável',
+        'Timeout':'Tempo limite',
+        'Timeout (seconds)':'Tempo limite (segundos)',
+        'Timeout message (optional)':'Mensagem de tempo esgotado (opcional)',
+        'No reply received. Try again...':'Nenhuma resposta recebida. Tente novamente...',
+        'Reply received':'Resposta recebida',
+        'Test name':'Nome do teste',
+        'Message test A':'Teste de mensagem A',
+        'Path A percentage (%)':'Porcentagem do caminho A (%)',
+        'Target node':'Nó de destino',
+        'Select node...':'Selecione o nó...',
+        'Add buttons...':'Adicionar botões...',
+        'Add options...':'Adicionar opções...',
+        'Add image...':'Adicionar imagem...',
+        'Add video...':'Adicionar vídeo...',
+        'Image attached':'Imagem anexada',
+        'Video attached':'Vídeo anexado',
+        'Typing':'Digitando',
+        'Select agent/team...':'Selecione atendente/equipe...',
+        'Select label...':'Selecione a etiqueta...',
+        'Select attribute...':'Selecione atributo...',
+        'Select field...':'Selecione campo...',
+        'Select inbox...':'Selecione a caixa...',
+        'Select priority...':'Selecione a prioridade...',
+        'Select status...':'Selecione o status...',
+        'Select target node...':'Selecione o nó de destino...',
+        'Enter URL...':'Digite a URL...',
+        'Set URL...':'Definir URL...',
+        'Enter a bot name':'Digite um nome para o bot',
+        'File exported successfully':'Arquivo exportado com sucesso',
+        'Importing will replace the current flow. Continue?':'A importação substituirá o fluxo atual. Continuar?',
+        'Invalid file':'Arquivo inválido',
+        'Flow imported successfully':'Fluxo importado com sucesso',
+        'Error reading file':'Erro ao ler o arquivo',
+        'Error loading bot':'Erro ao carregar o bot',
+        'localStorage full — save manually':'localStorage cheio — salve manualmente',
+        'Copied':'Copiado',
+        'Pasted':'Colar',
+        'Node duplicated':'Nó duplicado',
+        'a moment ago':'um momento atrás',
+        'Draft found from':'Rascunho encontrado de',
+        'Draft found from ':'Rascunho encontrado de ',
+        '. Restore?':'. Restaurar?',
+        'Unsaved draft found. Restore?':'Rascunho não salvo encontrado. Restaurar?',
+        'Save failed — timeout. Draft preserved locally.':'Falha ao salvar — tempo esgotado. Rascunho preservado localmente.',
+        'Error saving — draft preserved locally':'Erro ao salvar — rascunho preservado localmente',
+        'Nodes aligned':'Nós alinhados',
+        'Flow is valid!':'O fluxo é válido!',
+        'No nodes':'Sem nós',
+        'Empty keyword':'Palavra-chave vazia',
+        'Empty message':'Mensagem vazia',
+        'issues found':'problemas encontrados',
+        'Method':'Método',
+        'Body (JSON)':'Corpo (JSON)',
+        'Headers (JSON)':'Cabeçalhos (JSON)',
+        'Delete this bot?':'Excluir este bot?',
+        'Delete node':'Excluir nó',
+        'Next':'Próximo',
+        'Success':'Sucesso',
+        'Error':'Erro',
+        'Just now':'Agora mesmo',
+        '— add a first button':'— adicione um primeiro botão',
+        '— add text':'— adicione texto',
+        '— enter a trigger keyword':'— digite uma palavra-chave',
+        '— select an agent or team':'— selecione um atendente ou equipe',
+        'disconnected — connect to a previous node':'desconectado — conecte a um nó anterior',
+        'no URL — add a link':'sem URL — adicione um link',
+        'no URL — enter a URL':'sem URL — digite uma URL',
+        'no connection — connect to a target':'sem conexão — conecte a um destino',
+        'no inbox — select a target':'sem caixa — selecione um destino',
+        'no name — select an attribute':'sem nome — selecione um atributo',
+        'no options — add at least one':'sem opções — adicione pelo menos uma',
+        'not selected — select a level':'não selecionado — selecione um nível',
+        'not selected — select a value':'não selecionado — selecione um valor',
+        'No nodes — drag a trigger from the palette':'Sem nós — arraste um gatilho da paleta',
+        'Missing trigger — drag "Incoming Message" from the palette':'Gatilho ausente — arraste "Mensagem Recebida" da paleta',
+        'No inboxes found':'Nenhuma caixa encontrada',
+        'select an attribute...':'selecione um atributo...',
+        'Delete node with ':'Excluir nó com ',
+        'connections':'conexões',
+        'nodes':'nós',
+        'days ago':'dias atrás',
+        'hours ago':'horas atrás',
+        'min ago':'min atrás',
+        'Agent: ':'Atendente: ',
+        'Team: ':'Equipe: ',
+        'Status: ':'Status: ',
+        'Priority: ':'Prioridade: ',
+        'Inbox: ':'Caixa: ',
+        'Keyword: ':'Palavra-chave: ',
+        'Saved in: ':'Salvo em: ',
+        'Go to node #':'Ir para nó #',
+        'Created ':'Criado '
+      };
+      var EMBX=['nodes','connections'];
+      var keys=Object.keys(EX).filter(function(k){return k.indexOf(' ')!==-1||EMBX.indexOf(k)!==-1;}).sort(function(a,b){return b.length-a.length;});
+      function tr(s){
+        if(!s||!/[A-Za-z]/.test(s))return s;
+        var t=s.trim();
+        if(EX[t]!==undefined){return s.replace(t,EX[t]);}
+        var r=s;
+        for(var i=0;i<keys.length;i++){var k=keys[i];if(r.indexOf(k)!==-1)r=r.split(k).join(EX[k]);}
+        return r;
+      }
+      function attr(el,n){var v=el.getAttribute&&el.getAttribute(n);if(v){var nv=tr(v);if(nv!==v)el.setAttribute(n,nv);}}
+      var SKIP={SCRIPT:1,STYLE:1,TEXTAREA:1,INPUT:1,CODE:1,PRE:1};
+      function walk(node){
+        if(node.nodeType===3){var nv=tr(node.nodeValue);if(nv!==node.nodeValue)node.nodeValue=nv;return;}
+        if(node.nodeType!==1)return;
+        if(SKIP[node.nodeName])return;
+        if(node.hasAttribute&&node.hasAttribute('contenteditable'))return;
+        attr(node,'placeholder');attr(node,'title');attr(node,'aria-label');
+        var ch=node.childNodes;for(var i=0;i<ch.length;i++)walk(ch[i]);
+      }
+      var applying=false;
+      var obs=new MutationObserver(function(muts){
+        if(applying)return;applying=true;
+        for(var i=0;i<muts.length;i++){var m=muts[i];
+          if(m.type==='characterData')walk(m.target);
+          if(m.addedNodes)for(var j=0;j<m.addedNodes.length;j++)walk(m.addedNodes[j]);
+        }
+        applying=false;
+      });
+      function boot(){
+        if(document.title)document.title=tr(document.title);
+        walk(document.body);
+        obs.observe(document.body,{childList:true,subtree:true,characterData:true});
+      }
+      if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+      var _c=window.confirm,_a=window.alert,_p=window.prompt;
+      window.confirm=function(m){return _c(tr(String(m)));};
+      window.alert=function(m){return _a(tr(String(m)));};
+      window.prompt=function(m,d){return _p(tr(String(m)),d);};
+    })();
+    </script>
+    JS
+  end
+
   def fab_html
     '<style>' \
     '.cw-fab{position:fixed;bottom:20px;right:20px;width:36px;height:36px;border-radius:8px;background:#FFFFFF;border:1px solid #EAEAEA;color:#80838D;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:9000;transition:background .15s,border-color .15s,color .15s;font-family:"Inter",-apple-system,system-ui,sans-serif;box-shadow:0 1px 4px rgba(0,0,0,.06)}' \
@@ -546,7 +839,7 @@ class BotBuilderMiddleware
     "var sv=localStorage.getItem(_bbSortKey);if(sv){sortEl.value=sv;doSort(sv)}" \
     "sortEl.addEventListener('change',function(){var v=this.value;localStorage.setItem(_bbSortKey,v);doSort(v)});" \
     "}" \
-    "</script></body></html>"
+    "</script>#{pt_i18n_js(locale)}</body></html>"
   end
 
   def editor_page(bot_id, user=nil)
@@ -3652,10 +3945,11 @@ setTimeout(queueMM,800);
     if(tipsDiv) tipsDiv.innerHTML='<i class="ti ti-drag-drop" style="font-size:13px"></i> \u05D2\u05E8\u05D5\u05E8 \u05D0\u05DC\u05DE\u05E0\u05D8 \u05DC\u05E7\u05E0\u05D1\u05E1<br><i class="ti ti-mouse" style="font-size:13px"></i> \u05DC\u05D7\u05D9\u05E6\u05D4 \u05DB\u05E4\u05D5\u05DC\u05D4 = \u05E2\u05E8\u05D9\u05DB\u05D4<br><i class="ti ti-device-floppy" style="font-size:13px"></i> Ctrl+S = \u05E9\u05DE\u05D9\u05E8\u05D4<br><i class="ti ti-backspace" style="font-size:13px"></i> Delete = \u05DE\u05D7\u05D9\u05E7\u05EA \u05D0\u05DC\u05DE\u05E0\u05D8<br><i class="ti ti-arrow-back-up" style="font-size:13px"></i> Ctrl+Z = \u05D1\u05D9\u05D8\u05D5\u05DC<br><i class="ti ti-menu-2" style="font-size:13px"></i> \u05DC\u05D7\u05D9\u05E6\u05D4 \u05D9\u05DE\u05E0\u05D9\u05EA = \u05EA\u05E4\u05E8\u05D9\u05D8';
   }
 })();
-</script>
-</body></html>
+ </script>
+__PT_I18N__
+ </body></html>
     ENDHTML
-    html.gsub('__BOT_ID__', bid_js).gsub('__LOCALE__', "\"#{locale}\"")
+    html.gsub('__BOT_ID__', bid_js).gsub('__LOCALE__', "\"#{locale}\"").gsub('__PT_I18N__', pt_i18n_js(locale))
   end
 end
 
