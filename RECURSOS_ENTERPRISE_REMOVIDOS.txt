@@ -1,0 +1,60 @@
+RECURSOS DA VERSÃO ENTERPRISE REMOVIDOS DO FORMULÁRIO DE CONTAS
+================================================================
+
+Contexto
+--------
+Estes recursos estão marcados como "premium" no arquivo config/features.yml.
+No Chatwoot/Chatwoot CE eles só funcionam com a edição Enterprise (ou no
+Chatwoot Cloud). Como não temos licença Enterprise, removemos esses itens do
+Super Admin > Contas para não confundir. Eles continuam existindo no código
+(apenas não aparecem mais no formulário), então nada quebra.
+
+Relação dos itens removidos da tela
+-----------------------------------
+1.  disable_branding   - Desativar Marca (remove a marca do Chatwoot do widget/e-mails)
+2.  audit_logs         - Logs de Auditoria
+3.  custom_tools       - Ferramentas personalizadas do Captain
+4.  sla                - SLA (políticas de prazo/atendimento)
+5.  help_center_embedding_search - Busca semântica na Central de Ajuda (Captain)
+6.  captain_integration - Captain (IA)
+7.  custom_roles       - Perfis/Papéis personalizados
+8.  captain_v1_action_classifier - Captain (classificador de ações V1)
+9.  channel_voice      - Canal de Voz (Twilio)
+10. captain_integration_v2 - Captain V2
+11. captain_document_auto_sync - Sincronização automática de documentos do Captain
+12. advanced_search    - Busca avançada
+13. saml               - SAML SSO
+14. advanced_search_indexing - Indexação da busca avançada
+15. companies          - Empresas (CRM premium)
+16. csat_review_notes  - Notas de revisão de CSAT
+17. conversation_required_attributes - Atributos obrigatórios na resolução (menu "Fluxo de Conversa")
+18. advanced_assignment - Atribuição avançada
+19. audit_log_ip_address - IP de origem nos logs de auditoria
+
+Também foram ocultados (não são "enterprise", mas não fazem sentido na tela):
+- Recursos internos do Chatwoot (chatwoot_internal), ex.: conversation_unread_counts,
+  inbox_view, contact_chatwoot_support_team, shopify_integration, search_with_gin,
+  crm_v2, reply_mailer_migration, unread_count_for_filters.
+- Recursos obsoletos (deprecated): message_reply_to, whatsapp_embedded_signup,
+  whatsapp_reconfigure.
+- Duplicados/relacionados ao Captain: campaigns e captain_tasks aparecem nas novas
+  seções "Funcionalidades"/"Recursos de IA" (ou ficam reservados para elas).
+
+Ideias que podemos reimplementar de forma independente (sem copiar a Enterprise)
+-------------------------------------------------------------------------------
+- Log de Auditoria próprio: registrar login, logout, IP de origem, troca de status
+  de conversa, alterações de configuração etc. em uma tabela nossa (ex.: audit_events)
+  e exibir uma tela simples. Não precisa do código Enterprise.
+- SLA simples: tabela de políticas (primeira resposta / resolução) por caixa de
+  entrada, com alerta visual quando o prazo estourar. Implementação própria.
+- Perfis/Papéis personalizados: partir das roles atuais (administrator/agent) e
+  criar permissões granulares próprias.
+- Busca avançada: melhorar filtros/consulta no nosso código (sem o índice Enterprise).
+- Atributos obrigatórios na resolução: já existe a tela "Fluxo de Conversa"; dá para
+  implementar a validação no nosso backend de forma independente.
+- Marcas personalizadas: usar as configurações de branding que já temos no fork.
+
+Observação
+----------
+Este arquivo é apenas documentação. Nenhum recurso foi apagado do código; apenas
+deixou de ser listado no formulário de contas para evitar confusão.

@@ -1,16 +1,14 @@
 <div>
   <%
     labels = {
-      'max_users' => t('super_admin.accounts.max_users', default: 'Maximum users'),
-      'max_inboxes' => t('super_admin.accounts.max_inboxes', default: 'Maximum inboxes')
+      'max_users' => 'Máximo de Usuários',
+      'max_inboxes' => 'Máximo de Caixas de Entrada'
     }
   %>
   <% JSON.parse(field.to_s).each do |key, val| %>
     <div class="flex items-center gap-2">
       <span class="text-sm font-medium text-slate-700"><%= labels[key] || key %>:</span>
-      <span class="text-sm text-slate-600">
-        <%= val.present? ? val : t('super_admin.accounts.unlimited', default: 'Unlimited') %>
-      </span>
+      <span class="text-sm text-slate-600"><%= val.present? ? val : 'Ilimitado' %></span>
     </div>
   <% end %>
 </div>

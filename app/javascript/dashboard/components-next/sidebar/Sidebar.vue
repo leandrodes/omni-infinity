@@ -904,7 +904,7 @@ const menuItems = computed(() => {
         {
           name: 'Settings Bot Builder',
           label: 'Chatbot',
-          icon: 'i-lucide-workflow',
+          icon: 'i-lucide-bot-message-square',
           href: '/bot-builder',
         },
         ...(hasDataImport.value

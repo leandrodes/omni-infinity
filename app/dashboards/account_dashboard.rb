@@ -87,7 +87,6 @@ class AccountDashboard < Administrate::BaseDashboard
     suspension_history
     conversations
     account_users
-    transcription_allow_system
   ] + enterprise_show_page_attributes + ce_show_page_attributes).freeze
 
   # FORM_ATTRIBUTES
@@ -107,7 +106,6 @@ class AccountDashboard < Administrate::BaseDashboard
     name
     locale
     status
-    transcription_allow_system
   ] + enterprise_form_attributes + ce_form_attributes).freeze
 
   # COLLECTION_FILTERS
@@ -138,7 +136,7 @@ class AccountDashboard < Administrate::BaseDashboard
   # to prevent an error from being raised (wrong number of arguments)
   # Reference: https://github.com/thoughtbot/administrate/pull/2356/files#diff-4e220b661b88f9a19ac527c50d6f1577ef6ab7b0bed2bfdf048e22e6bfa74a05R204
   def permitted_attributes(action)
-    attrs = super + [limits: {}, captain_models: {}]
+    attrs = super + [:transcription_allow_system, { limits: {}, captain_models: {} }]
     attrs += %i[suspension_category suspension_reason] if action == 'update'
 
     # Add manually_managed_features to permitted attributes only for Chatwoot Cloud

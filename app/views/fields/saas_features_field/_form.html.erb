@@ -1,18 +1,13 @@
 <div class="field-unit__label">
-  <%= f.label field.attribute %>
+  <label>Funcionalidades e Recursos de IA</label>
 </div>
 <div class="field-unit__field feature-container">
   <%
     display_names = SuperAdmin::AccountFeaturesHelper.feature_display_names
-    premium_features = SuperAdmin::AccountFeaturesHelper.account_premium_features
-    other_features = SuperAdmin::AccountFeaturesHelper.filtered_features(field.data)
-                       .reject { |key_array, _val| SaasFeaturesField::SAAS_FEATURES.include?(key_array.first) }
   %>
 
-  <h3 class="mb-3 text-sm font-semibold text-slate-700">
-    <%= t('super_admin.accounts.functional_features', default: 'Funcionalidades') %>
-  </h3>
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  <h3 class="mb-3 text-sm font-semibold text-slate-700">Funcionalidades</h3>
+  <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
     <% SaasFeaturesField::FUNCTIONALITY_FEATURES.each do |feature_key| %>
       <% val = field.data[feature_key] %>
       <div class="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm outline outline-1 outline-n-container">
@@ -22,10 +17,8 @@
     <% end %>
   </div>
 
-  <h3 class="mt-8 mb-3 text-sm font-semibold text-slate-700">
-    <%= t('super_admin.accounts.ai_features', default: 'Recursos de IA') %>
-  </h3>
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  <h3 class="mt-8 mb-3 text-sm font-semibold text-slate-700">Recursos de IA</h3>
+  <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
     <% SaasFeaturesField::AI_FEATURES.each do |feature_key| %>
       <% val = field.data[feature_key] %>
       <div class="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm outline outline-1 outline-n-container">
@@ -33,22 +26,34 @@
         <span><%= check_box "enabled_features", "feature_#{feature_key}", { checked: val, class: "h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-600" }, true, false %></span>
       </div>
     <% end %>
+
+    <div class="flex items-center justify-between gap-3 p-3 bg-white rounded-lg shadow-sm outline outline-1 outline-n-container">
+      <div class="flex flex-col">
+        <span class="text-sm text-slate-700">Transcrição de Áudio</span>
+        <span class="text-xs text-slate-500">
+          Habilita o uso do nosso Whisper interno (cobrado à parte). Se desabilitado,
+          a conta ainda pode configurar um provedor externo próprio (Groq, OpenAI, Whisper etc.).
+        </span>
+      </div>
+      <span class="flex-shrink-0">
+        <%= hidden_field_tag 'account[transcription_allow_system]', '0' %>
+        <%= check_box_tag 'account[transcription_allow_system]', '1', f.object.transcription_allow_system,
+              class: 'h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-600' %>
+      </span>
+    </div>
   </div>
 
   <hr class="my-8 shadow-sm outline outline-1 outline-n-container">
 
-  <h3 class="mb-3 text-sm font-semibold text-slate-700">
-    <%= t('super_admin.accounts.other_features', default: 'Outras funcionalidades') %>
-  </h3>
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-    <% other_features.each do |key_array, val| %>
+  <h3 class="mb-3 text-sm font-semibold text-slate-700">Outras funcionalidades</h3>
+  <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <% field.other_features.each do |key_array, val| %>
       <% feature_key, display_name = key_array %>
       <div class="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm outline outline-1 outline-n-container">
-        <span class="text-sm text-slate-700"><%= display_name %></span>
+        <span class="text-sm text-slate-700"><%= field.label_for(feature_key, display_name) %></span>
         <span>
           <%= check_box "enabled_features", "feature_#{feature_key}",
-                { checked: val, disabled: premium_features.include?(feature_key),
-                  class: "h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-600" }, true, false %>
+                { checked: val, class: "h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-600" }, true, false %>
         </span>
       </div>
     <% end %>
