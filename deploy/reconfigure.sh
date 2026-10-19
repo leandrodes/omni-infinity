@@ -40,8 +40,9 @@ if [[ "$CFG_FAIL2BAN" =~ ^[Ss]$ ]]; then
   fi
   mkdir -p /etc/fail2ban/jail.d
   mkdir -p /etc/fail2ban/filter.d
-  mkdir -p "$PROJECT_DIR/deploy/logs/caddy"
-  touch "$PROJECT_DIR/deploy/logs/caddy/access.log"
+  mkdir -p /var/log/caddy
+  touch /var/log/caddy/access.log
+  chown -R caddy:caddy /var/log/caddy 2>/dev/null || true
   if [ -f "$SCRIPT_DIR/fail2ban/filter.d/caddy-auth.conf" ]; then
     cp "$SCRIPT_DIR/fail2ban/filter.d/caddy-auth.conf" /etc/fail2ban/filter.d/caddy-auth.conf
     chmod 644 /etc/fail2ban/filter.d/caddy-auth.conf
@@ -60,7 +61,7 @@ findtime = 10m
 enabled = true
 filter = caddy-auth
 port = http,https
-logpath = ${PROJECT_DIR}/deploy/logs/caddy/*.log
+logpath = /var/log/caddy/*.log
 maxretry = 5
 bantime = 1h
 findtime = 10m

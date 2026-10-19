@@ -12,7 +12,7 @@ class Api::V1::Accounts::UnofficialWhatsapp::InstancesController < Api::V1::Acco
     end
 
     provider = channel.provider_service
-    provider.connect(events: 'Message')
+    provider.connect
     channel.update!(connection_status: 'connecting')
 
     render json: status_payload(channel)
@@ -66,8 +66,7 @@ class Api::V1::Accounts::UnofficialWhatsapp::InstancesController < Api::V1::Acco
     service = channel.provider_service
     remote = service.create_session(
       name: "omni-#{channel.account_id}-inbox-#{@inbox.id}",
-      webhook: @inbox.callback_webhook_url,
-      events: 'Message'
+      webhook: @inbox.callback_webhook_url
     )
     channel.update!(
       instance_token: remote[:token],

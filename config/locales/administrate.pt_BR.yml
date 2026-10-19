@@ -1,0 +1,60 @@
+# encoding: UTF-8
+---
+# O gem administrate só traz o locale "pt-BR" (com hífen), porém o Omni-Channel
+# usa "pt_BR" (com underline). Este arquivo espelha as traduções do Administrate
+# para o locale :pt_BR, além de alguns nomes de modelos usados no Super-Admin.
+pt_BR:
+  administrate:
+    actions:
+      confirm: Você tem certeza?
+      destroy: Excluir
+      edit: Editar
+      edit_resource: Editar %{name}
+      show_resource: Visualizar %{name}
+      new_resource: Criar %{name}
+      back: Voltar
+    controller:
+      create:
+        success: "%{resource} foi criado com sucesso."
+      destroy:
+        success: "%{resource} foi excluído com sucesso."
+      update:
+        success: "%{resource} foi atualizado com sucesso."
+    fields:
+      has_many:
+        more: "Exibindo %{count} de %{total_count}"
+        none: Nenhum
+    form:
+      error: erro
+      errors: "%{pluralized_errors} impediram %{resource_name} de ser salvo:"
+    navigation:
+      back_to_app: Voltar ao aplicativo
+    search:
+      clear: Limpar pesquisa
+      label: Pesquisar %{resource}
+  activerecord:
+    models:
+      account:
+        one: Conta
+        other: Contas
+      user:
+        one: Usuário
+        other: Usuários
+      account_user:
+        one: Usuário da Conta
+        other: Usuários da Conta
+      agent_bot:
+        one: Bot
+        other: Bots
+      platform_app:
+        one: App da Plataforma
+        other: Apps da Plataforma
+      platform_banner:
+        one: Banner
+        other: Banners
+      access_token:
+        one: Token de Acesso
+        other: Tokens de Acesso
+      installation_config:
+        one: Configuração de Instalação
+        other: Configurações de Instalação

@@ -130,6 +130,10 @@ export const useInbox = (inboxId = null) => {
     );
   });
 
+  const isAUnofficialWhatsappChannel = computed(() => {
+    return channelType.value === INBOX_TYPES.UNOFFICIAL_WHATSAPP;
+  });
+
   const isAnInstagramChannel = computed(() => {
     return channelType.value === INBOX_TYPES.INSTAGRAM;
   });
@@ -153,6 +157,7 @@ export const useInbox = (inboxId = null) => {
     isATwilioSMSChannel,
     isAWebWidgetInbox,
     isAWhatsAppChannel,
+    isAUnofficialWhatsappChannel,
     isAMicrosoftInbox,
     isAGoogleInbox,
     isATwilioWhatsAppChannel,

@@ -27,6 +27,8 @@ const {
   DISABLE_META_MESSAGE_SENDING: disableMetaMessageSending,
   DEPLOYMENT_ENV: deploymentEnv,
   ACTIVE_PLATFORM_BANNERS: activePlatformBanners,
+  WUZAPI_CONFIGURED: wuzapiConfigured,
+  WACALLS_CONFIGURED: wacallsConfigured,
 } = window.globalConfig || {};
 
 const state = {
@@ -55,6 +57,8 @@ const state = {
   widgetBrandURL,
   isEnterprise: parseBoolean(isEnterprise),
   activePlatformBanners: activePlatformBanners || [],
+  wuzapiConfigured: parseBoolean(wuzapiConfigured),
+  wacallsConfigured: parseBoolean(wacallsConfigured),
 };
 
 export const getters = {
@@ -66,6 +70,8 @@ export const getters = {
     $state.deploymentEnv === 'cloud' && $state.disableMetaMessageSending,
   isACustomBrandedInstance: $state => $state.installationName !== 'Chatwoot',
   isAChatwootInstance: $state => $state.installationName === 'Chatwoot',
+  isWuzapiConfigured: $state => $state.wuzapiConfigured,
+  isWacallsConfigured: $state => $state.wacallsConfigured,
 };
 
 export const actions = {};

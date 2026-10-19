@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import { useAccount } from 'dashboard/composables/useAccount';
+import { useMapGetter } from 'dashboard/composables/store';
 import ChannelSelector from '../ChannelSelector.vue';
 
 const props = defineProps({
@@ -16,6 +17,12 @@ const props = defineProps({
 
 const emit = defineEmits(['channelItemClick']);
 const { isOnChatwootCloud } = useAccount();
+
+const globalConfig = useMapGetter('globalConfig/get');
+
+const isWuzapiConfigured = computed(() =>
+  Boolean(globalConfig.value.wuzapiConfigured)
+);
 
 const hasFbConfigured = computed(() => {
   return window.chatwootConfig?.fbAppId;
@@ -56,6 +63,10 @@ const isActive = computed(() => {
 
   if (key === 'voice' || key === 'whatsapp_call') {
     return props.enabledFeatures.channel_voice;
+  }
+
+  if (key === 'unofficial_whatsapp') {
+    return isWuzapiConfigured.value;
   }
 
   return [

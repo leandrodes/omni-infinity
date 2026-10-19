@@ -29,7 +29,8 @@ fi
 say "Atualizando Omni-Channel Infinity em $PROJECT_DIR"
 cd "$PROJECT_DIR"
 # Versões antigas do instalador editavam o compose e quebravam o `git pull`.
-# Descarta alterações locais em arquivos rastreados do deploy (não toca em .env/Caddyfile/wuzapi/wacalls).
+# Descarta alterações locais em arquivos rastreados do deploy (não toca em
+# .env, /etc/caddy/Caddyfile, wuzapi/wacalls).
 git checkout -- deploy/ 2>/dev/null || true
 git pull origin main
 cd "$PROJECT_DIR/deploy"
@@ -72,4 +73,16 @@ docker compose -f docker-compose.prod.yaml run --rm -T rails bundle exec rails o
   || warn "Não foi possível aplicar a identidade visual (seguindo)."
 
 say "Concluído. Containers atualizados."
+
+# Caddy roda no host (systemd). Recarrega a config se houver alterações e
+# garante que o serviço esteja ativo.
+if command -v caddy >/dev/null 2>&1; then
+  if caddy validate --config /etc/caddy/Caddyfile >/dev/null 2>&1; then
+    systemctl reload caddy >/dev/null 2>&1 || systemctl restart caddy >/dev/null 2>&1 || true
+    say "Caddy (host) recarregado."
+  else
+    warn "Caddyfile inválido em /etc/caddy/Caddyfile; mantendo o Caddy como está."
+  fi
+fi
+
 docker compose -f docker-compose.prod.yaml ps

@@ -60,19 +60,9 @@ services:
       timeout: 5s
       retries: 5
 
-  caddy:
-    image: caddy:2-alpine
-    restart: always
-    ports:
-      - '80:80'
-      - '443:443'
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - caddy_data:/data
-      - caddy_config:/config
-      - ./logs/caddy:/data/logs
-    depends_on:
-      - rails
+  # Caddy NÃO roda mais como container: é instalado e gerenciado no host
+  # (systemd) pelo install.sh. O Caddy do host faz o reverse proxy/HTTPS para
+  # os serviços abaixo, que ficam expostos apenas em 127.0.0.1.
 
   # OPCIONAIS - ativados via Docker Compose profiles (definidos em .env: COMPOSE_PROFILES)
   wuzapi:
@@ -114,13 +104,28 @@ services:
     ports:
       - '127.0.0.1:9000:9000'
 
+  # Transcrição de áudio (Whisper). Exposto apenas internamente em
+  # http://whisper:9000 (usado pelo Omni-Channel). A porta do host (9005) serve
+  # só para depuração local.
+  whisper:
+    profiles: ["whisper"]
+    image: onerahmet/openai-whisper-asr-webservice:latest
+    restart: always
+    environment:
+      - ASR_ENGINE=${WHISPER_ENGINE:-faster_whisper}
+      - ASR_MODEL=${WHISPER_MODEL:-base}
+      - ASR_DEVICE=cpu
+    volumes:
+      - whisper_cache:/root/.cache
+    ports:
+      - '127.0.0.1:9005:9000'
+
 volumes:
   storage_data:
   postgres_data:
   redis_data:
-  caddy_data:
-  caddy_config:
   wuzapi_data:
   wuzapi_files:
   wacalls_data:
   portainer_data:
+  whisper_cache:

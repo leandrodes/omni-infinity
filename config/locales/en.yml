@@ -183,6 +183,8 @@ en:
     openai:
       invalid_api_key: 'OpenAI API key is invalid or revoked. Please check your key in your OpenAI dashboard.'
     inboxes:
+      unofficial_whatsapp:
+        not_configured: 'The unofficial WhatsApp (WuzAPI) integration is not configured. Ask a super admin to set the WuzAPI endpoint and admin token.'
       imap:
         socket_error: Please check the network connection, IMAP address and try again.
         no_response_error: Please check the IMAP credentials and try again.

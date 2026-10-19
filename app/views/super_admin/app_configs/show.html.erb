@@ -1,5 +1,5 @@
 <% content_for(:title) do %>
-  Configure Settings - <%= @config.titleize %>
+  Configurar - <%= settings_page_title(@config) %>
 <% end %>
 
 <header class="main-content__header" role="banner">
@@ -34,6 +34,12 @@
                 rows: 12,
                 wrap: 'off',
                 class: "mt-2 border font-mono text-xs border-slate-100 p-1 rounded-md overflow-scroll"
+            %>
+          <% elsif @installation_configs[key]&.dig('type') == 'textarea' %>
+            <%= form.text_area "app_config[#{key}]",
+                value: @app_config[key],
+                rows: 3,
+                class: "mt-2 border border-slate-100 p-1.5 rounded-md w-full"
             %>
           <% elsif @installation_configs[key]&.dig('type') == 'secret' %>
             <div class="relative">
@@ -71,7 +77,7 @@
       </div>
     <% end %>
     <div class="form-actions">
-      <%= form.submit "Submit" %>
+      <%= form.submit "Salvar" %>
     </div>
   <% end %>
 </section>

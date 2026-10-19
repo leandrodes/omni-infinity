@@ -1,6 +1,6 @@
 class SuperAdmin::AppConfigsController < SuperAdmin::ApplicationController
   GENERAL_CONFIGS = %w[ENABLE_ACCOUNT_SIGNUP FIREBASE_PROJECT_ID FIREBASE_CREDENTIALS WEBHOOK_TIMEOUT MAXIMUM_FILE_UPLOAD_SIZE
-                       WIDGET_TOKEN_EXPIRY].freeze
+                       FILE_TOO_LARGE_MESSAGE WIDGET_TOKEN_EXPIRY].freeze
   META_INCIDENT_CONFIGS = %w[DISABLE_META_INBOX_CREATION DISABLE_META_MESSAGE_SENDING].freeze
   SHOPIFY_CONFIGS = %w[
     ENABLE_SHOPIFY_INTEGRATION
@@ -65,7 +65,8 @@ class SuperAdmin::AppConfigsController < SuperAdmin::ApplicationController
       'instagram' => %w[INSTAGRAM_APP_ID INSTAGRAM_APP_SECRET INSTAGRAM_VERIFY_TOKEN INSTAGRAM_API_VERSION ENABLE_INSTAGRAM_CHANNEL_HUMAN_AGENT],
       'tiktok' => %w[TIKTOK_APP_ID TIKTOK_APP_SECRET TIKTOK_API_VERSION],
       'whatsapp_embedded' => %w[WHATSAPP_APP_ID WHATSAPP_APP_SECRET WHATSAPP_CONFIGURATION_ID WHATSAPP_API_VERSION],
-      'unofficial_whatsapp' => %w[WUZAPI_ENDPOINT WUZAPI_ADMIN_TOKEN],
+      'unofficial_whatsapp' => %w[WUZAPI_ENDPOINT WUZAPI_ADMIN_TOKEN UAZAPI_ENDPOINT UAZAPI_ADMIN_TOKEN EVOLUTION_ENDPOINT EVOLUTION_API_KEY WACALLS_ENDPOINT WACALLS_API_KEY],
+      'transcription' => %w[TRANSCRIPTION_ENDPOINT TRANSCRIPTION_API_KEY TRANSCRIPTION_MODEL TRANSCRIPTION_LANGUAGE],
       'notion' => %w[NOTION_CLIENT_ID NOTION_CLIENT_SECRET],
       'google' => %w[GOOGLE_OAUTH_CLIENT_ID GOOGLE_OAUTH_CLIENT_SECRET GOOGLE_OAUTH_REDIRECT_URI ENABLE_GOOGLE_OAUTH_LOGIN],
       'captain' => %w[CAPTAIN_OPEN_AI_API_KEY CAPTAIN_OPEN_AI_MODEL CAPTAIN_OPEN_AI_ENDPOINT]
@@ -88,10 +89,10 @@ class SuperAdmin::AppConfigsController < SuperAdmin::ApplicationController
   end
 
   def success_notice
-    message = "#{@config.titleize} settings updated successfully"
+    message = "Configurações de #{settings_page_title(@config)} atualizadas com sucesso"
     return message unless restart_required_config_saved?
 
-    "#{message.delete_suffix('.')}. Restart Chatwoot web and worker processes to apply this change everywhere."
+    "#{message}. Reinicie os processos web e worker do Omni-Channel para aplicar esta alteração em todos os lugares."
   end
 
   def success_flash

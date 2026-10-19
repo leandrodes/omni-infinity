@@ -5,7 +5,7 @@ ${TLS_DIRECTIVE}
   encode gzip zstd
 
   log {
-    output file /data/logs/access.log
+    output file /var/log/caddy/access.log
     format json
   }
 
@@ -17,7 +17,7 @@ ${TLS_DIRECTIVE}
     Permissions-Policy "geolocation=(), microphone=(), camera=()"
   }
 
-  reverse_proxy rails:3000 {
+  reverse_proxy 127.0.0.1:3000 {
     header_up X-Forwarded-Proto https
   }
 }

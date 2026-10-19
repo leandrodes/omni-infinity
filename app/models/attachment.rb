@@ -43,6 +43,10 @@ class Attachment < ApplicationRecord
   has_one_attached :file
   before_save :set_extension
   validate :acceptable_file
+  # Transcrição de áudio via Whisper (super-admin). O build enterprise já possui
+  # o seu próprio fluxo (Enterprise::Concerns::Attachment), então aqui só rodamos
+  # na edição Community.
+  after_create_commit :enqueue_omni_audio_transcription
   validates :external_url, length: { maximum: Limits::URL_LENGTH_LIMIT }
   enum file_type: { :image => 0, :audio => 1, :video => 2, :file => 3, :location => 4, :fallback => 5, :share => 6, :story_mention => 7,
                     :contact => 8, :ig_reel => 9, :ig_post => 10, :ig_story => 11, :embed => 12 }
@@ -80,6 +84,14 @@ class Attachment < ApplicationRecord
   end
 
   private
+
+  def enqueue_omni_audio_transcription
+    return if ChatwootApp.enterprise?
+    return unless file_type&.to_sym == :audio
+    return unless Transcription::Config.enabled_for?(account)
+
+    Transcription::AudioTranscriptionJob.perform_later(id)
+  end
 
   def metadata_for_file_type
     case file_type.to_sym

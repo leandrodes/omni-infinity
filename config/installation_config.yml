@@ -59,9 +59,9 @@
 
 # ------- Signup & Account Related Config ------- #
 - name: ENABLE_ACCOUNT_SIGNUP
-  display_title: 'Enable Account Signup'
+  display_title: 'Permitir Cadastro de Contas'
   value: false
-  description: 'Allow users to signup for new accounts'
+  description: 'Permitir que novos usuários criem contas'
   locked: false
   type: boolean
 - name: CREATE_NEW_ACCOUNT_FROM_DASHBOARD
@@ -81,8 +81,8 @@
   locked: false
 - name: WEBHOOK_TIMEOUT
   value: 5
-  display_title: 'Webhook request timeout (seconds)'
-  description: 'Maximum time Chatwoot waits for a webhook response before failing the request'
+  display_title: 'Tempo limite de requisição do Webhook (segundos)'
+  description: 'Tempo máximo que o Omni-Channel aguarda a resposta de um webhook antes de considerar a requisição falha'
   locked: false
 - name: DIRECT_UPLOADS_ENABLED
   type: boolean
@@ -91,8 +91,14 @@
   locked: false
 - name: MAXIMUM_FILE_UPLOAD_SIZE
   value: 40
-  display_title: 'Attachment size limit (MB)'
-  description: 'Maximum attachment size in MB allowed for uploads'
+  display_title: 'Limite de tamanho de anexos (MB)'
+  description: 'Tamanho máximo de anexo em MB permitido para uploads'
+  locked: false
+- name: FILE_TOO_LARGE_MESSAGE
+  display_title: 'Mensagem para arquivos acima do limite'
+  description: 'Texto usado quando um arquivo recebido excede o "Limite de tamanho de anexos (MB)". O arquivo não é anexado à conversa e esta mensagem fica visível para os agentes.'
+  value: 'Um arquivo foi recebido, mas não pôde ser processado por exceder o limite de tamanho permitido. Solicite o reenvio por outro meio.'
+  type: textarea
   locked: false
 # ------- End of Account Related Config ------- #
 
@@ -170,19 +176,79 @@
   locked: false
 # ------- End of WhatsApp Channel Related Config ------- #
 
-# ------- Unofficial WhatsApp (WuzAPI and friends) ------- #
+# ------- Unofficial WhatsApp (WuzAPI, UazAPI, Evolution API and friends) ------- #
 - name: WUZAPI_ENDPOINT
-  display_title: 'WuzAPI Endpoint'
-  description: 'Base URL of the WuzAPI server used by the "WhatsApp Não Oficial" channel. Inside Docker use the service name (e.g. http://wuzapi:8080).'
-  value: 'http://wuzapi:8080'
+  display_title: 'WuzAPI - Endpoint'
+  description: 'URL base do servidor WuzAPI usado pelo canal "WhatsApp Não Oficial". Preenchido manualmente pelo super-admin. Dentro do Docker use o nome do serviço (ex.: http://wuzapi:8080) ou uma URL pública (ex.: https://wuzapi.example.com).'
+  value: ''
   type: text
   locked: false
 - name: WUZAPI_ADMIN_TOKEN
-  display_title: 'WuzAPI Admin Token'
-  description: 'WUZAPI_ADMIN_TOKEN used to provision WhatsApp instances on the WuzAPI server.'
+  display_title: 'WuzAPI - Admin Token'
+  description: 'Token de administrador (WUZAPI_ADMIN_TOKEN) usado para provisionar instâncias de WhatsApp no servidor WuzAPI. Preenchido manualmente pelo super-admin.'
+  type: secret
+  locked: false
+- name: UAZAPI_ENDPOINT
+  display_title: 'UazAPI - Endpoint'
+  description: 'URL base do servidor UazAPI usado pelo canal "WhatsApp Não Oficial". Preenchido manualmente pelo super-admin (ex.: https://uazapi.example.com).'
+  value: ''
+  type: text
+  locked: false
+- name: UAZAPI_ADMIN_TOKEN
+  display_title: 'UazAPI - Admin Token'
+  description: 'Token de administrador da instância UazAPI, usado para provisionar sessões de WhatsApp. Preenchido manualmente pelo super-admin.'
+  type: secret
+  locked: false
+- name: EVOLUTION_ENDPOINT
+  display_title: 'Evolution API - Endpoint'
+  description: 'URL base do servidor Evolution API usado pelo canal "WhatsApp Não Oficial". Preenchido manualmente pelo super-admin (ex.: https://evolution.example.com).'
+  value: ''
+  type: text
+  locked: false
+- name: EVOLUTION_API_KEY
+  display_title: 'Evolution API - API Key (Token)'
+  description: 'API Key global (apikey) do servidor Evolution API, usada para provisionar instâncias de WhatsApp. Preenchida manualmente pelo super-admin.'
+  type: secret
+  locked: false
+- name: WACALLS_ENDPOINT
+  display_title: 'WaCalls - Endpoint'
+  description: 'URL base do servidor WaCalls usado pelo canal "Chamadas do WhatsApp (Não Oficial)". Preenchido manualmente pelo super-admin (ex.: https://wacalls.example.com).'
+  value: ''
+  type: text
+  locked: false
+- name: WACALLS_API_KEY
+  display_title: 'WaCalls - API Key'
+  description: 'API key (X-API-Key) usada para provisionar sessões do WaCalls. Preenchida manualmente pelo super-admin.'
   type: secret
   locked: false
 # ------- End of Unofficial WhatsApp ------- #
+
+# ------- Audio Transcription (Whisper and friends) ------- #
+- name: TRANSCRIPTION_ENDPOINT
+  display_title: 'Endpoint de Transcrição'
+  description: 'URL base do serviço de transcrição de áudio (container Whisper). Usado para transcrever os áudios recebidos nos canais de WhatsApp (WuzAPI, UazAPI, Evolution API e WhatsApp oficial). Ex.: http://whisper:9000.'
+  value: ''
+  type: text
+  locked: false
+- name: TRANSCRIPTION_API_KEY
+  display_title: 'Chave de API da Transcrição'
+  description: 'Token/chave de API usado para autenticar no serviço de transcrição, se necessário. Preenchido manualmente pelo super-admin.'
+  type: secret
+  locked: false
+- name: TRANSCRIPTION_MODEL
+  display_title: 'Modelo de Transcrição'
+  description: 'Nome do modelo usado na transcrição (ex.: whisper-1, base, small, medium). Padrão: whisper-1.'
+  value: 'whisper-1'
+  type: text
+  locked: false
+- name: TRANSCRIPTION_LANGUAGE
+  display_title: 'Idioma da Transcrição'
+  description: 'Código do idioma para a transcrição (ex.: pt, en, es). Deixe em branco para detecção automática.'
+  value: ''
+  type: text
+  locked: false
+# ------- End of Audio Transcription ------- #
+
 
 # MARK: Microsoft Email Channel Config
 - name: AZURE_APP_ID
@@ -391,16 +457,16 @@
 
 ## ------ Configs added for FCM v1 notifications ------ ##
 - name: FIREBASE_PROJECT_ID
-  display_title: 'Firebase Project ID'
+  display_title: 'ID do Projeto Firebase'
   value:
   locked: false
-  description: 'Firebase project ID'
+  description: 'ID do projeto Firebase'
 - name: FIREBASE_CREDENTIALS
-  display_title: 'Firebase Credentials'
+  display_title: 'Credenciais do Firebase'
   value:
   locked: false
   type: secret
-  description: 'Contents on your firebase credentials json file'
+  description: 'Conteúdo do arquivo JSON de credenciais do Firebase'
 ## ------ End of Configs added for FCM v1 notifications ------ ##
 
 ## ------ Configs added for Linear ------ ##
@@ -603,10 +669,10 @@
 
 ## ------ Customizations for Customers ------ ##
 - name: WIDGET_TOKEN_EXPIRY
-  display_title: 'Widget Token Expiry'
+  display_title: 'Validade do Token do Widget'
   value: 180
   locked: false
-  description: 'Token expiry in days'
+  description: 'Validade do token em dias'
 ## ------ End of Customizations for Customers ------ ##
 
 ## ----- LLM Observability ---- ##

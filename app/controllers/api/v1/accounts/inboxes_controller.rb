@@ -2,6 +2,7 @@ class Api::V1::Accounts::InboxesController < Api::V1::Accounts::BaseController
   include Api::V1::InboxesHelper
   before_action :fetch_inbox, except: [:index, :create]
   before_action :fetch_agent_bot, only: [:set_agent_bot]
+  before_action :ensure_channel_configured, only: [:create]
   # we are already handling the authorization in fetch inbox
   before_action :check_authorization, except: [:show]
 
@@ -97,6 +98,16 @@ class Api::V1::Accounts::InboxesController < Api::V1::Accounts::BaseController
     return unless allowed_channel_types.include?(permitted_params[:channel][:type])
 
     account_channels_method.create!(permitted_params(channel_type_from_params::EDITABLE_ATTRS)[:channel].except(:type))
+  end
+
+  # Backend guard: never allow creating an unofficial WhatsApp inbox unless the
+  # super admin has configured WuzAPI. The frontend already hides/fades the
+  # option, this prevents API-level bypass.
+  def ensure_channel_configured
+    return unless permitted_params.dig(:channel, :type) == 'unofficial_whatsapp'
+    return if UnofficialWhatsapp::ProviderConfig.wuzapi_configured?
+
+    render json: { message: I18n.t('errors.inboxes.unofficial_whatsapp.not_configured') }, status: :unprocessable_entity
   end
 
   def allowed_channel_types

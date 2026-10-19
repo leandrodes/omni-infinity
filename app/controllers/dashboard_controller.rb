@@ -86,7 +86,9 @@ class DashboardController < ActionController::Base
       AZURE_APP_ID: GlobalConfigService.load('AZURE_APP_ID', ''),
       GIT_SHA: GIT_HASH,
       ALLOWED_LOGIN_METHODS: allowed_login_methods,
-      ACTIVE_PLATFORM_BANNERS: active_platform_banners
+      ACTIVE_PLATFORM_BANNERS: active_platform_banners,
+      WUZAPI_CONFIGURED: UnofficialWhatsapp::ProviderConfig.wuzapi_configured?,
+      WACALLS_CONFIGURED: UnofficialWhatsapp::ProviderConfig.wacalls_configured?
     }
   end
 

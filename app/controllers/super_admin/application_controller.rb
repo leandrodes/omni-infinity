@@ -9,9 +9,14 @@ class SuperAdmin::ApplicationController < Administrate::ApplicationController
   include ActionView::Context
   include SuperAdmin::NavigationHelper
 
-  helper_method :render_vue_component, :settings_open?, :settings_pages
+  helper_method :render_vue_component, :settings_open?, :settings_pages, :settings_page_title
   # authenticiation done via devise : SuperAdmin Model
   before_action :authenticate_super_admin!
+
+  # O Super-Admin é exibido em português por padrão (independe do idioma do
+  # agente). O Administrate já traz as traduções para pt-BR; aqui apenas
+  # garantimos que o locale :pt_BR seja usado em todas as telas do Super-Admin.
+  around_action :use_super_admin_locale
 
   # Override this value to specify the number of elements to display at a time
   # on index pages. Defaults to 20.
@@ -28,6 +33,14 @@ class SuperAdmin::ApplicationController < Administrate::ApplicationController
 
   private
 
+  def use_super_admin_locale(&action)
+    I18n.with_locale(super_admin_locale, &action)
+  end
+
+  def super_admin_locale
+    :pt_BR
+  end
+
   def render_vue_component(component_name, props = {})
     html_options = {
       id: 'app',
@@ -41,7 +54,7 @@ class SuperAdmin::ApplicationController < Administrate::ApplicationController
 
   def invalid_action_perfomed
     # rubocop:disable Rails/I18nLocaleTexts
-    flash[:error] = 'Invalid action performed'
+    flash[:error] = 'Ação inválida executada'
     # rubocop:enable Rails/I18nLocaleTexts
     redirect_back(fallback_location: root_path)
   end

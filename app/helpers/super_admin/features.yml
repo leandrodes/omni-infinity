@@ -1,158 +1,164 @@
 # TODO: Move this values to features.yml itself
 # No need to replicate the same values in two places
 
-# ------- Premium Features ------- #
+# ------- Recursos Premium ------- #
 saml:
   name: 'SAML SSO'
-  description: 'Configuration for controlling SAML Single Sign-On availability'
+  description: 'Configuração para controlar a disponibilidade do SAML Single Sign-On'
   enabled: <%= ChatwootApp.enterprise? %>
   icon: 'icon-lock-line'
   config_key: 'saml'
   enterprise: true
 custom_branding:
-  name: 'Custom Branding'
-  description: 'Apply your own branding to this installation.'
+  name: 'Marca Personalizada'
+  description: 'Aplique sua própria marca a esta instalação.'
   enabled: <%= (ChatwootHub.pricing_plan != 'community') %>
   icon: 'icon-paint-brush-line'
   config_key: 'custom_branding'
   enterprise: true
 agent_capacity:
-  name: 'Agent Capacity'
-  description: 'Set limits to auto-assigning conversations to your agents.'
+  name: 'Capacidade do Agente'
+  description: 'Defina limites para atribuir conversas automaticamente aos seus agentes.'
   enabled: <%= (ChatwootHub.pricing_plan != 'community') %>
   icon: 'icon-hourglass-line'
   enterprise: true
 audit_logs:
-  name: 'Audit Logs'
-  description: 'Track and trace account activities with ease with detailed audit logs.'
+  name: 'Logs de Auditoria'
+  description: 'Acompanhe e rastreie as atividades da conta com logs de auditoria detalhados.'
   enabled: <%= (ChatwootHub.pricing_plan != 'community') %>
   icon: 'icon-menu-search-line'
   enterprise: true
 disable_branding:
-  name: 'Disable Branding'
-  description: 'Disable branding on live-chat widget and external emails.'
+  name: 'Desativar Marca'
+  description: 'Desativa a marca no widget de chat ao vivo e nos e-mails externos.'
   enabled: <%= (ChatwootHub.pricing_plan != 'community') %>
   icon: 'icon-sailbot-fill'
   enterprise: true
 voice_calls:
-  name: 'Voice Calls'
-  description: 'Enable voice calling capabilities for your agents and customers.'
+  name: 'Chamadas de Voz'
+  description: 'Habilita recursos de chamadas de voz para seus agentes e clientes.'
   enabled: <%= (ChatwootHub.pricing_plan != 'community') %>
   icon: 'icon-voice-line'
   enterprise: true
 
-# ------- Product Features ------- #
+# ------- Recursos do Produto ------- #
 help_center:
-  name: 'Help Center'
-  description: 'Allow agents to create help center articles and publish them in a portal.'
+  name: 'Central de Ajuda'
+  description: 'Permite que os agentes criem artigos da central de ajuda e os publiquem em um portal.'
   enabled: true
   icon: 'icon-book-2-line'
 captain:
   name: 'Captain'
-  description: 'Enable AI-powered conversations with your customers.'
+  description: 'Habilite conversas com IA para seus clientes.'
   enabled: true
   icon: 'icon-captain'
   config_key: 'captain'
+transcription:
+  name: 'Transcrição'
+  description: 'Configure o endpoint de transcrição de áudio (ex.: Whisper) para transcrever os áudios recebidos nos canais de WhatsApp.'
+  enabled: true
+  icon: 'icon-mic-line'
+  config_key: 'transcription'
 
-# ------- Communication Channels ------- #
+# ------- Canais de Comunicação ------- #
 live_chat:
-  name: 'Live Chat'
-  description: 'Improve your customer experience using a live chat on your website.'
+  name: 'Chat ao Vivo'
+  description: 'Melhore a experiência dos seus clientes usando um chat ao vivo no seu site.'
   enabled: true
   icon: 'icon-chat-smile-3-line'
 email:
-  name: 'Email'
-  description: 'Manage your email customer interactions from Chatwoot.'
+  name: 'E-mail'
+  description: 'Gerencie as interações por e-mail com seus clientes pelo Omni-Channel.'
   enabled: true
   icon: 'icon-mail-send-fill'
   config_key: 'email'
 sms:
   name: 'SMS'
-  description: 'Manage your SMS customer interactions from Chatwoot.'
+  description: 'Gerencie as interações por SMS com seus clientes pelo Omni-Channel.'
   enabled: true
   icon: 'icon-message-line'
 messenger:
   name: 'Messenger'
-  description: 'Stay connected with your customers on Facebook & Instagram.'
+  description: 'Mantenha-se conectado com seus clientes no Facebook e Instagram.'
   enabled: true
   icon: 'icon-messenger-line'
   config_key: 'facebook'
 instagram:
   name: 'Instagram'
-  description: 'Stay connected with your customers on Instagram'
+  description: 'Mantenha-se conectado com seus clientes no Instagram'
   enabled: true
   icon: 'icon-instagram'
   config_key: 'instagram'
 tiktok:
   name: 'TikTok'
-  description: 'Stay connected with your customers on TikTok'
+  description: 'Mantenha-se conectado com seus clientes no TikTok'
   enabled: true
   icon: 'icon-tiktok'
   config_key: 'tiktok'
 whatsapp:
   name: 'WhatsApp'
-  description: 'Manage your WhatsApp business interactions from Chatwoot.'
+  description: 'Gerencie as interações de WhatsApp Business com seus clientes pelo Omni-Channel.'
   enabled: true
   icon: 'icon-whatsapp-line'
 unofficial_whatsapp:
   name: 'WhatsApp Não Oficial'
-  description: 'Configure the WuzAPI server used by the unofficial WhatsApp channel.'
+  description: 'Configure os servidores WuzAPI, UazAPI e Evolution API usados pelo canal de WhatsApp não oficial.'
   enabled: true
   icon: 'icon-whatsapp-line'
   config_key: 'unofficial_whatsapp'
 telegram:
   name: 'Telegram'
-  description: 'Manage your Telegram customer interactions from Chatwoot.'
+  description: 'Gerencie as interações por Telegram com seus clientes pelo Omni-Channel.'
   enabled: true
   icon: 'icon-telegram-line'
 line:
   name: 'Line'
-  description: 'Manage your Line customer interactions from Chatwoot.'
+  description: 'Gerencie as interações por Line com seus clientes pelo Omni-Channel.'
   enabled: true
   icon: 'icon-line-line'
 
-# ------- OAuth & Authentication ------- #
+# ------- OAuth e Autenticação ------- #
 google:
   name: 'Google'
-  description: 'Configuration for setting up Google OAuth Integration'
+  description: 'Configuração para a integração OAuth do Google'
   enabled: true
   icon: 'icon-google'
   config_key: 'google'
 microsoft:
   name: 'Microsoft'
-  description: 'Configuration for setting up Microsoft Email'
+  description: 'Configuração para o e-mail da Microsoft'
   enabled: true
   icon: 'icon-microsoft'
   config_key: 'microsoft'
 
-# ------- Third-party Integrations ------- #
+# ------- Integrações de Terceiros ------- #
 linear:
   name: 'Linear'
-  description: 'Configuration for setting up Linear Integration'
+  description: 'Configuração para a integração com o Linear'
   enabled: true
   icon: 'icon-linear'
   config_key: 'linear'
 notion:
   name: 'Notion'
-  description: 'Configuration for setting up Notion Integration'
+  description: 'Configuração para a integração com o Notion'
   enabled: true
   icon: 'icon-notion'
   config_key: 'notion'
 slack:
   name: 'Slack'
-  description: 'Configuration for setting up Slack Integration'
+  description: 'Configuração para a integração com o Slack'
   enabled: true
   icon: 'icon-slack'
   config_key: 'slack'
 whatsapp_embedded:
   name: 'WhatsApp Embedded'
-  description: 'Configuration for setting up WhatsApp Embedded Integration'
+  description: 'Configuração para a integração do WhatsApp Embedded'
   enabled: true
   icon: 'icon-whatsapp-line'
   config_key: 'whatsapp_embedded'
 shopify:
   name: 'Shopify'
-  description: 'Configuration for setting up Shopify Integration'
+  description: 'Configuração para a integração com o Shopify'
   enabled: true
   icon: 'icon-shopify'
   config_key: 'shopify'

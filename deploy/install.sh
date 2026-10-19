@@ -118,8 +118,9 @@ setup_fail2ban() {
   fi
   mkdir -p /etc/fail2ban/jail.d
   mkdir -p /etc/fail2ban/filter.d
-  mkdir -p ./logs/caddy
-  touch ./logs/caddy/access.log
+  mkdir -p /var/log/caddy
+  touch /var/log/caddy/access.log
+  chown -R caddy:caddy /var/log/caddy 2>/dev/null || true
   if [ -f "$SCRIPT_DIR/fail2ban/filter.d/caddy-auth.conf" ]; then
     cp "$SCRIPT_DIR/fail2ban/filter.d/caddy-auth.conf" /etc/fail2ban/filter.d/caddy-auth.conf
     chmod 644 /etc/fail2ban/filter.d/caddy-auth.conf
@@ -138,7 +139,7 @@ findtime = 10m
 enabled = true
 filter = caddy-auth
 port = http,https
-logpath = ${PROJECT_DIR}/deploy/logs/caddy/*.log
+logpath = /var/log/caddy/*.log
 maxretry = 5
 bantime = 1h
 findtime = 10m
@@ -146,6 +147,26 @@ EOF
   systemctl enable --now fail2ban >/dev/null 2>&1 || fail2ban-client start >/dev/null 2>&1 || true
   say "✓ Fail2Ban configurado"
 }
+# Instala o Caddy no HOST (não mais como container) e habilita o serviço systemd.
+install_host_caddy() {
+  if ! command -v caddy >/dev/null 2>&1; then
+    say "Instalando Caddy no host (repositório oficial Cloudsmith)..."
+    apt-get update -y
+    apt-get install -y debian-keyring debian-archive-keyring apt-transport-https curl gnupg
+    curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' \
+      | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+    curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' \
+      | tee /etc/apt/sources.list.d/caddy-stable.list >/dev/null
+    apt-get update -y
+    apt-get install -y caddy
+  fi
+  if ! command -v caddy >/dev/null 2>&1; then
+    err "Falha ao instalar o Caddy. Instale manualmente (https://caddyserver.com/docs/install) e reexecute."
+    exit 1
+  fi
+  say "✓ Caddy instalado: $(caddy version 2>/dev/null | head -1)"
+}
+
 gen_hex() {
   openssl rand -hex "$1" 2>/dev/null || head -c "$(( $1 * 2 ))" /dev/urandom | xxd -p -c 256 | head -c "$(( $1 * 2 ))" || true
 }
@@ -336,7 +357,11 @@ if [[ "$CFG_WUZAPI" =~ ^[Ss]$ ]] && [ -n "$WUZAPI_DOMAIN" ]; then
 ${TLS_DIRECTIVE}
 
   encode gzip zstd
-  reverse_proxy wuzapi:8080
+  log {
+    output file /var/log/caddy/wuzapi-access.log
+    format json
+  }
+  reverse_proxy 127.0.0.1:8080
 }"
 fi
 
@@ -346,7 +371,11 @@ if [[ "$CFG_WACALLS" =~ ^[Ss]$ ]] && [ -n "$WACALLS_DOMAIN" ]; then
 ${TLS_DIRECTIVE}
 
   encode gzip zstd
-  reverse_proxy wacalls:8080
+  log {
+    output file /var/log/caddy/wacalls-access.log
+    format json
+  }
+  reverse_proxy 127.0.0.1:8082
 }"
 fi
 
@@ -356,15 +385,25 @@ if [[ "$CFG_PORTAINER" =~ ^[Ss]$ ]] && [ -n "$PORTAINER_DOMAIN" ]; then
 ${TLS_DIRECTIVE}
 
   encode gzip zstd
-  reverse_proxy portainer:9000
+  log {
+    output file /var/log/caddy/portainer-access.log
+    format json
+  }
+  reverse_proxy 127.0.0.1:9000
 }"
 fi
 
 export APP_DOMAIN TLS_DIRECTIVE WUZAPI_DOMAIN_BLOCK WACALLS_DOMAIN_BLOCK PORTAINER_DOMAIN_BLOCK SCHEME GLOBAL_OPTIONS
-envsubst < Caddyfile.template > Caddyfile
+# O Caddy roda no host: garante o binário/serviço antes de escrever a config.
+install_host_caddy
+mkdir -p /etc/caddy /var/log/caddy
+touch /var/log/caddy/access.log
+chown -R caddy:caddy /var/log/caddy 2>/dev/null || true
+envsubst < Caddyfile.template > /etc/caddy/Caddyfile
 
 say "Arquivos gerados:"
-ls -1 .env Caddyfile 2>/dev/null
+ls -1 .env 2>/dev/null
+say "Caddyfile: /etc/caddy/Caddyfile"
 
 # Clona forks públicos para build local (se ainda não existirem)
 mkdir -p "$PROJECT_DIR/deploy"
@@ -418,7 +457,7 @@ if [[ "$UP" =~ ^[Ss]$ ]]; then
   docker compose -f docker-compose.prod.yaml run --rm -T rails bundle exec rails omni:rebrand </dev/null \
     || warn "Não foi possível aplicar a identidade visual (seguindo)."
   # 3) App e proxy
-  docker compose -f docker-compose.prod.yaml up -d rails sidekiq caddy
+  docker compose -f docker-compose.prod.yaml up -d rails sidekiq
   # Serviços opcionais: falha em um não derruba o restante
   if [[ "$CFG_WUZAPI" =~ ^[Ss]$ ]]; then
     if docker compose -f docker-compose.prod.yaml up -d wuzapi; then
@@ -441,6 +480,19 @@ if [[ "$UP" =~ ^[Ss]$ ]]; then
       warn "Falha ao subir Portainer (verifique a imagem/porta). O restante segue funcionando."
     fi
   fi
+  # 4) Caddy no HOST (systemd): valida e inicia com o Caddyfile já gerado.
+  if caddy validate --config /etc/caddy/Caddyfile >/dev/null 2>&1; then
+    say "✓ Caddyfile válido"
+  else
+    warn "Caddyfile inválido. Verifique /etc/caddy/Caddyfile (rode: caddy validate --config /etc/caddy/Caddyfile)."
+  fi
+  systemctl enable caddy >/dev/null 2>&1 || true
+  systemctl restart caddy >/dev/null 2>&1 || true
+  if systemctl is-active --quiet caddy; then
+    say "✓ Caddy (host) ativo"
+  else
+    warn "Caddy não está ativo. Verifique: systemctl status caddy && journalctl -u caddy -n 50"
+  fi
   say "Concluído. Aguarde ~60s para inicialização completa."
   echo
   say "URLs:"
@@ -456,7 +508,7 @@ if [[ "$UP" =~ ^[Ss]$ ]]; then
   say "Verifique o estado com: docker compose -f docker-compose.prod.yaml ps"
   say "Primeiro acesso ao Omni-Channel Infinity: crie a conta de administrador em https://${APP_DOMAIN}"
 else
-  say "Instalação preparada. Para subir: cd ${PROJECT_DIR}/deploy && docker compose -f docker-compose.prod.yaml up -d"
+  say "Instalação preparada. Para subir: cd ${PROJECT_DIR}/deploy && docker compose -f docker-compose.prod.yaml up -d && systemctl enable --now caddy"
 fi
 
 say "Finalizado."

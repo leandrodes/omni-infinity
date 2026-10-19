@@ -21,6 +21,7 @@ const {
   isATwilioChannel,
   isAWebWidgetInbox,
   isAWhatsAppChannel,
+  isAUnofficialWhatsappChannel,
   isAnEmailChannel,
   isAnInstagramChannel,
   isATiktokChannel,
@@ -62,6 +63,7 @@ const isSent = computed(() => {
 
   if (
     isAWhatsAppChannel.value ||
+    isAUnofficialWhatsappChannel.value ||
     isATwilioChannel.value ||
     isAFacebookInbox.value ||
     isASmsInbox.value ||
@@ -86,6 +88,7 @@ const isDelivered = computed(() => {
 
   if (
     isAWhatsAppChannel.value ||
+    isAUnofficialWhatsappChannel.value ||
     isATwilioChannel.value ||
     isASmsInbox.value ||
     isAFacebookInbox.value ||
@@ -112,6 +115,7 @@ const isRead = computed(() => {
 
   if (
     isAWhatsAppChannel.value ||
+    isAUnofficialWhatsappChannel.value ||
     isATwilioChannel.value ||
     isAFacebookInbox.value ||
     isAnInstagramChannel.value ||
@@ -153,4 +157,3 @@ const statusToShow = computed(() => {
     <MessageStatus v-if="showStatusIndicator" :status="statusToShow" />
   </div>
 </template>
-`

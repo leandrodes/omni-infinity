@@ -9,8 +9,14 @@ module SuperAdmin::NavigationHelper
     end
 
     # Add general at the beginning
-    general_feature = [['general', { 'config_key' => 'general', 'name' => 'General' }]]
+    general_feature = [['general', { 'config_key' => 'general', 'name' => 'Geral' }]]
 
     general_feature + features.to_a
+  end
+
+  # Nome de exibição de uma seção de configuração (usado nos títulos das telas).
+  def settings_page_title(config_key)
+    page = settings_pages.find { |_key, attrs| attrs['config_key'] == config_key }
+    page&.last&.dig('name') || config_key.to_s.titleize
   end
 end

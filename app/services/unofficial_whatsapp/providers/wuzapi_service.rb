@@ -1,5 +1,9 @@
 class UnofficialWhatsapp::Providers::WuzapiService < UnofficialWhatsapp::Providers::BaseService
-  def create_session(name:, webhook:, events: 'Message', proxy_url: nil)
+  # `ReadReceipt` carries the delivery/read acknowledgements from whatsmeow,
+  # which we map onto the outgoing message status (single/double gray/blue ticks).
+  DEFAULT_EVENTS = 'Message,ReadReceipt,CallOffer,CallTerminate'.freeze
+
+  def create_session(name:, webhook:, events: DEFAULT_EVENTS, proxy_url: nil)
     remote_token = SecureRandom.hex(24)
     payload = { name: name, token: remote_token, webhook: webhook, events: events }
     payload[:s3Config] = { enabled: false, mediaDelivery: 'base64' }
@@ -31,7 +35,7 @@ class UnofficialWhatsapp::Providers::WuzapiService < UnofficialWhatsapp::Provide
   end
 
   def set_webhook(url)
-    user_post('/webhook', { 'webhookURL' => url })
+    user_post('/webhook', { 'webhookURL' => url, 'events' => event_list(DEFAULT_EVENTS) })
   end
 
   def logout
@@ -69,10 +73,26 @@ class UnofficialWhatsapp::Providers::WuzapiService < UnofficialWhatsapp::Provide
     Rails.logger.warn("WuzAPI apply media delivery failed: #{e.class}: #{e.message}")
   end
 
-  def connect(events: 'Message,CallOffer,CallTerminate')
+  def connect(events: DEFAULT_EVENTS)
     apply_media_delivery
-    response = user_post('/session/connect', { 'Subscribe' => Array(events.split(',')).map(&:strip), 'Immediate' => true })
+    # Persist the subscription even when the session is already connected:
+    # /session/connect returns 409 in that case and would not update events.
+    apply_webhook_events(events)
+    response = user_post('/session/connect', { 'Subscribe' => event_list(events), 'Immediate' => true })
     response
+  end
+
+  def apply_webhook_events(events)
+    webhook_url = channel.inbox&.callback_webhook_url
+    return if webhook_url.blank?
+
+    user_post('/webhook', { 'webhookURL' => webhook_url, 'events' => event_list(events), 'Active' => true })
+  rescue StandardError => e
+    Rails.logger.warn("WuzAPI apply webhook events failed: #{e.class}: #{e.message}")
+  end
+
+  def event_list(events)
+    Array(events.split(',')).map(&:strip).compact_blank
   end
 
   def validate_provider_config?
@@ -89,7 +109,7 @@ class UnofficialWhatsapp::Providers::WuzapiService < UnofficialWhatsapp::Provide
   end
 
   def endpoint
-    @endpoint ||= config_for('WUZAPI_ENDPOINT', 'http://wuzapi:8080').to_s.chomp('/')
+    @endpoint ||= config_for('WUZAPI_ENDPOINT', nil).to_s.chomp('/')
   end
 
   def admin_token
@@ -117,9 +137,12 @@ class UnofficialWhatsapp::Providers::WuzapiService < UnofficialWhatsapp::Provide
     attachment = message.attachments.first
     id = outbound_message_id(message)
     media_type = wuzapi_media_type(attachment.file_type)
-    payload = { 'Phone' => phone_number, media_type => data_url(attachment) }
+    payload = { 'Phone' => phone_number, media_type => data_url(attachment), 'Id' => id }
     payload['Caption'] = message.outgoing_content if %w[image video document].include?(media_type)
-    payload['FileName'] = attachment.file.filename.to_s if media_type == 'document'
+    if media_type == 'document'
+      payload['FileName'] = attachment.file.filename.to_s
+      payload['MimeType'] = attachment.file.content_type
+    end
 
     response = user_post("/chat/send/#{media_type}", payload)
     process_response(response, message, id)
@@ -140,7 +163,9 @@ class UnofficialWhatsapp::Providers::WuzapiService < UnofficialWhatsapp::Provide
   def process_response(response, message, id)
     parsed = response.parsed_response
     if response.success? && parsed['success'] != false
-      id
+      # WuzAPI returns the actual whatsmeow message id in data.Id; receipts
+      # (delivered/read) reference this id, so it must be our source_id.
+      parsed.dig('data', 'Id').presence || id
     else
       handle_error(response, message)
       nil

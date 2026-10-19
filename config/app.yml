@@ -1,5 +1,6 @@
 shared: &shared
   version: '4.18.0'
+  omni_version: '1.0.0'
 
 development:
   <<: *shared
