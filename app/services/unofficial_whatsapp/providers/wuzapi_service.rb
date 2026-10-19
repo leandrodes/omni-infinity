@@ -142,6 +142,8 @@ class UnofficialWhatsapp::Providers::WuzapiService < UnofficialWhatsapp::Provide
     if media_type == 'audio'
       payload['MimeType'] = audio_mime_type(attachment)
       payload['PTT'] = true
+      seconds = audio_duration_seconds(attachment)
+      payload['Seconds'] = seconds if seconds&.positive?
     elsif media_type == 'document'
       payload['FileName'] = attachment.file.filename.to_s
       payload['MimeType'] = attachment.file.content_type
@@ -168,6 +170,35 @@ class UnofficialWhatsapp::Providers::WuzapiService < UnofficialWhatsapp::Provide
     return 'audio/ogg; codecs=opus' if %w[audio/ogg audio/opus application/ogg application/x-ogg].include?(content_type)
 
     content_type.presence || 'audio/ogg; codecs=opus'
+  end
+
+  def audio_duration_seconds(attachment)
+    content_type = attachment.file.content_type.to_s
+    return unless %w[audio/ogg audio/opus application/ogg application/x-ogg].include?(content_type)
+
+    ogg_duration_seconds(attachment.file.download)
+  end
+
+  # The last OGG page granule position holds the total number of 48 kHz samples,
+  # which is how WhatsApp derives the voice note duration shown to recipients.
+  def ogg_duration_seconds(bytes)
+    io = StringIO.new(bytes)
+    last_granule = 0
+    loop do
+      header = io.read(27)
+      break if header.nil? || header.bytesize < 27 || !header.start_with?('OggS')
+
+      granule = header.byteslice(6, 8).unpack1('q<')
+      segment_count = header.getbyte(26)
+      segment_table = io.read(segment_count).to_s.bytes
+      io.seek(segment_table.sum, IO::SEEK_CUR)
+      last_granule = granule if granule.positive?
+    end
+    return if last_granule <= 0
+
+    (last_granule / 48_000.0).round
+  rescue StandardError
+    nil
   end
 
   def process_response(response, message, id)

@@ -989,6 +989,12 @@
         "DESCRIPTION": "Restrict which websites can embed your chat widget. For security, only add domains you own and trust. Add one or more domains separated by commas. Leave blank to allow all domains (not recommended for production).",
         "PLACEHOLDER": "example.com, www.example.com, app.example.com"
       },
+      "AUDIO_TRANSCRIPTION": {
+        "TITLE": "Transcrever áudios recebidos",
+        "DESCRIPTION": "Quando ativado, os áudios recebidos nesta caixa de entrada são transcritos automaticamente. Também é necessário que a transcrição de áudio esteja habilitada na conta.",
+        "SUCCESS": "Configuração de transcrição de áudio da caixa de entrada atualizada com sucesso",
+        "ERROR": "Falha ao atualizar a configuração de transcrição de áudio da caixa de entrada"
+      },
       "ALLOW_MOBILE_WEBVIEW": {
         "LABEL": "Enable widget in mobile apps",
         "SUBTITLE": "Check this if you embed the widget in iOS or Android apps. Mobile apps don't send domain information, so they would be blocked by domain restrictions unless this is enabled."

@@ -88,7 +88,8 @@ class Attachment < ApplicationRecord
   def enqueue_omni_audio_transcription
     return if ChatwootApp.enterprise?
     return unless file_type&.to_sym == :audio
-    return unless Transcription::Config.enabled_for?(account)
+    return unless message&.incoming?
+    return unless Transcription::Config.enabled_for_inbox?(message.inbox)
 
     Transcription::AudioTranscriptionJob.perform_later(id)
   end

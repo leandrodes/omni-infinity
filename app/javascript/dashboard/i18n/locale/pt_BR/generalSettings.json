@@ -98,7 +98,7 @@
       },
       "AUDIO_TRANSCRIPTION": {
         "TITLE": "Transcrever Mensagens de Áudio",
-        "NOTE": "Transcreve automaticamente mensagens de áudio nas conversas. Gera uma transcrição de texto sempre que uma mensagem de áudio é enviada ou recebida, e a exibe junto da mensagem.",
+        "NOTE": "Transcreve automaticamente mensagens de áudio nas conversas. Gera uma transcrição de texto sempre que uma mensagem de áudio é recebida, e a exibe junto da mensagem.",
         "API": {
           "SUCCESS": "Configuração de transcrição de áudio atualizada com sucesso",
           "ERROR": "Falha ao atualizar configuração de transcrição de áudio"

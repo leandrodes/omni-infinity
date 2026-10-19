@@ -1021,6 +1021,12 @@
         "DESCRIPTION": "Restrinja quais sites podem incorporar seu widget de chat. Por segurança, adicione apenas domínios que você possui e confia. Adicione um ou mais domínios separados por vírgulas. Deixe em branco para permitir todos os domínios (não recomendado para produção).",
         "PLACEHOLDER": "example.com, www.example.com, app.example.com"
       },
+      "AUDIO_TRANSCRIPTION": {
+        "TITLE": "Transcrever áudios recebidos",
+        "DESCRIPTION": "Quando ativado, os áudios recebidos nesta caixa de entrada são transcritos automaticamente. Também é necessário que a transcrição de áudio esteja habilitada na conta.",
+        "SUCCESS": "Configuração de transcrição de áudio da caixa de entrada atualizada com sucesso",
+        "ERROR": "Falha ao atualizar a configuração de transcrição de áudio da caixa de entrada"
+      },
       "ALLOW_MOBILE_WEBVIEW": {
         "LABEL": "Ativar widget em aplicativos móveis",
         "SUBTITLE": "Marque esta opção se você incorporar o widget em aplicativos iOS ou Android. Aplicativos móveis não enviam informações de domínio, então serão bloqueados pelas restrições de domínio, a menos que isso esteja ativado."

@@ -40,6 +40,18 @@ module Transcription
       setting.nil? ? true : ActiveModel::Type::Boolean.new.cast(setting)
     end
 
+    # A transcrição só roda se estiver ligada na conta (controle global) e na
+    # caixa de entrada ("Transcrever áudios recebidos"). Caixas sem a coluna
+    # (instalações antigas) permanecem ligadas por padrão.
+    def enabled_for_inbox?(inbox)
+      return false if inbox.blank?
+      return false unless enabled_for?(inbox.account)
+      return true unless inbox.respond_to?(:transcribe_audio)
+
+      setting = inbox.transcribe_audio
+      setting.nil? ? true : ActiveModel::Type::Boolean.new.cast(setting)
+    end
+
     def value(key)
       GlobalConfig.get(key)[key].presence || ENV.fetch(key, nil)
     end

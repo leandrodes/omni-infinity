@@ -46,6 +46,7 @@ export default {
     return {
       hmacMandatory: false,
       allowMobileWebview: false,
+      transcribeAudio: true,
       whatsAppInboxAPIKey: '',
       isSyncingTemplates: false,
       allowedDomains: '',
@@ -70,6 +71,12 @@ export default {
     isForwardingEnabled() {
       return !!this.inbox.forwarding_enabled;
     },
+    showAudioTranscriptionToggle() {
+      return (
+        (this.isAWhatsAppChannel && !this.isATwilioChannel) ||
+        this.isAUnofficialWhatsappChannel
+      );
+    },
   },
   watch: {
     inbox() {
@@ -77,6 +84,9 @@ export default {
     },
     allowMobileWebview() {
       if (!this.isSettingDefaults) this.handleMobileWebviewFlag();
+    },
+    transcribeAudio() {
+      if (!this.isSettingDefaults) this.updateTranscribeAudio();
     },
     hmacMandatory() {
       if (!this.isSettingDefaults && this.isAWebWidgetInbox)
@@ -93,6 +103,7 @@ export default {
       this.allowMobileWebview = (
         this.inbox.selected_feature_flags || []
       ).includes('allow_mobile_webview');
+      this.transcribeAudio = this.inbox.transcribe_audio !== false;
       this.allowedDomains = this.inbox.allowed_domains || '';
       this.$nextTick(() => {
         this.isSettingDefaults = false;
@@ -114,6 +125,22 @@ export default {
         useAlert(this.$t('INBOX_MGMT.EDIT.API.SUCCESS_MESSAGE'));
       } catch (error) {
         useAlert(this.$t('INBOX_MGMT.EDIT.API.ERROR_MESSAGE'));
+      }
+    },
+    async updateTranscribeAudio() {
+      try {
+        await this.$store.dispatch('inboxes/updateInbox', {
+          id: this.inbox.id,
+          formData: false,
+          transcribe_audio: this.transcribeAudio,
+        });
+        useAlert(
+          this.$t('INBOX_MGMT.SETTINGS_POPUP.AUDIO_TRANSCRIPTION.SUCCESS')
+        );
+      } catch (error) {
+        useAlert(
+          this.$t('INBOX_MGMT.SETTINGS_POPUP.AUDIO_TRANSCRIPTION.ERROR')
+        );
       }
     },
     async handleMobileWebviewFlag() {
@@ -217,6 +244,15 @@ export default {
 </script>
 
 <template>
+  <SettingsToggleSection
+    v-if="showAudioTranscriptionToggle"
+    v-model="transcribeAudio"
+    class="mb-6"
+    :header="$t('INBOX_MGMT.SETTINGS_POPUP.AUDIO_TRANSCRIPTION.TITLE')"
+    :description="
+      $t('INBOX_MGMT.SETTINGS_POPUP.AUDIO_TRANSCRIPTION.DESCRIPTION')
+    "
+  />
   <div v-if="isATwilioChannel">
     <SettingsFieldSection
       :label="$t('INBOX_MGMT.ADD.TWILIO.API_CALLBACK.TITLE')"
