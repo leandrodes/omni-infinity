@@ -292,6 +292,7 @@ Rails.application.routes.draw do
           resources :custom_attribute_definitions, only: [:index, :show, :create, :update, :destroy]
           resources :custom_filters, only: [:index, :show, :create, :update, :destroy]
           resource :branded_email_layout, only: [:show, :update]
+          resource :transcription_settings, only: [:show, :update], controller: 'transcription_settings'
           resources :inboxes, only: [:index, :show, :create, :update, :destroy] do
             get :assignable_agents, on: :member
             get :campaigns, on: :member

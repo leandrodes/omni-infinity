@@ -105,6 +105,7 @@ class Account < ApplicationRecord
   has_many :whatsapp_channels, dependent: :destroy_async, class_name: '::Channel::Whatsapp'
   has_many :unofficial_whatsapp_channels, dependent: :destroy_async, class_name: '::Channel::UnofficialWhatsapp'
   has_many :working_hours, dependent: :destroy_async
+  has_one :transcription_setting, dependent: :destroy, class_name: '::TranscriptionSetting'
 
   has_one_attached :contacts_export
 

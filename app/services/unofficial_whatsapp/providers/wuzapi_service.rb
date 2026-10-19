@@ -101,7 +101,10 @@ class UnofficialWhatsapp::Providers::WuzapiService < UnofficialWhatsapp::Provide
 
   def send_message(phone_number, message)
     @message = message
-    if message.attachments.present?
+    interactive = interactive_payload(message)
+    if interactive.present?
+      send_interactive_message(phone_number, message, interactive)
+    elsif message.attachments.present?
       send_attachment_message(phone_number, message)
     else
       send_text_message(phone_number, message)
@@ -150,6 +153,78 @@ class UnofficialWhatsapp::Providers::WuzapiService < UnofficialWhatsapp::Provide
     end
 
     response = user_post("/chat/send/#{media_type}", payload)
+    process_response(response, message, id)
+  end
+
+  # Mensagens interativas (botões/listas) do WuzAPI. Esperamos que o gerador da
+  # mensagem (ex.: flow builder) popule `content_attributes['interactive']`:
+  #   { "type": "buttons", "body": "...", "buttons": [{ "title": "...", "id": "..." }] }
+  #   { "type": "list", "body": "...", "button": "Menu",
+  #     "sections": [{ "title": "...", "rows": [{ "title": "...", "description": "...", "id": "..." }] }] }
+  def interactive_payload(message)
+    attrs = message.content_attributes || {}
+    data = attrs['interactive'] || attrs[:interactive]
+    return nil unless data.is_a?(Hash) || data.is_a?(ActiveSupport::HashWithIndifferentAccess)
+    return nil if data['buttons'].blank? && data['sections'].blank?
+
+    data
+  end
+
+  def send_interactive_message(phone_number, message, data)
+    type = (data['type'] || 'buttons').to_s
+    if type == 'list'
+      send_list_message(phone_number, message, data)
+    else
+      send_buttons_message(phone_number, message, data)
+    end
+  end
+
+  def send_buttons_message(phone_number, message, data)
+    id = outbound_message_id(message)
+    buttons = Array(data['buttons']).filter_map do |button|
+      title = button['title'].to_s.strip
+      next if title.blank?
+
+      { 'type' => (button['type'] || 'reply').to_s, 'title' => title, 'id' => (button['id'] || title).to_s }
+    end
+    return send_text_message(phone_number, message) if buttons.empty?
+
+    payload = {
+      'Phone' => phone_number,
+      'Body' => (data['body'] || message.outgoing_content).to_s,
+      'Buttons' => buttons,
+      'Id' => id
+    }
+    payload['Footer'] = data['footer'].to_s if data['footer'].present?
+    response = user_post('/chat/send/buttons', payload)
+    process_response(response, message, id)
+  end
+
+  def send_list_message(phone_number, message, data)
+    id = outbound_message_id(message)
+    sections = Array(data['sections']).filter_map do |section|
+      rows = Array(section['rows']).filter_map do |row|
+        title = row['title'].to_s.strip
+        next if title.blank?
+
+        { 'title' => title, 'desc' => row['description'].to_s, 'RowId' => (row['id'] || title).to_s }
+      end
+      next if rows.empty?
+
+      { 'title' => section['title'].to_s, 'rows' => rows }
+    end
+    return send_text_message(phone_number, message) if sections.empty?
+
+    payload = {
+      'Phone' => phone_number,
+      'ButtonText' => (data['button'] || 'Selecionar').to_s,
+      'Desc' => (data['body'] || message.outgoing_content).to_s,
+      'Sections' => sections,
+      'Id' => id
+    }
+    payload['TopText'] = data['header'].to_s if data['header'].present?
+    payload['FooterText'] = data['footer'].to_s if data['footer'].present?
+    response = user_post('/chat/send/list', payload)
     process_response(response, message, id)
   end
 

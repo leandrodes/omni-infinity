@@ -102,6 +102,35 @@
         "API": {
           "SUCCESS": "Audio transcription setting updated successfully",
           "ERROR": "Failed to update audio transcription setting"
+        },
+        "PROVIDER": {
+          "LABEL": "Transcription provider",
+          "SYSTEM": "System transcription (Internal)",
+          "EXTERNAL": "External transcription (OpenAI, Groq, etc.)",
+          "SYSTEM_NOT_ALLOWED": "To use our system, contact our company to enable this feature (this feature is charged monthly at R$40.00)."
+        },
+        "ENDPOINT": {
+          "LABEL": "API endpoint",
+          "PLACEHOLDER": "https://api.groq.com/openai/v1",
+          "HELP": "OpenAI/Groq: use the /v1 URL. Your own Whisper server: inform the URL ending in /asr."
+        },
+        "MODEL": {
+          "LABEL": "Model",
+          "PLACEHOLDER": "whisper-large-v3"
+        },
+        "LANGUAGE": {
+          "LABEL": "Language",
+          "PLACEHOLDER": "pt (leave blank for auto)"
+        },
+        "API_KEY": {
+          "LABEL": "API key",
+          "PLACEHOLDER": "Your provider token",
+          "PLACEHOLDER_KEEP": "Leave blank to keep the current key"
+        },
+        "SAVE": {
+          "LABEL": "Save",
+          "SUCCESS": "Transcription settings saved successfully",
+          "ERROR": "Failed to save transcription settings"
         }
       },
       "AUTO_RESOLVE_DURATION": {

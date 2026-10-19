@@ -36,6 +36,7 @@ class AccountDashboard < Administrate::BaseDashboard
     status: AccountStatusField.with_options(collection: [%w[Active active], %w[Suspended suspended]]),
     suspension_history: SuspensionHistoryField,
     account_users: Field::HasMany,
+    transcription_allow_system: Field::Boolean,
     custom_attributes: Field::String
   }.merge(enterprise_attribute_types).freeze
 
@@ -74,6 +75,7 @@ class AccountDashboard < Administrate::BaseDashboard
     suspension_history
     conversations
     account_users
+    transcription_allow_system
   ] + enterprise_show_page_attributes).freeze
 
   # FORM_ATTRIBUTES
@@ -92,6 +94,7 @@ class AccountDashboard < Administrate::BaseDashboard
     name
     locale
     status
+    transcription_allow_system
   ] + enterprise_form_attributes).freeze
 
   # COLLECTION_FILTERS

@@ -102,6 +102,35 @@
         "API": {
           "SUCCESS": "Definição de transcrição de áudio atualizada com sucesso",
           "ERROR": "Falha ao atualizar a definição de transcrição de áudio"
+        },
+        "PROVIDER": {
+          "LABEL": "Provedor de transcrição",
+          "SYSTEM": "Transcrição do Sistema (Interno)",
+          "EXTERNAL": "Transcrição Externa (OpenAI, Groq, etc.)",
+          "SYSTEM_NOT_ALLOWED": "Caso queira usar nosso sistema, contate nossa empresa para habilitar esta funcionalidade (esta funcionalidade é cobrada mensalmente no valor de R$40,00)."
+        },
+        "ENDPOINT": {
+          "LABEL": "Endpoint da API",
+          "PLACEHOLDER": "https://api.groq.com/openai/v1",
+          "HELP": "OpenAI/Groq: use a URL /v1. Servidor Whisper próprio: informe a URL terminando em /asr."
+        },
+        "MODEL": {
+          "LABEL": "Modelo",
+          "PLACEHOLDER": "whisper-large-v3"
+        },
+        "LANGUAGE": {
+          "LABEL": "Idioma",
+          "PLACEHOLDER": "pt (deixe em branco para detectar)"
+        },
+        "API_KEY": {
+          "LABEL": "Chave de API",
+          "PLACEHOLDER": "Token do seu provedor",
+          "PLACEHOLDER_KEEP": "Deixe em branco para manter a chave atual"
+        },
+        "SAVE": {
+          "LABEL": "Salvar",
+          "SUCCESS": "Configurações de transcrição salvas com sucesso",
+          "ERROR": "Falha ao salvar as configurações de transcrição"
         }
       },
       "AUTO_RESOLVE_DURATION": {

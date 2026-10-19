@@ -1,8 +1,11 @@
 require 'httparty'
 require 'fileutils'
 
-# Transcreve anexos de áudio usando um serviço Whisper auto-hospedado
-# (compatível com https://github.com/ahmetoner/whisper-asr-webservice).
+# Transcreve anexos de áudio usando o provedor configurado pela conta:
+#
+#   - :whisper_asr -> serviço Whisper auto-hospedado
+#     (compatível com https://github.com/ahmetoner/whisper-asr-webservice)
+#   - :openai      -> API compatível com OpenAI/Groq (/audio/transcriptions)
 #
 # Grava o resultado em `attachment.meta['transcribed_text']`, que o front-end já
 # sabe exibir abaixo do player de áudio e que também é usado pelo LLM
@@ -22,6 +25,9 @@ module Transcription
     def perform
       return { error: 'orphan_attachment' } if attachment.message.blank?
       return { error: 'no_file' } unless attachment.file.attached?
+
+      @provider = Transcription::Config.provider_for(attachment.message.inbox&.account)
+      return { error: 'not_configured' } if @provider.blank?
 
       blob = attachment.file.blob
       return { error: 'too_large' } if blob.byte_size.to_i > BYTE_LIMIT
@@ -64,35 +70,70 @@ module Transcription
     end
 
     def call_endpoint(path)
-      response = HTTParty.post(
-        asr_url,
-        query: query_params,
-        headers: headers,
-        multipart: true,
-        body: { audio_file: File.new(path, 'rb') },
-        timeout: READ_TIMEOUT
-      )
+      response = if openai_provider?
+                   call_openai(path)
+                 else
+                   call_whisper_asr(path)
+                 end
 
       raise "transcription endpoint returned #{response.code}: #{response.body.to_s.first(200)}" unless response.success?
 
       response.parsed_response
     end
 
-    def asr_url
-      base = Transcription::Config.endpoint
+    def call_openai(path)
+      HTTParty.post(
+        openai_url,
+        headers: auth_headers,
+        multipart: true,
+        body: openai_body(path),
+        timeout: READ_TIMEOUT
+      )
+    end
+
+    def call_whisper_asr(path)
+      HTTParty.post(
+        whisper_asr_url,
+        query: whisper_asr_query,
+        headers: auth_headers,
+        multipart: true,
+        body: { audio_file: File.new(path, 'rb') },
+        timeout: READ_TIMEOUT
+      )
+    end
+
+    def openai_provider?
+      @provider[:kind] == Transcription::Config::OPENAI
+    end
+
+    def openai_url
+      base = @provider[:endpoint]
+      return base if base.end_with?('/audio/transcriptions')
+
+      "#{base}/audio/transcriptions"
+    end
+
+    def openai_body(path)
+      body = { file: File.new(path, 'rb'), model: @provider[:model].presence || 'whisper-1' }
+      body[:language] = @provider[:language] if @provider[:language].present?
+      body
+    end
+
+    def whisper_asr_url
+      base = @provider[:endpoint]
       return base if base.end_with?('/asr')
 
       "#{base}/asr"
     end
 
-    def query_params
+    def whisper_asr_query
       params = { task: 'transcribe', output: 'json', encode: 'true' }
-      params[:language] = Transcription::Config.language if Transcription::Config.language.present?
+      params[:language] = @provider[:language] if @provider[:language].present?
       params
     end
 
-    def headers
-      key = Transcription::Config.api_key
+    def auth_headers
+      key = @provider[:api_key].to_s
       key.present? ? { 'Authorization' => "Bearer #{key}" } : {}
     end
 
