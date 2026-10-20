@@ -47,6 +47,21 @@ class UnofficialWhatsapp::Providers::EvolutionService < UnofficialWhatsapp::Prov
     instance_get("/instance/connect/#{instance_name}")
   end
 
+  # A paired instance can get stuck in a reconnect/conflict loop created by
+  # overlapping sockets. Restarting the remote instance closes the stale
+  # socket before opening a new one; fall back to connect when it is not open.
+  def reconnect(events: DEFAULT_EVENTS)
+    apply_webhook(events)
+
+    current = status
+    if current.success? && parse_status(current)[:logged_in]
+      restarted = instance_post("/instance/restart/#{instance_name}", {})
+      return restarted if restarted.success?
+    end
+
+    instance_get("/instance/connect/#{instance_name}")
+  end
+
   def qrcode
     instance_get("/instance/connect/#{instance_name}")
   end

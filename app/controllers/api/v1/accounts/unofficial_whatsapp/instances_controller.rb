@@ -10,7 +10,7 @@ class Api::V1::Accounts::UnofficialWhatsapp::InstancesController < Api::V1::Acco
     provision(channel) unless channel.provider_service.provisioned?
 
     provider = channel.provider_service
-    provider.connect
+    provider.reconnect
     channel.update!(connection_status: 'connecting')
 
     render json: status_payload(channel)
@@ -22,6 +22,11 @@ class Api::V1::Accounts::UnofficialWhatsapp::InstancesController < Api::V1::Acco
   def qrcode
     channel = @inbox.channel
     service = channel.provider_service
+
+    if channel.connection_status == 'connected'
+      return render json: { qr_code: nil, connected: true }
+    end
+
     response = service.qrcode
 
     if response.success?

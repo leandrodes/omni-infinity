@@ -23,6 +23,14 @@ class UnofficialWhatsapp::Providers::BaseService
     raise 'Overwrite this method in child class'
   end
 
+  # Recovers an existing session. Providers can override this to restart the
+  # remote socket instead of only re-issuing the pairing request.
+  def reconnect(events: nil)
+    return connect if events.nil?
+
+    connect(events: events)
+  end
+
   def qrcode
     raise 'Overwrite this method in child class'
   end
