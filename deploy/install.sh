@@ -328,6 +328,10 @@ fi
 if [[ "$CFG_PORTAINER" =~ ^[Ss]$ ]]; then
   COMPOSE_PROFILES_LIST="${COMPOSE_PROFILES_LIST:+${COMPOSE_PROFILES_LIST},}portainer"
 fi
+# Preserva o módulo Evolution se ele já foi instalado (install-evolution.sh).
+if grep -q '^EVOLUTION_API_KEY=' .env 2>/dev/null; then
+  COMPOSE_PROFILES_LIST="${COMPOSE_PROFILES_LIST:+${COMPOSE_PROFILES_LIST},}evolution"
+fi
 if [ -n "$COMPOSE_PROFILES_LIST" ]; then
   {
     echo ""
@@ -393,7 +397,24 @@ ${TLS_DIRECTIVE}
 }"
 fi
 
-export APP_DOMAIN TLS_DIRECTIVE WUZAPI_DOMAIN_BLOCK WACALLS_DOMAIN_BLOCK PORTAINER_DOMAIN_BLOCK SCHEME GLOBAL_OPTIONS
+# Mantém o bloco do Evolution ao regerar o Caddyfile (módulo opcional instalado
+# depois pelo install-evolution.sh, que grava EVOLUTION_DOMAIN no .env).
+EVOLUTION_DOMAIN="$(grep '^EVOLUTION_DOMAIN=' .env 2>/dev/null | head -1 | cut -d= -f2- || true)"
+EVOLUTION_DOMAIN_BLOCK=""
+if [ -n "$EVOLUTION_DOMAIN" ]; then
+  EVOLUTION_DOMAIN_BLOCK="${SCHEME}${EVOLUTION_DOMAIN} {
+${TLS_DIRECTIVE}
+
+  encode gzip zstd
+  log {
+    output file /var/log/caddy/evolution-access.log
+    format json
+  }
+  reverse_proxy 127.0.0.1:8081
+}"
+fi
+
+export APP_DOMAIN TLS_DIRECTIVE WUZAPI_DOMAIN_BLOCK EVOLUTION_DOMAIN_BLOCK WACALLS_DOMAIN_BLOCK PORTAINER_DOMAIN_BLOCK SCHEME GLOBAL_OPTIONS
 # O Caddy roda no host: garante o binário/serviço antes de escrever a config.
 install_host_caddy
 mkdir -p /etc/caddy /var/log/caddy

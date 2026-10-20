@@ -92,7 +92,7 @@ services:
       - redis
     env_file: .env
     environment:
-      - SERVER_URL=http://evolution:8080
+      - SERVER_URL=${EVOLUTION_PUBLIC_URL:-http://evolution:8080}
       - AUTHENTICATION_API_KEY=${EVOLUTION_API_KEY}
       - DATABASE_PROVIDER=postgresql
       - DATABASE_CONNECTION_URI=postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/evolution?schema=public

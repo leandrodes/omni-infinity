@@ -19,13 +19,25 @@ ENV_FILE="${PROJECT_DIR}/deploy/.env"
 COMPOSE_FILE="docker-compose.prod.yaml"
 EVOLUTION_WEB_URL="http://evolution:8080"
 EVOLUTION_LOCAL_URL="http://127.0.0.1:8081"
+EVOLUTION_DOMAIN="${EVOLUTION_DOMAIN:-omnichannelevolution.infinitytelecom.com.br}"
+EVOLUTION_PUBLIC_URL="https://${EVOLUTION_DOMAIN}"
 
 say "Instalando módulo Evolution API em ${PROJECT_DIR}"
 if [ ! -f "$ENV_FILE" ]; then err ".env não encontrado em ${ENV_FILE}. Rode o install.sh primeiro."; exit 1; fi
 
 ensure_env_var "$ENV_FILE" "EVOLUTION_API_KEY" "$(gen_hex 32)"
 ensure_env_var "$ENV_FILE" "EVOLUTION_ENDPOINT" "$EVOLUTION_WEB_URL"
+ensure_env_var "$ENV_FILE" "EVOLUTION_DOMAIN" "$EVOLUTION_DOMAIN"
+ensure_env_var "$ENV_FILE" "EVOLUTION_PUBLIC_URL" "$EVOLUTION_PUBLIC_URL"
 ensure_compose_profile "$ENV_FILE" "evolution"
+
+# Expõe o Evolution no Caddy do host (mesmo modelo do WuzAPI).
+# O DNS é criado no provedor; o Caddy emite o certificado automaticamente
+# quando o domínio passar a apontar para esta VPS.
+ensure_caddy_block "$EVOLUTION_DOMAIN" "127.0.0.1:8081" "evolution" || true
+if ! getent hosts "$EVOLUTION_DOMAIN" >/dev/null 2>&1; then
+  warn "O DNS de ${EVOLUTION_DOMAIN} ainda não resolve. Crie um registro A apontando para o IP desta VPS; o certificado será emitido automaticamente."
+fi
 
 cd "${PROJECT_DIR}/deploy"
 
@@ -65,6 +77,8 @@ echo
 say "Evolution API instalado."
 echo "  Endpoint interno: ${EVOLUTION_WEB_URL}"
 echo "  URL local:        ${EVOLUTION_LOCAL_URL}"
+echo "  URL pública:      ${EVOLUTION_PUBLIC_URL}"
+echo "  Manager:          ${EVOLUTION_PUBLIC_URL}/manager"
 echo "  API Key:          ${KEY}"
 echo
 say "O canal 'WhatsApp API Não Oficial' já pode usar o provedor Evolution API (quando habilitado na conta)."

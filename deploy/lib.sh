@@ -80,6 +80,10 @@ ensure_caddy_block() {
     echo "  reverse_proxy ${upstream}"
     echo "}"
   } >> "$caddyfile"
+  # Pré-cria o log com o dono correto: o Caddy roda como usuário "caddy" e
+  # não consegue abrir um arquivo novo durante o reload em algumas instalações.
+  touch "/var/log/caddy/${tag}-access.log" 2>/dev/null || true
+  chown caddy:caddy "/var/log/caddy/${tag}-access.log" 2>/dev/null || true
   say "Bloco Caddy adicionado: ${domain} -> ${upstream}"
   reload_caddy
 }
@@ -91,7 +95,7 @@ reload_caddy() {
   fi
   mkdir -p /var/log/caddy
   touch /var/log/caddy/access.log
-  chown -R caddy:caddy /var/log/caddy 2>/dev/null || true
+  find /var/log/caddy -maxdepth 1 -type f -name '*.log' -exec chown caddy:caddy {} + 2>/dev/null || true
   if caddy validate --config /etc/caddy/Caddyfile >/dev/null 2>&1; then
     systemctl reload caddy 2>/dev/null || systemctl restart caddy 2>/dev/null || true
     say "Caddy (host) recarregado."
