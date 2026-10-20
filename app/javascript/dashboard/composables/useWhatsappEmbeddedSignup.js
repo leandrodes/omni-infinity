@@ -31,7 +31,6 @@ export function useWhatsappEmbeddedSignup() {
     return new Promise((resolve, reject) => {
       let authCode = null;
       let businessData = null;
-      let isCoexistence = false;
       let settled = false;
       let messageHandler;
 
@@ -52,7 +51,6 @@ export function useWhatsappEmbeddedSignup() {
           business_id: businessData.business_id || '',
           waba_id: businessData.waba_id,
           phone_number_id: businessData.phone_number_id || '',
-          is_coexistence: isCoexistence,
         });
       };
 
@@ -60,8 +58,6 @@ export function useWhatsappEmbeddedSignup() {
         const result = classifySignupEvent(data);
 
         if (result.type === SIGNUP_RESULT.FINISH) {
-          // Keep the first terminal event: a coexistence FINISH must win over a
-          // later normal FINISH that can arrive before the auth code is known.
           if (businessData) return;
           if (!isValidBusinessData(data.data)) {
             const invalidData = t(
@@ -71,7 +67,6 @@ export function useWhatsappEmbeddedSignup() {
             return;
           }
           businessData = data.data;
-          isCoexistence = result.isCoexistence;
           resolveIfReady();
         } else if (result.type === SIGNUP_RESULT.UNSUPPORTED) {
           const unsupported = t(

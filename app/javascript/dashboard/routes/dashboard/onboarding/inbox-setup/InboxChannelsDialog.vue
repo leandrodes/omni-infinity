@@ -20,7 +20,7 @@ const emit = defineEmits(['connected']);
 
 const { t } = useI18n();
 const { connectViaOAuth, connectWhatsapp } = useChannelConnect();
-const { isConfigured, isEnabled } = useChannelConfig();
+const { isConfigured } = useChannelConfig();
 
 // Maps the dialog's display types to the OAuth client key the flow expects.
 // Types without an entry (manual-setup channels) are no-ops for now.
@@ -28,7 +28,6 @@ const OAUTH_PROVIDERS = {
   [CHANNEL_TYPES.GMAIL]: 'google',
   [CHANNEL_TYPES.OUTLOOK]: 'microsoft',
   [CHANNEL_TYPES.INSTAGRAM]: 'instagram',
-  [CHANNEL_TYPES.TIKTOK]: 'tiktok',
 };
 
 // A card's availability — what the user can do with it right now:
@@ -39,9 +38,7 @@ const OAUTH_PROVIDERS = {
 // `connected` (a real inbox already backs it) is orthogonal and tracked
 // separately, since a connected channel can still be in any of these states.
 const channelAvailability = channel => {
-  return channel.setupLater || !isEnabled(channel.type)
-    ? 'setupLater'
-    : 'available';
+  return channel.setupLater ? 'setupLater' : 'available';
 };
 
 const CARD_CLASS = {

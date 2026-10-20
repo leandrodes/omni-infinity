@@ -13,7 +13,6 @@ import SettingsAccordion from 'dashboard/components-next/Settings/SettingsAccord
 import inboxMixin from 'shared/mixins/inboxMixin';
 import FacebookReauthorize from './facebook/Reauthorize.vue';
 import InstagramReauthorize from './channels/instagram/Reauthorize.vue';
-import TiktokReauthorize from './channels/tiktok/Reauthorize.vue';
 import DuplicateInboxBanner from './channels/instagram/DuplicateInboxBanner.vue';
 import MicrosoftReauthorize from './channels/microsoft/Reauthorize.vue';
 import GoogleReauthorize from './channels/google/Reauthorize.vue';
@@ -76,7 +75,6 @@ export default {
     NextButton,
     SpinnerLoader,
     InstagramReauthorize,
-    TiktokReauthorize,
     WhatsappReauthorize,
     DuplicateInboxBanner,
     Editor,
@@ -220,7 +218,6 @@ export default {
 
       if (
         this.isATwilioChannel ||
-        this.isALineChannel ||
         this.isAPIInbox ||
         this.isAUnofficialWhatsappChannel ||
         (this.isAnEmailChannel && !this.inbox.provider) ||
@@ -339,8 +336,6 @@ export default {
         this.isAFacebookInbox ||
         this.isAPIInbox ||
         this.isAnInstagramChannel ||
-        this.isALineChannel ||
-        this.isATiktokChannel ||
         this.isATelegramChannel
       );
     },
@@ -373,9 +368,6 @@ export default {
     },
     metaRestrictionStatusUrl() {
       return META_RESTRICTION_STATUS_URL;
-    },
-    tiktokUnauthorized() {
-      return this.isATiktokChannel && this.inbox.reauthorization_required;
     },
     // Check if a instagram inbox exists with the same instagram_id
     hasDuplicateInstagramInbox() {
@@ -826,12 +818,6 @@ export default {
         />
         <InstagramReauthorize
           v-if="instagramUnauthorized"
-          :inbox="inbox"
-          class="mb-4"
-          :class="bannerMaxWidth"
-        />
-        <TiktokReauthorize
-          v-if="tiktokUnauthorized"
           :inbox="inbox"
           class="mb-4"
           :class="bannerMaxWidth"

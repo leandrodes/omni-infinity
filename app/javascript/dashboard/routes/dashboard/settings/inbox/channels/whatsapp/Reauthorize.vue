@@ -79,15 +79,12 @@ const handleEmbeddedSignupEvents = async (data, authCode) => {
   if (result.type === SIGNUP_RESULT.FINISH) {
     const businessData = data.data;
 
-    // phone_number_id isn't required here: the backend resolves it from the WABA
-    // (PhoneInfoService) when omitted, which coexistence completions sometimes do.
     if (isValidBusinessData(businessData)) {
       await reauthorizeWhatsApp({
         code: authCode,
         business_id: businessData.business_id || '',
         waba_id: businessData.waba_id,
         phone_number_id: businessData.phone_number_id || '',
-        is_coexistence: result.isCoexistence,
       });
     } else {
       isRequestingAuthorization.value = false;
@@ -140,8 +137,7 @@ const startEmbeddedSignup = () => {
     if (type === SIGNUP_RESULT.IGNORE) return;
 
     if (type === SIGNUP_RESULT.FINISH) {
-      // Keep the first terminal event: a coexistence FINISH must win over a
-      // later normal FINISH that can arrive before the auth code is known.
+      // Keep the first terminal FINISH that can arrive before the auth code is known.
       pendingEvent = pendingEvent || data;
       process();
       return;
@@ -162,7 +158,7 @@ const startEmbeddedSignup = () => {
 };
 
 // The "existing config" reauth shortcut already trusts the stored business/phone IDs,
-// so it only needs to know which FINISH variant occurred — same ordering guarantee as
+// so it only needs to know that a FINISH occurred — same ordering guarantee as
 // startEmbeddedSignup above, just without needing to buffer the event's business data.
 const createFinishEventWaiter = () => {
   let listener;
@@ -174,7 +170,7 @@ const createFinishEventWaiter = () => {
       window.removeEventListener('message', listener);
 
       if (result.type === SIGNUP_RESULT.FINISH) {
-        resolve(result.isCoexistence);
+        resolve(true);
       } else if (result.type === SIGNUP_RESULT.UNSUPPORTED) {
         reject(
           new Error(
@@ -227,13 +223,12 @@ const handleLoginAndReauthorize = async () => {
     );
 
     if (hasExistingConfig) {
-      const isCoexistence = await finishWaiter.promise;
+      await finishWaiter.promise;
       await reauthorizeWhatsApp({
         code: authCode,
         business_id: existingConfig.business_account_id,
         waba_id: existingConfig.business_account_id,
         phone_number_id: existingConfig.phone_number_id,
-        is_coexistence: isCoexistence,
       });
       return false;
     }

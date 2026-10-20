@@ -168,8 +168,6 @@ const healthSections = computed(() => {
     code_verification_status: codeVerificationStatus,
     throughput_level: throughputLevel,
     last_onboarded_time: lastOnboardedTime,
-    is_on_biz_app: isOnBizApp,
-    platform_type: platformType,
     business_account_id: businessAccountId,
     business_account_name: businessAccountName,
     business_portfolio_id: businessPortfolioId,
@@ -219,14 +217,6 @@ const healthSections = computed(() => {
           tooltip: t(
             'INBOX_MGMT.ACCOUNT_HEALTH.FIELDS.PHONE_NUMBER_ID.TOOLTIP'
           ),
-        },
-        {
-          key: 'coexistence',
-          label: t('INBOX_MGMT.ACCOUNT_HEALTH.FIELDS.COEXISTENCE.LABEL'),
-          value: 'ACTIVE',
-          tooltip: t('INBOX_MGMT.ACCOUNT_HEALTH.FIELDS.COEXISTENCE.TOOLTIP'),
-          type: 'status',
-          show: isOnBizApp === true && platformType === 'CLOUD_API',
         },
         {
           key: 'lastOnboardedTime',

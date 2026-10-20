@@ -133,6 +133,14 @@
           "ERROR": "Failed to save transcription settings"
         }
       },
+      "MESSAGE_SIGNATURE": {
+        "TITLE": "Agents can disable signature?",
+        "NOTE": "When disabled, the signature is mandatory for all agents on this account: the signature button is hidden and every message is sent with the agent signature. When enabled, the signature button is shown and each agent can choose whether to send it.",
+        "API": {
+          "SUCCESS": "Signature setting updated successfully",
+          "ERROR": "Failed to update the signature setting"
+        }
+      },
       "AUTO_RESOLVE_DURATION": {
         "LABEL": "Inactivity duration for resolution",
         "HELP": "Duration after a conversation should auto resolve if there is no activity",

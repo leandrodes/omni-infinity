@@ -100,15 +100,6 @@ const channelList = computed(() => {
     });
   }
 
-  if (features.channel_tiktok) {
-    channels.push({
-      key: 'tiktok',
-      title: t('INBOX_MGMT.ADD.AUTH.CHANNEL.TIKTOK.TITLE'),
-      description: t('INBOX_MGMT.ADD.AUTH.CHANNEL.TIKTOK.DESCRIPTION'),
-      icon: 'i-woot-tiktok',
-    });
-  }
-
   if (features.channel_voice) {
     channels.push({
       key: 'voice',

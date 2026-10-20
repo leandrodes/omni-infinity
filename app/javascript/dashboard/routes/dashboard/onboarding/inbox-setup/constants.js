@@ -1,24 +1,22 @@
 import { CHANNEL_TYPES } from 'dashboard/helper/inbox';
 
 // Channels whose connect flow opens the channels dialog preselected to their
-// in-dialog step — Facebook (page picker) and the credential-form channels
-// (Telegram, Line) — rather than redirecting through OAuth.
+// in-dialog step — Facebook (page picker) and Telegram (credential form) —
+// rather than redirecting through OAuth.
 export const DIALOG_CHANNELS = [
   CHANNEL_TYPES.FACEBOOK,
   CHANNEL_TYPES.TELEGRAM,
-  CHANNEL_TYPES.LINE,
 ];
 
 // Suggested channels (in priority order) to offer as rows when nothing is
 // detected, so the step isn't empty. The mainstream OAuth channels show on
-// configured installs, while credential-free Telegram/LINE keep the list
+// configured installs, while credential-free Telegram keeps the list
 // non-empty on a bare self-host.
 export const DEFAULT_CHANNEL_TYPES = [
   CHANNEL_TYPES.WHATSAPP,
   CHANNEL_TYPES.FACEBOOK,
   CHANNEL_TYPES.INSTAGRAM,
   CHANNEL_TYPES.TELEGRAM,
-  CHANNEL_TYPES.LINE,
 ];
 
 // Channels offered in the onboarding "View all" dialog. `inbox` is a stub shaped
@@ -53,20 +51,9 @@ export const CHANNEL_LIST = [
     inbox: { channel_type: 'Channel::FacebookPage' },
   },
   {
-    type: 'tiktok',
-    labelKey: 'INBOX_MGMT.ADD.AUTH.CHANNEL.TIKTOK.TITLE',
-    inbox: { channel_type: 'Channel::Tiktok' },
-  },
-  {
     type: 'telegram',
     labelKey: 'INBOX_MGMT.ADD.AUTH.CHANNEL.TELEGRAM.TITLE',
     inbox: { channel_type: 'Channel::Telegram' },
-    form: true,
-  },
-  {
-    type: 'line',
-    labelKey: 'INBOX_MGMT.ADD.AUTH.CHANNEL.LINE.TITLE',
-    inbox: { channel_type: 'Channel::Line' },
     form: true,
   },
   // Email channels (including Gmail/Outlook OAuth) are set up later in-app for
@@ -115,7 +102,7 @@ const channelByType = type =>
 // Icons shown next to "View all" when every detected channel is already
 // connected — a representative trio sourced from CHANNEL_LIST so the inbox stubs
 // aren't duplicated.
-export const FALLBACK_PREVIEW_CHANNELS = ['gmail', 'tiktok', 'whatsapp'].map(
+export const FALLBACK_PREVIEW_CHANNELS = ['gmail', 'telegram', 'whatsapp'].map(
   channelByType
 );
 
@@ -126,10 +113,8 @@ export const FALLBACK_PREVIEW_CHANNELS = ['gmail', 'tiktok', 'whatsapp'].map(
 const SOCIAL_PLATFORM_TYPES = [
   'whatsapp',
   'facebook',
-  'line',
   'instagram',
   'telegram',
-  'tiktok',
 ];
 
 export const SOCIAL_PLATFORMS = Object.fromEntries(

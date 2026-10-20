@@ -93,6 +93,7 @@ export default {
       uiSettings,
       isEditorHotKeyEnabled,
       fetchSignatureFlagFromUISettings,
+      agentsCanDisableSignature,
       setQuotedReplyFlagForInbox,
       fetchQuotedReplyFlagFromUISettings,
     } = useUISettings();
@@ -142,6 +143,7 @@ export default {
       uiSettings,
       isEditorHotKeyEnabled,
       fetchSignatureFlagFromUISettings,
+      agentsCanDisableSignature,
       setQuotedReplyFlagForInbox,
       fetchQuotedReplyFlagFromUISettings,
       messageEditor,
@@ -958,6 +960,8 @@ export default {
           });
     },
     async onSendReply() {
+      this.ensureMandatorySignature();
+
       const undefinedVariables = getUndefinedVariablesInMessage({
         message: this.message,
         variables: this.messageVariables,
@@ -980,6 +984,27 @@ export default {
       } else {
         this.confirmOnSendReply();
       }
+    },
+    ensureMandatorySignature() {
+      if (
+        this.agentsCanDisableSignature ||
+        this.isPrivate ||
+        !this.messageSignature ||
+        !this.message
+      ) {
+        return;
+      }
+
+      const effectiveChannelType = getEffectiveChannelType(
+        this.channelType,
+        this.inbox?.medium || ''
+      );
+
+      this.message = appendSignature(
+        this.message,
+        this.messageSignature,
+        effectiveChannelType
+      );
     },
     async sendMessage(
       messagePayload,

@@ -133,6 +133,14 @@
           "ERROR": "Falha ao salvar as configurações de transcrição"
         }
       },
+      "MESSAGE_SIGNATURE": {
+        "TITLE": "Agentes podem desabilitar Assinatura?",
+        "NOTE": "Quando desabilitado, a assinatura é obrigatória para todos os agentes desta conta: o botão de assinatura fica oculto e todas as mensagens são enviadas com a assinatura do agente. Quando habilitado, o botão de assinatura fica visível e cada agente pode escolher se envia ou não.",
+        "API": {
+          "SUCCESS": "Configuração de assinatura atualizada com sucesso",
+          "ERROR": "Falha ao atualizar a configuração de assinatura"
+        }
+      },
       "AUTO_RESOLVE_DURATION": {
         "LABEL": "Tempo de inatividade para resolução",
         "HELP": "Tempo de inatividade após o qual a conversa deve ser encerrada automaticamente",

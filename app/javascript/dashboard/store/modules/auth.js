@@ -80,9 +80,10 @@ export const getters = {
   },
 
   getMessageSignature($state) {
-    const { message_signature: messageSignature } = $state.currentUser;
+    const { message_signature: messageSignature, name } = $state.currentUser;
 
-    return messageSignature || '';
+    if (messageSignature) return messageSignature;
+    return name || '';
   },
 
   getCurrentAccount($state, $getters) {

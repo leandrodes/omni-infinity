@@ -47,12 +47,6 @@ help_center:
   description: 'Permite que os agentes criem artigos da central de ajuda e os publiquem em um portal.'
   enabled: true
   icon: 'icon-book-2-line'
-captain:
-  name: 'Captain'
-  description: 'Habilite conversas com IA para seus clientes.'
-  enabled: true
-  icon: 'icon-captain'
-  config_key: 'captain'
 transcription:
   name: 'Transcrição'
   description: 'Configure o endpoint de transcrição de áudio (ex.: Whisper) para transcrever os áudios recebidos nos canais de WhatsApp.'
@@ -89,12 +83,6 @@ instagram:
   enabled: true
   icon: 'icon-instagram'
   config_key: 'instagram'
-tiktok:
-  name: 'TikTok'
-  description: 'Mantenha-se conectado com seus clientes no TikTok'
-  enabled: true
-  icon: 'icon-tiktok'
-  config_key: 'tiktok'
 whatsapp:
   name: 'WhatsApp'
   description: 'Gerencie as interações de WhatsApp Business com seus clientes pelo Omni-Channel.'
@@ -111,13 +99,6 @@ telegram:
   description: 'Gerencie as interações por Telegram com seus clientes pelo Omni-Channel.'
   enabled: true
   icon: 'icon-telegram-line'
-line:
-  name: 'Line'
-  description: 'Gerencie as interações por Line com seus clientes pelo Omni-Channel.'
-  enabled: true
-  icon: 'icon-line-line'
-
-# ------- OAuth e Autenticação ------- #
 google:
   name: 'Google'
   description: 'Configuração para a integração OAuth do Google'
@@ -130,35 +111,3 @@ microsoft:
   enabled: true
   icon: 'icon-microsoft'
   config_key: 'microsoft'
-
-# ------- Integrações de Terceiros ------- #
-linear:
-  name: 'Linear'
-  description: 'Configuração para a integração com o Linear'
-  enabled: true
-  icon: 'icon-linear'
-  config_key: 'linear'
-notion:
-  name: 'Notion'
-  description: 'Configuração para a integração com o Notion'
-  enabled: true
-  icon: 'icon-notion'
-  config_key: 'notion'
-slack:
-  name: 'Slack'
-  description: 'Configuração para a integração com o Slack'
-  enabled: true
-  icon: 'icon-slack'
-  config_key: 'slack'
-whatsapp_embedded:
-  name: 'WhatsApp Embedded'
-  description: 'Configuração para a integração do WhatsApp Embedded'
-  enabled: true
-  icon: 'icon-whatsapp-line'
-  config_key: 'whatsapp_embedded'
-shopify:
-  name: 'Shopify'
-  description: 'Configuração para a integração com o Shopify'
-  enabled: true
-  icon: 'icon-shopify'
-  config_key: 'shopify'

@@ -82,7 +82,7 @@ services:
 
   evolution:
     profiles: ["evolution"]
-    image: evoapicloud/evolution-api:v2.1.1
+    image: evoapicloud/evolution-api:v2.3.7
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1
       - net.ipv6.conf.default.disable_ipv6=1
@@ -99,7 +99,7 @@ services:
       - DATABASE_SAVE_DATA_INSTANCE=true
       - DATABASE_SAVE_DATA_NEW_MESSAGE=true
       - DATABASE_SAVE_MESSAGE_UPDATE=true
-      - DATABASE_SAVE_DATA_CONTACTS=false
+      - DATABASE_SAVE_DATA_CONTACTS=true
       - DATABASE_SAVE_DATA_CHATS=false
       - DATABASE_SAVE_DATA_HISTORIC=false
       - DATABASE_SAVE_DATA_LABELS=false
@@ -107,7 +107,6 @@ services:
       - CACHE_LOCAL_ENABLED=true
       - CONFIG_SESSION_PHONE_CLIENT=Omni Infinity
       - CONFIG_SESSION_PHONE_NAME=Chrome
-      - CONFIG_SESSION_PHONE_VERSION=2.3000.1050968285
       - NODE_OPTIONS=--dns-result-order=ipv4first
       - QRCODE_LIMIT=30
       - QRCODE_COLOR=#198754

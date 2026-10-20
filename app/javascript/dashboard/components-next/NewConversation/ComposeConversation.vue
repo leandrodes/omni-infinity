@@ -1,5 +1,6 @@
 <script setup>
 import { reactive, ref, computed, onMounted, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import { useStore, useMapGetter } from 'dashboard/composables/store';
 import { useI18n } from 'vue-i18n';
 import { useUISettings } from 'dashboard/composables/useUISettings';
@@ -35,6 +36,7 @@ const emit = defineEmits(['close']);
 
 const searchContacts = createContactSearcher();
 const store = useStore();
+const router = useRouter();
 const { t } = useI18n();
 
 const { fetchSignatureFlagFromUISettings } = useUISettings();
@@ -43,6 +45,7 @@ const popoverRef = ref(null);
 const contacts = ref([]);
 const selectedContact = ref(null);
 const targetInbox = ref(null);
+const targetTeam = ref(null);
 const isCreatingContact = ref(false);
 const isFetchingInboxes = ref(false);
 const isSearching = ref(false);
@@ -71,6 +74,7 @@ const globalConfig = useMapGetter('globalConfig/get');
 const uiFlags = useMapGetter('contactConversations/getUIFlags');
 const messageSignature = useMapGetter('getMessageSignature');
 const inboxesList = useMapGetter('inboxes/getInboxes');
+const teamsList = useMapGetter('teams/getTeams');
 
 const sendWithSignature = computed(() =>
   fetchSignatureFlagFromUISettings(targetInbox.value?.channelType)
@@ -150,9 +154,14 @@ const handleTargetInbox = inbox => {
   resetContacts();
 };
 
+const handleTargetTeam = team => {
+  targetTeam.value = team;
+};
+
 const clearSelectedContact = () => {
   selectedContact.value = null;
   targetInbox.value = null;
+  targetTeam.value = null;
   clearFormState();
 };
 
@@ -164,6 +173,7 @@ const closeCompose = () => {
     selectedContact.value = null;
   }
   targetInbox.value = null;
+  targetTeam.value = null;
   resetContacts();
 };
 
@@ -185,6 +195,13 @@ const createConversation = async ({ payload, isFromWhatsApp }) => {
       message: t('COMPOSE_NEW_CONVERSATION.FORM.GO_TO_CONVERSATION'),
     };
     discardCompose();
+    if (data.existing_conversation) {
+      useAlert(
+        t('COMPOSE_NEW_CONVERSATION.FORM.EXISTING_CONVERSATION_MESSAGE')
+      );
+      router.push(action.to);
+      return true;
+    }
     useAlert(t('COMPOSE_NEW_CONVERSATION.FORM.SUCCESS_MESSAGE'), action);
     return true; // Return success
   } catch (error) {
@@ -204,6 +221,7 @@ const onPopoverShow = () => {
   // Cache-aware refetch, so newly synced WhatsApp templates show up here
   // even if the account-cache-invalidated websocket event was missed.
   store.dispatch('inboxes/get');
+  store.dispatch('teams/get');
 };
 
 const onPopoverHide = () => {
@@ -260,6 +278,8 @@ onMounted(() => resetContacts());
         :current-user="currentUser"
         :selected-contact="selectedContact"
         :target-inbox="targetInbox"
+        :target-team="targetTeam"
+        :teams="teamsList"
         :is-creating-contact="isCreatingContact"
         :is-fetching-inboxes="isFetchingInboxes"
         :is-direct-uploads-enabled="directUploadsEnabled"
@@ -271,6 +291,7 @@ onMounted(() => resetContacts());
         @reset-contact-search="resetContacts"
         @update-selected-contact="handleSelectedContact"
         @update-target-inbox="handleTargetInbox"
+        @update-target-team="handleTargetTeam"
         @clear-selected-contact="clearSelectedContact"
         @create-conversation="createConversation"
         @discard="discardCompose"

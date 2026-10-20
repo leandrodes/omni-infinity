@@ -150,7 +150,7 @@ const stripTrailingBlankLine = body =>
  * @returns {string} - The signature with the delimiter added.
  */
 function appendDelimiter(signature) {
-  return `${SIGNATURE_DELIMITER}\n\n${cleanSignature(signature)}`;
+  return cleanSignature(signature);
 }
 
 /**
@@ -211,7 +211,8 @@ export function appendSignature(body, signature, channelType) {
     return body;
   }
 
-  return `${body.trimEnd()}\n\n${appendDelimiter(cleanedSignature)}`;
+  const separator = body.trim() ? '\n' : '';
+  return `${body.trimEnd()}${separator}${appendDelimiter(cleanedSignature)}`;
 }
 
 /**

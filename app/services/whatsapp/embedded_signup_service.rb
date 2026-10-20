@@ -5,7 +5,6 @@ class Whatsapp::EmbeddedSignupService
     @waba_id = params[:waba_id]
     @phone_number_id = params[:phone_number_id]
     @inbox_id = inbox_id
-    @is_coexistence = ActiveModel::Type::Boolean.new.cast(params[:is_coexistence])
   end
 
   def perform
@@ -19,10 +18,10 @@ class Whatsapp::EmbeddedSignupService
     # 1. Reauthorization flow updates an existing channel (not a create), so after_commit on: :create won't trigger
     # 2. We need to run check_channel_health_and_prompt_reauth after webhook setup completes
     # 3. The channel is marked with source: 'embedded_signup' to skip the after_commit callback
-    channel.setup_webhooks(is_coexistence: @is_coexistence)
-    # Skip health check on reauth (avoids false disconnect emails) and on coexistence signups
-    # (Meta's health data can lag several minutes behind a fresh FINISH event).
-    check_channel_health_and_prompt_reauth(channel) if @inbox_id.blank? && !@is_coexistence
+    channel.setup_webhooks
+    # Skip health check on reauth to avoid false disconnect emails while Meta's
+    # health data catches up with a fresh FINISH event.
+    check_channel_health_and_prompt_reauth(channel) if @inbox_id.blank?
     channel
 
   rescue StandardError => e
@@ -42,9 +41,9 @@ class Whatsapp::EmbeddedSignupService
     ).perform
   end
 
-  # When phone_number_id is omitted (coexistence completions can leave it blank), this lets
-  # PhoneInfoService match the WABA number against the channel being reauthorized instead of
-  # arbitrarily taking the first number, which would misidentify a WABA with multiple numbers.
+  # When phone_number_id is omitted, this lets PhoneInfoService match the WABA
+  # number against the channel being reauthorized instead of arbitrarily taking
+  # the first number, which would misidentify a WABA with multiple numbers.
   def reauthorizing_channel
     return nil if @inbox_id.blank?
 

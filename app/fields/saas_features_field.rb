@@ -28,7 +28,13 @@ class SaasFeaturesField < Administrate::Field::Base
 
   # Features that either already have their own SaaS toggle or are Captain/
   # enterprise-adjacent and should not show up under "Outras funcionalidades".
-  HIDDEN_OTHER_FEATURES = (SAAS_FEATURES + %w[campaigns captain_tasks]).freeze
+  HIDDEN_OTHER_FEATURES = (SAAS_FEATURES + %w[
+    campaigns captain_tasks
+    captain_integration captain_integration_v2
+    linear_integration notion_integration channel_tiktok
+    shopify_integration whatsapp_embedded_signup
+    whatsapp_embedded_signup_inbox_creation
+  ]).freeze
 
   OTHER_FEATURE_LABELS = {
     'inbound_emails' => 'E-mails recebidos',
@@ -56,18 +62,14 @@ class SaasFeaturesField < Administrate::Field::Base
     'custom_reply_email' => 'E-mail de resposta personalizado',
     'custom_reply_domain' => 'Domínio de resposta personalizado',
     'branded_email_templates' => 'Modelos de e-mail com marca',
-    'linear_integration' => 'Integração com Linear',
     'chatwoot_v4' => 'Chatwoot V4',
     'channel_instagram' => 'Canal do Instagram',
     'crm_integration' => 'Integração de CRM',
-    'notion_integration' => 'Integração com Notion',
     'whatsapp_campaign' => 'Campanha de WhatsApp',
     'assignment_v2' => 'Atribuição V2',
-    'channel_tiktok' => 'Canal do TikTok',
     'whatsapp_manual_transfer' => 'Transferência manual de WhatsApp',
     'data_import' => 'Importação de dados',
     'api_and_webhooks' => 'API e Webhooks',
-    'whatsapp_embedded_signup_inbox_creation' => 'Criação de inbox via Embedded Signup',
     'delayed_automations' => 'Automações com atraso'
   }.freeze
 

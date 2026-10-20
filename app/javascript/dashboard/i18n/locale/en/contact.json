@@ -624,6 +624,7 @@
     },
     "FORM": {
       "GO_TO_CONVERSATION": "View",
+      "EXISTING_CONVERSATION_MESSAGE": "This contact already has an open conversation. Opening the existing conversation.",
       "SUCCESS_MESSAGE": "The message was sent successfully!",
       "ERROR_MESSAGE": "An error occurred while creating the conversation. Please try again later.",
       "NO_INBOX_ALERT": "There are no available inboxes to start a conversation with this contact.",
@@ -631,6 +632,10 @@
         "LABEL": "To:",
         "TAG_INPUT_PLACEHOLDER": "Enter at least 2 characters to search by name, email, or phone number",
         "CONTACT_CREATING": "Creating contact..."
+      },
+      "TEAM_SELECTOR": {
+        "LABEL": "Team:",
+        "BUTTON": "Assign team"
       },
       "INBOX_SELECTOR": {
         "LABEL": "Via:",

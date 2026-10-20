@@ -83,7 +83,6 @@ describe('useWhatsappEmbeddedSignup', () => {
       business_id: 'biz-1',
       waba_id: 'waba-1',
       phone_number_id: 'phone-1',
-      is_coexistence: false,
     });
     expect(setupFacebookSdk).toHaveBeenCalledWith('app-id', 'v22.0');
     expect(initWhatsAppEmbeddedSignup).toHaveBeenCalledWith('config-id');
@@ -97,10 +96,7 @@ describe('useWhatsappEmbeddedSignup', () => {
     const result = runEmbeddedSignup();
 
     // Business data lands first, while FB.login is still pending.
-    emit({
-      event: 'FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING',
-      data: VALID_BUSINESS,
-    });
+    emit({ event: 'FINISH', data: VALID_BUSINESS });
     code.resolve('late-code');
 
     await expect(result).resolves.toEqual({
@@ -108,11 +104,10 @@ describe('useWhatsappEmbeddedSignup', () => {
       business_id: 'biz-1',
       waba_id: 'waba-1',
       phone_number_id: 'phone-1',
-      is_coexistence: true,
     });
   });
 
-  it('resolves a coexistence completion that only carries waba_id', async () => {
+  it('rejects a coexistence completion as unsupported', async () => {
     initWhatsAppEmbeddedSignup.mockResolvedValue('auth-code');
 
     const { runEmbeddedSignup } = useWhatsappEmbeddedSignup();
@@ -124,13 +119,9 @@ describe('useWhatsappEmbeddedSignup', () => {
       data: { waba_id: 'waba-1' },
     });
 
-    await expect(result).resolves.toEqual({
-      code: 'auth-code',
-      business_id: '',
-      waba_id: 'waba-1',
-      phone_number_id: '',
-      is_coexistence: true,
-    });
+    await expect(result).rejects.toThrow(
+      'INBOX_MGMT.ADD.WHATSAPP.EMBEDDED_SIGNUP.UNSUPPORTED_COMPLETION'
+    );
   });
 
   it('defaults phone_number_id to an empty string when absent', async () => {
@@ -196,6 +187,7 @@ describe('useWhatsappEmbeddedSignup', () => {
     'FINISH_ONLY_WABA',
     'FINISH_OBO_MIGRATION',
     'FINISH_GRANT_ONLY_API_ACCESS',
+    'FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING',
   ])('rejects the %s completion instead of hanging', async event => {
     initWhatsAppEmbeddedSignup.mockReturnValue(createDeferred().promise);
 

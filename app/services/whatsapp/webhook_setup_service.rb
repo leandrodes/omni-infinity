@@ -1,12 +1,11 @@
 class Whatsapp::WebhookSetupService
   attr_reader :registration_error
 
-  def initialize(channel, waba_id = nil, access_token = nil, is_coexistence: nil)
+  def initialize(channel, waba_id = nil, access_token = nil)
     @channel = channel
     @waba_id = waba_id || channel.provider_config['business_account_id']
     @access_token = access_token || channel.provider_config['api_key']
     @api_client = Whatsapp::FacebookApiClient.new(@access_token)
-    @is_coexistence = is_coexistence
   end
 
   def perform
@@ -24,16 +23,9 @@ class Whatsapp::WebhookSetupService
 
   private
 
-  # Coexistence numbers come pre-registered, so /register is redundant. @is_coexistence (from the
-  # FE's FINISH event) skips the health API call entirely; the is_on_biz_app fallback only runs for
-  # callers that pass no signal at all (nil) — manual setup, voice toggle, direct webhook
-  # re-registration — since an explicit `false` already means the FE positively ruled out coexistence.
-  # Otherwise register only when the number is neither connected nor ownership-verified, or when
-  # Meta still reports a pending provisioning state.
+  # Register only when the number is neither connected nor ownership-verified,
+  # or when Meta still reports a pending provisioning state.
   def should_register_phone_number?
-    return false if @is_coexistence
-    return false if @is_coexistence.nil? && health_data[:is_on_biz_app]
-
     !phone_number_verified? || phone_number_needs_registration?
   end
 
@@ -83,7 +75,7 @@ class Whatsapp::WebhookSetupService
 
   # Subscribe to `calls` only when voice calling is enabled on the inbox
   def subscribed_fields
-    fields = %w[messages smb_message_echoes]
+    fields = %w[messages]
     fields << 'calls' if calls_enabled_on_waba?
     fields
   end

@@ -15,6 +15,11 @@ import ContentTemplateSelector from './ContentTemplateSelector.vue';
 const props = defineProps({
   attachedFiles: { type: Array, default: () => [] },
   isWhatsappInbox: { type: Boolean, default: false },
+  isUnofficialWhatsappInbox: { type: Boolean, default: false },
+  isRecordingAudio: { type: Boolean, default: false },
+  recordingAudioDurationText: { type: String, default: '00:00' },
+  // eslint-disable-next-line vue/no-unused-properties
+  recordingAudioState: { type: String, default: '' },
   isEmailOrWebWidgetInbox: { type: Boolean, default: false },
   isTwilioSmsInbox: { type: Boolean, default: false },
   isTwilioWhatsAppInbox: { type: Boolean, default: false },
@@ -40,6 +45,7 @@ const emit = defineEmits([
   'addSignature',
   'removeSignature',
   'attachFile',
+  'toggleAudioRecorder',
 ]);
 
 const { t } = useI18n();
@@ -61,6 +67,7 @@ const EmojiIconPicker = defineAsyncComponent(
 const {
   fetchSignatureFlagFromUISettings,
   setSignatureFlagForInbox,
+  agentsCanDisableSignature,
   isEditorHotKeyEnabled,
 } = useUISettings();
 
@@ -74,7 +81,10 @@ const showTwilioContentTemplates = computed(() => {
 
 const shouldShowEmojiButton = computed(() => {
   return (
-    !props.isWhatsappInbox && !props.isTwilioWhatsAppInbox && !props.hasNoInbox
+    !props.isWhatsappInbox &&
+    !props.isTwilioWhatsAppInbox &&
+    !props.hasNoInbox &&
+    !props.isRecordingAudio
   );
 });
 
@@ -84,7 +94,11 @@ const isRegularMessageMode = computed(() => {
 
 const shouldShowSignatureButton = computed(() => {
   return (
-    props.hasSelectedInbox && isRegularMessageMode.value && !props.voiceEnabled
+    agentsCanDisableSignature.value &&
+    props.hasSelectedInbox &&
+    isRegularMessageMode.value &&
+    !props.voiceEnabled &&
+    Boolean(props.messageSignature)
   );
 });
 
@@ -224,7 +238,7 @@ useEventListener(document, 'paste', onPaste);
         />
       </div>
       <FileUpload
-        v-if="isEmailOrWebWidgetInbox"
+        v-if="isEmailOrWebWidgetInbox || isUnofficialWhatsappInbox"
         ref="uploadAttachment"
         input-id="composeNewConversationAttachment"
         :size="4096 * 4096"
@@ -245,6 +259,20 @@ useEventListener(document, 'paste', onPaste);
           class="!w-10 relative"
         />
       </FileUpload>
+      <Button
+        v-if="isUnofficialWhatsappInbox"
+        :icon="isRecordingAudio ? 'i-lucide-square' : 'i-lucide-mic'"
+        :color="isRecordingAudio ? 'ruby' : 'slate'"
+        size="sm"
+        class="!w-10"
+        @click="emit('toggleAudioRecorder')"
+      />
+      <span
+        v-if="isRecordingAudio"
+        class="text-xs font-medium text-n-ruby-11 tabular-nums"
+      >
+        {{ recordingAudioDurationText }}
+      </span>
       <Button
         v-if="shouldShowSignatureButton"
         icon="i-lucide-signature"
@@ -269,7 +297,7 @@ useEventListener(document, 'paste', onPaste);
         :label="sendButtonLabel"
         size="sm"
         class="!text-xs font-medium"
-        :disabled="isLoading || disableSendButton"
+        :disabled="isLoading || disableSendButton || isRecordingAudio"
         :is-loading="isLoading"
         @click="emit('sendMessage')"
       />

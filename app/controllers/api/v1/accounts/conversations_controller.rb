@@ -39,8 +39,12 @@ class Api::V1::Accounts::ConversationsController < Api::V1::Accounts::BaseContro
 
   def create
     ActiveRecord::Base.transaction do
-      @conversation = ConversationBuilder.new(params: params, contact_inbox: @contact_inbox).perform
-      Messages::MessageBuilder.new(Current.user, @conversation, params[:message]).perform if params[:message].present?
+      @existing_whatsapp_conversation = find_existing_whatsapp_conversation
+      @conversation = @existing_whatsapp_conversation ||
+                      ConversationBuilder.new(params: params, contact_inbox: @contact_inbox).perform
+      # Reusing an existing WhatsApp conversation only redirects the agent to it;
+      # the message composed in the new-conversation form must not be sent.
+      Messages::MessageBuilder.new(Current.user, @conversation, params[:message]).perform if params[:message].present? && @existing_whatsapp_conversation.blank?
     end
   end
 
@@ -137,6 +141,13 @@ class Api::V1::Accounts::ConversationsController < Api::V1::Accounts::BaseContro
   end
 
   private
+
+  def find_existing_whatsapp_conversation
+    inbox = @contact_inbox&.inbox
+    return unless inbox&.whatsapp? || inbox&.unofficial_whatsapp? || inbox&.twilio_whatsapp?
+
+    @contact_inbox.conversations.where.not(status: :resolved).order(last_activity_at: :desc).first
+  end
 
   def permitted_update_params
     # TODO: Move the other conversation attributes to this method and remove specific endpoints for each attribute

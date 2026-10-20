@@ -119,7 +119,7 @@ class Api::V1::Accounts::InboxesController < Api::V1::Accounts::BaseController
   end
 
   def allowed_channel_types
-    %w[web_widget api email line telegram whatsapp sms unofficial_whatsapp]
+    %w[web_widget api email telegram whatsapp sms unofficial_whatsapp]
   end
 
   def update_inbox_working_hours
@@ -226,7 +226,6 @@ class Api::V1::Accounts::InboxesController < Api::V1::Accounts::BaseController
       'web_widget' => Channel::WebWidget,
       'api' => Channel::Api,
       'email' => Channel::Email,
-      'line' => Channel::Line,
       'telegram' => Channel::Telegram,
       'whatsapp' => Channel::Whatsapp,
       'sms' => Channel::Sms,

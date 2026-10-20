@@ -102,11 +102,18 @@ const setQuotedReplyFlagForInbox = (channelType, value, updateUISettings) => {
  * @param {Object} uiSettings - Reactive UI settings object.
  * @returns {boolean} The value of the signature enabled flag.
  */
-const fetchSignatureFlagFromUISettings = (channelType, uiSettings) => {
+const fetchSignatureFlagFromUISettings = (
+  channelType,
+  uiSettings,
+  accountDefault = true,
+  agentsCanDisableSignature = true
+) => {
   if (!channelType) return false;
+  if (!agentsCanDisableSignature) return true;
 
   const slugifiedChannel = slugifyChannel(channelType);
-  return uiSettings.value[`${slugifiedChannel}_signature_enabled`];
+  const value = uiSettings.value[`${slugifiedChannel}_signature_enabled`];
+  return value === undefined ? accountDefault : value;
 };
 
 const fetchQuotedReplyFlagFromUISettings = (channelType, uiSettings) => {
@@ -141,6 +148,18 @@ export function useUISettings() {
   const getters = useStoreGetters();
   const store = useStore();
   const uiSettings = computed(() => getters.getUISettings.value);
+  const currentAccountId = computed(() => getters.getCurrentAccountId?.value);
+  // The auth store's account entries are a lightweight profile summary and do
+  // not include account settings. Read the full account from the accounts store
+  // so signature settings stay reactive after an admin updates them.
+  const currentAccount = computed(() => {
+    const id = currentAccountId.value;
+    return id ? getters['accounts/getAccount']?.value?.(id) : null;
+  });
+  const agentsCanDisableSignature = computed(
+    () =>
+      currentAccount.value?.settings?.signature_agents_can_disable === true
+  );
 
   const updateUISettings = (settings = {}) => {
     store.dispatch('updateUISettings', {
@@ -169,10 +188,18 @@ export function useUISettings() {
     isContactSidebarItemOpen: key => !!uiSettings.value[key],
     toggleSidebarUIState: key =>
       toggleSidebarUIState(key, uiSettings, updateUISettings),
-    setSignatureFlagForInbox: (channelType, value) =>
-      setSignatureFlagForInbox(channelType, value, updateUISettings),
+    agentsCanDisableSignature,
+    setSignatureFlagForInbox: (channelType, value) => {
+      if (!agentsCanDisableSignature.value) return;
+      setSignatureFlagForInbox(channelType, value, updateUISettings);
+    },
     fetchSignatureFlagFromUISettings: channelType =>
-      fetchSignatureFlagFromUISettings(channelType, uiSettings),
+      fetchSignatureFlagFromUISettings(
+        channelType,
+        uiSettings,
+        true,
+        agentsCanDisableSignature.value
+      ),
     setQuotedReplyFlagForInbox: (channelType, value) =>
       setQuotedReplyFlagForInbox(channelType, value, updateUISettings),
     fetchQuotedReplyFlagFromUISettings: channelType =>

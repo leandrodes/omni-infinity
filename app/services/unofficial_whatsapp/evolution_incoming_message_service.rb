@@ -13,6 +13,14 @@ class UnofficialWhatsapp::EvolutionIncomingMessageService
     5 => 'read'
   }.freeze
 
+  STATUS_LABELS = {
+    'SERVER_ACK' => 'sent',
+    'DELIVERY_ACK' => 'delivered',
+    'READ' => 'read',
+    'PLAYED' => 'read',
+    'ERROR' => 'failed'
+  }.freeze
+
   DEFAULT_OVERSIZED_MESSAGE = 'Um arquivo foi recebido, mas não pôde ser processado por exceder o limite de tamanho permitido. Solicite o reenvio por outro meio.'.freeze
 
   def perform
@@ -54,13 +62,17 @@ class UnofficialWhatsapp::EvolutionIncomingMessageService
     key = payload['key'] || {}
     return if truthy?(key['fromMe'])
 
-    remote_jid = key['remoteJid'].to_s
+    remote_jid = alternative_jid(key) || key['remoteJid'].to_s
     return if remote_jid.blank?
 
     group = remote_jid.end_with?('@g.us')
     return if group && channel.ignore_groups
 
-    sender_jid = group ? (key['participant'] || payload['participant']).to_s : remote_jid
+    sender_jid = if group
+                   alternative_jid(key, 'participantAlt') || (key['participant'] || payload['participant']).to_s
+                 else
+                   remote_jid
+                 end
     return if sender_jid.blank?
 
     message_node = normalize_message_node(payload['message'])
@@ -99,16 +111,32 @@ class UnofficialWhatsapp::EvolutionIncomingMessageService
     updates.each do |update|
       next unless update.is_a?(Hash)
 
-      status = STATUS_MAP[update.dig('update', 'status').to_i]
+      status = status_from(update)
       next if status.blank?
 
-      message_ids = Array(update.dig('key', 'id')).compact_blank
+      message_ids = message_ids_from(update)
       next if message_ids.empty?
 
       Message.where(inbox_id: inbox.id, source_id: message_ids, message_type: :outgoing).find_each do |message|
         Messages::StatusUpdateService.new(message, status).perform
       end
     end
+  end
+
+  def status_from(update)
+    raw = update.dig('update', 'status') || update['status']
+    return if raw.blank?
+    return STATUS_MAP[raw.to_i] if raw.to_s.match?(/\A\d+\z/)
+
+    STATUS_LABELS[raw.to_s.upcase]
+  end
+
+  def message_ids_from(update)
+    [update.dig('key', 'id'), update['keyId']].compact_blank.uniq
+  end
+
+  def alternative_jid(key, field = 'remoteJidAlt')
+    key[field].presence || key['senderPn'].presence
   end
 
   def handle_connection_update

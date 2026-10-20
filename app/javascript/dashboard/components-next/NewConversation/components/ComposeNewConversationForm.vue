@@ -1,5 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { DirectUpload } from 'activestorage';
 import { useVuelidate } from '@vuelidate/core';
 import { required, requiredIf } from '@vuelidate/validators';
 import { INBOX_TYPES, isVoiceCallEnabled } from 'dashboard/helper/inbox';
@@ -15,10 +17,15 @@ import {
   prepareWhatsAppMessagePayload,
 } from 'dashboard/components-next/NewConversation/helpers/composeConversationHelper.js';
 
+import { useAlert } from 'dashboard/composables';
+import { useUISettings } from 'dashboard/composables/useUISettings';
 import { useCopilotReply } from 'dashboard/composables/useCopilotReply';
 import { useKeyboardEvents } from 'dashboard/composables/useKeyboardEvents';
+import { setDirectUploadAuthHeaders } from 'dashboard/helper/directUploadsHelper';
+import { AUDIO_FORMATS } from 'shared/constants/messages';
 
 import ContactSelector from './ContactSelector.vue';
+import TeamSelector from './TeamSelector.vue';
 import InboxSelector from './InboxSelector.vue';
 import EmailOptions from './EmailOptions.vue';
 import MessageEditor from './MessageEditor.vue';
@@ -26,12 +33,15 @@ import ActionButtons from './ActionButtons.vue';
 import InboxEmptyState from './InboxEmptyState.vue';
 import AttachmentPreviews from './AttachmentPreviews.vue';
 import CopilotReplyBottomPanel from 'dashboard/components/widgets/WootWriter/CopilotReplyBottomPanel.vue';
+import AudioRecorder from 'dashboard/components/widgets/WootWriter/AudioRecorder.vue';
 
 const props = defineProps({
   contacts: { type: Array, default: () => [] },
   contactId: { type: String, default: null },
   selectedContact: { type: Object, default: null },
   targetInbox: { type: Object, default: null },
+  targetTeam: { type: Object, default: null },
+  teams: { type: Array, default: () => [] },
   currentUser: { type: Object, default: null },
   isCreatingContact: { type: Boolean, default: false },
   isFetchingInboxes: { type: Boolean, default: false },
@@ -50,11 +60,15 @@ const emit = defineEmits([
   'discard',
   'updateSelectedContact',
   'updateTargetInbox',
+  'updateTargetTeam',
   'clearSelectedContact',
   'createConversation',
 ]);
 
 const DEFAULT_FORMATTING = 'Context::Default';
+
+const { t } = useI18n();
+const { agentsCanDisableSignature } = useUISettings();
 
 const copilot = useCopilotReply();
 
@@ -88,6 +102,8 @@ const inboxTypes = computed(() => ({
   isTwilioWhatsapp:
     props.targetInbox?.channelType === INBOX_TYPES.TWILIO &&
     props.targetInbox?.medium === 'whatsapp',
+  isUnofficialWhatsapp:
+    props.targetInbox?.channelType === INBOX_TYPES.UNOFFICIAL_WHATSAPP,
 }));
 
 const whatsappMessageTemplates = computed(() =>
@@ -100,6 +116,17 @@ const inboxChannelType = computed(() => props.targetInbox?.channelType || '');
 
 const inboxMedium = computed(() => props.targetInbox?.medium || '');
 
+const isRecordingAudio = ref(false);
+const recordingAudioState = ref('');
+const recordingAudioDurationText = ref('00:00');
+const audioRecorderRef = ref(null);
+
+const audioRecordFormat = computed(() => AUDIO_FORMATS.OGG);
+
+const hasAttachments = computed(
+  () => state.attachedFiles.length > 0 || isRecordingAudio.value
+);
+
 const voiceCallEnabled = computed(() => isVoiceCallEnabled(props.targetInbox));
 
 const effectiveChannelType = computed(() =>
@@ -109,7 +136,13 @@ const effectiveChannelType = computed(() =>
 const validationRules = computed(() => ({
   selectedContact: { required },
   targetInbox: { required },
-  message: { required: requiredIf(!inboxTypes.value.isWhatsapp) },
+  message: {
+    required: requiredIf(
+      !inboxTypes.value.isWhatsapp &&
+        !inboxTypes.value.isTwilioWhatsapp &&
+        !hasAttachments.value
+    ),
+  },
   subject: { required: requiredIf(inboxTypes.value.isEmail) },
 }));
 
@@ -140,6 +173,7 @@ const newMessagePayload = () => {
     currentUser: props.currentUser,
     attachedFiles,
     directUploadsEnabled: props.isDirectUploadsEnabled,
+    teamId: props.targetTeam?.id,
   });
 };
 
@@ -277,8 +311,102 @@ const handleAttachFile = files => {
   state.attachedFiles = files;
 };
 
+const handleTargetTeam = team => {
+  emit('updateTargetTeam', team);
+};
+
+const resetAudioRecorder = () => {
+  recordingAudioDurationText.value = '00:00';
+  isRecordingAudio.value = false;
+  recordingAudioState.value = '';
+  state.attachedFiles = state.attachedFiles.filter(
+    file => !file.isVoiceMessage
+  );
+};
+
+const toggleAudioRecorder = () => {
+  if (isRecordingAudio.value) {
+    audioRecorderRef.value?.stopRecording();
+    resetAudioRecorder();
+  } else {
+    isRecordingAudio.value = true;
+  }
+};
+
+const onRecordProgressChanged = duration => {
+  recordingAudioDurationText.value = duration;
+};
+
+const attachRecordedAudio = file => {
+  if (!props.isDirectUploadsEnabled) {
+    state.attachedFiles = [
+      ...state.attachedFiles,
+      {
+        resource: {
+          id: `audio-${Date.now()}`,
+          name: file.name,
+          type: file.type,
+          file,
+        },
+        isVoiceMessage: true,
+      },
+    ];
+    return;
+  }
+
+  const upload = new DirectUpload(file, '/rails/active_storage/direct_uploads', {
+    directUploadWillCreateBlobWithXHR: xhr => setDirectUploadAuthHeaders(xhr),
+  });
+
+  upload.create((error, blob) => {
+    if (error) {
+      useAlert(error);
+      return;
+    }
+    state.attachedFiles = [
+      ...state.attachedFiles,
+      {
+        resource: blob,
+        blobSignedId: blob.signed_id,
+        isVoiceMessage: true,
+      },
+    ];
+  });
+};
+
+const onFinishRecorder = file => {
+  recordingAudioState.value = 'stopped';
+  attachRecordedAudio(file);
+};
+
+const onRecordError = payload => {
+  resetAudioRecorder();
+  const error = payload?.error || payload;
+  const permissionErrors = [
+    'NotAllowedError',
+    'PermissionDeniedError',
+    'SecurityError',
+  ];
+  const unavailableErrors = [
+    'NotFoundError',
+    'DevicesNotFoundError',
+    'NotReadableError',
+    'OverconstrainedError',
+    'NotSupportedError',
+  ];
+
+  if (permissionErrors.includes(error?.name)) {
+    useAlert(t('CONVERSATION.REPLYBOX.MICROPHONE_PERMISSION_DENIED'));
+  } else if (unavailableErrors.includes(error?.name)) {
+    useAlert(t('CONVERSATION.REPLYBOX.MICROPHONE_UNAVAILABLE'));
+  } else {
+    useAlert(t('CONVERSATION.REPLYBOX.AUDIO_CONVERSION_FAILED'));
+  }
+};
+
 const clearForm = () => {
   copilot.reset(false);
+  resetAudioRecorder();
   Object.assign(state, {
     message: '',
     subject: '',
@@ -289,9 +417,27 @@ const clearForm = () => {
   v$.value.$reset();
 };
 
+const ensureMandatorySignature = () => {
+  if (
+    agentsCanDisableSignature.value ||
+    !props.messageSignature ||
+    !state.message
+  ) {
+    return;
+  }
+
+  state.message = appendSignature(
+    state.message,
+    props.messageSignature,
+    effectiveChannelType.value
+  );
+};
+
 const handleSendMessage = async () => {
   const isValid = await v$.value.$validate();
   if (!isValid) return;
+
+  ensureMandatorySignature();
 
   try {
     const success = await emit('createConversation', {
@@ -313,6 +459,7 @@ const handleSendWhatsappMessage = async ({ message, templateParams }) => {
     message,
     templateParams,
     currentUser: props.currentUser,
+    teamId: props.targetTeam?.id,
   });
   await emit('createConversation', {
     payload: whatsappMessagePayload,
@@ -327,6 +474,7 @@ const handleSendTwilioMessage = async ({ message, templateParams }) => {
     message,
     templateParams,
     currentUser: props.currentUser,
+    teamId: props.targetTeam?.id,
   });
   await emit('createConversation', {
     payload: twilioMessagePayload,
@@ -395,6 +543,13 @@ useKeyboardEvents({
         @handle-inbox-action="handleInboxAction"
       />
 
+      <TeamSelector
+        v-if="!showNoInboxAlert"
+        :teams="teams"
+        :target-team="targetTeam"
+        @update-team="handleTargetTeam"
+      />
+
       <EmailOptions
         v-if="inboxTypes.isEmail"
         v-model:cc-emails="state.ccEmails"
@@ -410,8 +565,18 @@ useKeyboardEvents({
         @update-dropdown="handleDropdownUpdate"
       />
 
+      <AudioRecorder
+        v-if="isRecordingAudio"
+        ref="audioRecorderRef"
+        :audio-record-format="audioRecordFormat"
+        @recorder-progress-changed="onRecordProgressChanged"
+        @finish-record="onFinishRecorder"
+        @record-error="onRecordError"
+        @play="recordingAudioState = 'playing'"
+        @pause="recordingAudioState = 'paused'"
+      />
       <MessageEditor
-        v-if="shouldShowMessageEditor"
+        v-else-if="shouldShowMessageEditor"
         v-model="state.message"
         :message-signature="messageSignature"
         :send-with-signature="sendWithSignature"
@@ -439,6 +604,10 @@ useKeyboardEvents({
       v-else
       :attached-files="state.attachedFiles"
       :is-whatsapp-inbox="inboxTypes.isWhatsapp"
+      :is-unofficial-whatsapp-inbox="inboxTypes.isUnofficialWhatsapp"
+      :is-recording-audio="isRecordingAudio"
+      :recording-audio-duration-text="recordingAudioDurationText"
+      :recording-audio-state="recordingAudioState"
       :is-email-or-web-widget-inbox="inboxTypes.isEmailOrWebWidget"
       :is-twilio-sms-inbox="inboxTypes.isTwilioSMS"
       :is-twilio-whats-app-inbox="inboxTypes.isTwilioWhatsapp"
@@ -456,6 +625,7 @@ useKeyboardEvents({
       @add-signature="handleAddSignature"
       @remove-signature="handleRemoveSignature"
       @attach-file="handleAttachFile"
+      @toggle-audio-recorder="toggleAudioRecorder"
       @discard="$emit('discard')"
       @send-message="handleSendMessage"
       @send-whatsapp-message="handleSendWhatsappMessage"

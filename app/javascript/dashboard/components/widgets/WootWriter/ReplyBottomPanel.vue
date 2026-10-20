@@ -140,8 +140,11 @@ export default {
     'requestContactInfoTemplate',
   ],
   setup(props) {
-    const { setSignatureFlagForInbox, fetchSignatureFlagFromUISettings } =
-      useUISettings();
+    const {
+      setSignatureFlagForInbox,
+      fetchSignatureFlagFromUISettings,
+      agentsCanDisableSignature,
+    } = useUISettings();
 
     const uploadRef = ref(false);
 
@@ -169,6 +172,7 @@ export default {
     return {
       setSignatureFlagForInbox,
       fetchSignatureFlagFromUISettings,
+      agentsCanDisableSignature,
       uploadRef,
     };
   },
@@ -245,7 +249,7 @@ export default {
     },
     showMessageSignatureButton() {
       if (this.isEditorDisabled) return false;
-      return !this.isOnPrivateNote;
+      return this.agentsCanDisableSignature && !this.isOnPrivateNote;
     },
     sendWithSignature() {
       // channelType is sourced from inboxMixin

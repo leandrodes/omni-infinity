@@ -29,15 +29,11 @@ export const initializeFacebook = (appId, apiVersion) => {
   });
 };
 
-// Only waba_id is guaranteed: Meta's coexistence FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING
-// event documents data: { waba_id } alone — no business_id or phone_number_id.
 export const isValidBusinessData = businessData => {
   return Boolean(businessData && businessData.waba_id);
 };
 
-const COEXISTENCE_FINISH_EVENT = 'FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING';
-
-const FINISH_EVENTS = ['FINISH', COEXISTENCE_FINISH_EVENT];
+const FINISH_EVENTS = ['FINISH'];
 
 // Terminal events that end the flow without a Cloud API phone number we can build an
 // inbox from. Embedded Signup v4 can emit any of them depending on the products
@@ -47,6 +43,7 @@ const UNSUPPORTED_FINISH_EVENTS = [
   'FINISH_ONLY_WABA',
   'FINISH_OBO_MIGRATION',
   'FINISH_GRANT_ONLY_API_ACCESS',
+  'FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING',
 ];
 
 export const SIGNUP_RESULT = Object.freeze({
@@ -68,10 +65,7 @@ export const classifySignupEvent = data => {
   const errorMessage = data?.error_message;
 
   if (FINISH_EVENTS.includes(event)) {
-    return {
-      type: SIGNUP_RESULT.FINISH,
-      isCoexistence: event === COEXISTENCE_FINISH_EVENT,
-    };
+    return { type: SIGNUP_RESULT.FINISH };
   }
 
   if (UNSUPPORTED_FINISH_EVENTS.includes(event)) {

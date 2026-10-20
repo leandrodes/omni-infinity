@@ -15,49 +15,10 @@ const emit = defineEmits(['back', 'created']);
 const { t } = useI18n();
 const store = useStore();
 
-// Per-channel field list + payload shape, mirroring the standalone settings
-// forms (channels/Line.vue, channels/Telegram.vue). Labels/placeholders reuse
-// the existing INBOX_MGMT translations so there's nothing new to localize.
+// Per-channel field list + payload shape, mirroring the standalone Telegram
+// settings form. Labels/placeholders reuse the existing INBOX_MGMT translations
+// so there's nothing new to localize.
 const FORMS = {
-  line: {
-    fields: [
-      {
-        key: 'lineChannelId',
-        label: t('INBOX_MGMT.ADD.LINE_CHANNEL.LINE_CHANNEL_ID.LABEL'),
-        placeholder: t(
-          'INBOX_MGMT.ADD.LINE_CHANNEL.LINE_CHANNEL_ID.PLACEHOLDER'
-        ),
-      },
-      {
-        key: 'lineChannelSecret',
-        label: t('INBOX_MGMT.ADD.LINE_CHANNEL.LINE_CHANNEL_SECRET.LABEL'),
-        placeholder: t(
-          'INBOX_MGMT.ADD.LINE_CHANNEL.LINE_CHANNEL_SECRET.PLACEHOLDER'
-        ),
-        type: 'password',
-      },
-      {
-        key: 'lineChannelToken',
-        label: t('INBOX_MGMT.ADD.LINE_CHANNEL.LINE_CHANNEL_TOKEN.LABEL'),
-        placeholder: t(
-          'INBOX_MGMT.ADD.LINE_CHANNEL.LINE_CHANNEL_TOKEN.PLACEHOLDER'
-        ),
-        type: 'password',
-      },
-    ],
-    errorMessage: t('INBOX_MGMT.ADD.LINE_CHANNEL.API.ERROR_MESSAGE'),
-    // Inbox name is mandatory for Line; prefill it from the channel label
-    // rather than asking, to keep the form to just the credentials.
-    buildPayload: values => ({
-      name: t(props.channel.labelKey),
-      channel: {
-        type: 'line',
-        line_channel_id: values.lineChannelId,
-        line_channel_secret: values.lineChannelSecret,
-        line_channel_token: values.lineChannelToken,
-      },
-    }),
-  },
   telegram: {
     fields: [
       {
