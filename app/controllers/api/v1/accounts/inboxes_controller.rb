@@ -101,11 +101,19 @@ class Api::V1::Accounts::InboxesController < Api::V1::Accounts::BaseController
   end
 
   # Backend guard: never allow creating an unofficial WhatsApp inbox unless the
-  # super admin has configured WuzAPI. The frontend already hides/fades the
-  # option, this prevents API-level bypass.
+  # selected provider is enabled for the account and configured on the server.
+  # The frontend already hides/blocks the option, this prevents API-level bypass.
   def ensure_channel_configured
-    return unless permitted_params.dig(:channel, :type) == 'unofficial_whatsapp'
-    return if UnofficialWhatsapp::ProviderConfig.wuzapi_configured?
+    return unless params.dig(:channel, :type).to_s == 'unofficial_whatsapp'
+
+    provider = params.dig(:channel, :provider).to_s
+    configured = case provider
+                 when 'wuzapi' then UnofficialWhatsapp::ProviderConfig.wuzapi_configured?
+                 when 'evolution' then UnofficialWhatsapp::ProviderConfig.evolution_configured?
+                 when 'uzapi' then UnofficialWhatsapp::ProviderConfig.uazapi_configured?
+                 else false
+                 end
+    return if configured
 
     render json: { message: I18n.t('errors.inboxes.unofficial_whatsapp.not_configured') }, status: :unprocessable_entity
   end

@@ -395,6 +395,7 @@ Rails.application.routes.draw do
 
           namespace :unofficial_whatsapp do
             post 'instances/:inbox_id', to: 'instances#create'
+            patch 'instances/:inbox_id/provider', to: 'instances#update_provider'
             get 'instances/:inbox_id/qrcode', to: 'instances#qrcode'
             get 'instances/:inbox_id/status', to: 'instances#status'
             post 'instances/:inbox_id/logout', to: 'instances#logout'

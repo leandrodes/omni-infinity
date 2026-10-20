@@ -2,30 +2,30 @@ class Api::V1::Accounts::UnofficialWhatsapp::InstancesController < Api::V1::Acco
   before_action :fetch_inbox
   before_action :ensure_channel!
 
-  # Provisions a WuzAPI user for this inbox and starts a WhatsApp session.
+  # Provisions a remote session for this inbox and starts the WhatsApp pairing.
   # The first call creates the remote session; subsequent calls just reconnect.
   def create
     channel = @inbox.channel
 
-    if channel.instance_token.blank?
-      provision(channel)
-    end
+    provision(channel) unless channel.provider_service.provisioned?
 
     provider = channel.provider_service
     provider.connect
     channel.update!(connection_status: 'connecting')
 
     render json: status_payload(channel)
-  rescue UnofficialWhatsapp::Providers::WuzapiService::WuzapiError => e
+  rescue UnofficialWhatsapp::Providers::WuzapiService::WuzapiError,
+         UnofficialWhatsapp::Providers::EvolutionService::EvolutionError => e
     render json: { message: e.message }, status: :unprocessable_entity
   end
 
   def qrcode
-    response = @inbox.channel.provider_service.qrcode
-    data = response.parsed_response['data'] || {}
+    channel = @inbox.channel
+    service = channel.provider_service
+    response = service.qrcode
 
     if response.success?
-      render json: { qr_code: data['QRCode'] }
+      render json: { qr_code: service.qrcode_from(response) }
     else
       render json: { message: response.body.to_s.first(255) }, status: :unprocessable_entity
     end
@@ -33,16 +33,15 @@ class Api::V1::Accounts::UnofficialWhatsapp::InstancesController < Api::V1::Acco
 
   def status
     channel = @inbox.channel
-    response = channel.provider_service.status
-    data = response.parsed_response['data'] || {}
+    service = channel.provider_service
+    response = service.status
 
     if response.success?
-      logged_in = truthy?(data['loggedIn'])
-      connected = truthy?(data['connected'])
-      new_status = compute_status(channel, logged_in, connected)
+      parsed = service.parse_status(response)
+      new_status = compute_status(channel, parsed[:logged_in], parsed[:connected])
       channel.update!(connection_status: new_status) if channel.connection_status != new_status
 
-      render json: status_payload(channel).merge(connected: connected, logged_in: logged_in)
+      render json: status_payload(channel).merge(connected: parsed[:connected], logged_in: parsed[:logged_in])
     else
       render json: { message: response.body.to_s.first(255) }, status: :unprocessable_entity
     end
@@ -50,14 +49,49 @@ class Api::V1::Accounts::UnofficialWhatsapp::InstancesController < Api::V1::Acco
 
   def logout
     channel = @inbox.channel
-    remote_id = channel.provider_config['wuzapi_user_id']
+    service = channel.provider_service
+    remote_id = remote_id_for(channel, service)
 
-    channel.provider_service.logout
+    service.logout
     # Tear down the remote session so a fresh QR scan is required next time.
-    channel.provider_service.delete_session(remote_id) if remote_id.present?
-    channel.update!(connection_status: 'disconnected', instance_token: nil)
+    service.delete_session(remote_id) if remote_id.present?
+    channel.update!(
+      connection_status: 'disconnected',
+      instance_token: nil,
+      provider_config: channel.provider_config.except(service.remote_id_key)
+    )
 
     render json: status_payload(channel)
+  end
+
+  # Switches the API provider of an existing inbox without recreating it.
+  # The current remote session is torn down and the client must scan a new QR.
+  def update_provider
+    channel = @inbox.channel
+    new_provider = params[:provider].to_s
+
+    unless Channel::UnofficialWhatsapp::PROVIDERS.include?(new_provider)
+      return render json: { message: 'Provedor inválido.' }, status: :unprocessable_entity
+    end
+
+    return render json: status_payload(channel) if channel.provider == new_provider
+
+    unless Current.account.feature_enabled?("saas_channel_#{new_provider}")
+      return render json: { message: I18n.t('errors.inboxes.unofficial_whatsapp.provider_not_enabled') },
+                    status: :unprocessable_entity
+    end
+
+    teardown_session(channel)
+    channel.update!(
+      provider: new_provider,
+      connection_status: 'initial',
+      instance_token: nil,
+      provider_config: channel.provider_config.except('wuzapi_user_id', 'evolution_instance')
+    )
+
+    render json: status_payload(channel)
+  rescue ActiveRecord::RecordInvalid => e
+    render json: { message: e.record.errors.full_messages.to_sentence }, status: :unprocessable_entity
   end
 
   private
@@ -70,8 +104,23 @@ class Api::V1::Accounts::UnofficialWhatsapp::InstancesController < Api::V1::Acco
     )
     channel.update!(
       instance_token: remote[:token],
-      provider_config: channel.provider_config.merge('wuzapi_user_id' => remote[:id])
+      provider_config: channel.provider_config.merge(service.remote_id_key => remote[:id])
     )
+  end
+
+  def teardown_session(channel)
+    service = channel.provider_service
+    remote_id = remote_id_for(channel, service)
+    service.logout
+    service.delete_session(remote_id) if remote_id.present?
+  rescue StandardError => e
+    Rails.logger.warn("UnofficialWhatsapp teardown failed: #{e.class}: #{e.message}")
+  end
+
+  def remote_id_for(channel, service)
+    channel.provider_config[service.remote_id_key]
+  rescue StandardError
+    nil
   end
 
   def status_payload(channel)

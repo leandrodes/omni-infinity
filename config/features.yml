@@ -293,11 +293,11 @@
   column: feature_flags_ext_1
 - name: saas_channel_wuzapi
   display_name: WuzAPI
-  enabled: false
+  enabled: true
   column: feature_flags_ext_1
 - name: saas_channel_evolution
   display_name: Evolution API
-  enabled: false
+  enabled: true
   column: feature_flags_ext_1
 - name: saas_channel_uzapi
   display_name: UzAPI

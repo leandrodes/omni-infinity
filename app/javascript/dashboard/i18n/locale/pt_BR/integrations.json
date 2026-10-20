@@ -403,6 +403,7 @@
       }
     },
     "NOTION": {
+      "NOT_CONFIGURED": "Esta integração ainda não está configurada no servidor. Fale com o Suporte.",
       "HEADER": "Notion",
       "DELETE": {
         "TITLE": "Você tem certeza que deseja excluir a integração com Notion?",

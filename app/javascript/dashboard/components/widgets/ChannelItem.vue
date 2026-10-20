@@ -1,7 +1,6 @@
 <script setup>
 import { computed } from 'vue';
 import { useAccount } from 'dashboard/composables/useAccount';
-import { useMapGetter } from 'dashboard/composables/store';
 import ChannelSelector from '../ChannelSelector.vue';
 
 const props = defineProps({
@@ -18,22 +17,16 @@ const props = defineProps({
 const emit = defineEmits(['channelItemClick']);
 const { isOnChatwootCloud } = useAccount();
 
-const globalConfig = useMapGetter('globalConfig/get');
-
-const isWuzapiConfigured = computed(() =>
-  Boolean(globalConfig.value.wuzapiConfigured)
-);
-
-const hasFbConfigured = computed(() => {
-  return window.chatwootConfig?.fbAppId;
-});
-
-const hasInstagramConfigured = computed(() => {
-  return window.chatwootConfig?.instagramAppId;
-});
-
 const hasTiktokConfigured = computed(() => {
   return window.chatwootConfig?.tiktokAppId;
+});
+
+const hasUnofficialWhatsappProvider = computed(() => {
+  return Boolean(
+    props.enabledFeatures.saas_channel_wuzapi ||
+      props.enabledFeatures.saas_channel_evolution ||
+      props.enabledFeatures.saas_channel_uzapi
+  );
 });
 
 const isActive = computed(() => {
@@ -45,20 +38,18 @@ const isActive = computed(() => {
     return props.enabledFeatures.channel_website;
   }
   if (key === 'facebook') {
-    return props.enabledFeatures.channel_facebook && hasFbConfigured.value;
+    return props.enabledFeatures.channel_facebook;
   }
   if (key === 'email') {
     return props.enabledFeatures.channel_email;
   }
 
   if (key === 'instagram') {
-    return (
-      props.enabledFeatures.channel_instagram && hasInstagramConfigured.value
-    );
+    return props.enabledFeatures.channel_instagram;
   }
 
   if (key === 'tiktok') {
-    return props.enabledFeatures.channel_tiktok && hasTiktokConfigured.value;
+    return props.enabledFeatures.channel_tiktok;
   }
 
   if (key === 'voice') {
@@ -70,7 +61,7 @@ const isActive = computed(() => {
   }
 
   if (key === 'unofficial_whatsapp') {
-    return isWuzapiConfigured.value;
+    return hasUnofficialWhatsappProvider.value;
   }
 
   return [
@@ -88,12 +79,7 @@ const isActive = computed(() => {
   ].includes(key);
 });
 
-const isComingSoon = computed(() => {
-  const { key } = props.channel;
-  // Show "Coming Soon" only if the channel is marked as coming soon
-  // and the corresponding feature flag is not enabled yet.
-  return ['voice'].includes(key) && !isActive.value;
-});
+const isComingSoon = computed(() => false);
 
 const isBeta = computed(() => {
   return ['tiktok', 'voice', 'whatsapp_call'].includes(props.channel.key);

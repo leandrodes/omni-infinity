@@ -201,13 +201,13 @@
   locked: false
 - name: EVOLUTION_ENDPOINT
   display_title: 'Evolution API - Endpoint'
-  description: 'URL base do servidor Evolution API usado pelo canal "WhatsApp Não Oficial". Preenchido manualmente pelo super-admin (ex.: https://evolution.example.com).'
+  description: 'URL base do servidor Evolution API usado pelo canal "WhatsApp API Não Oficial". Para o container interno use http://evolution:8080 (instalado por deploy/install-evolution.sh).'
   value: ''
   type: text
   locked: false
 - name: EVOLUTION_API_KEY
   display_title: 'Evolution API - API Key (Token)'
-  description: 'API Key global (apikey) do servidor Evolution API, usada para provisionar instâncias de WhatsApp. Preenchida manualmente pelo super-admin.'
+  description: 'API Key global (apikey) do servidor Evolution API, usada para provisionar instâncias de WhatsApp. O install-evolution.sh gera e preenche automaticamente.'
   type: secret
   locked: false
 - name: WACALLS_ENDPOINT

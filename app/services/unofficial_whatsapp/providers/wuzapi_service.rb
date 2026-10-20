@@ -3,6 +3,23 @@ class UnofficialWhatsapp::Providers::WuzapiService < UnofficialWhatsapp::Provide
   # which we map onto the outgoing message status (single/double gray/blue ticks).
   DEFAULT_EVENTS = 'Message,ReadReceipt,CallOffer,CallTerminate'.freeze
 
+  def remote_id_key
+    'wuzapi_user_id'
+  end
+
+  def provisioned?
+    channel.instance_token.present? || channel.provider_config['wuzapi_user_id'].present?
+  end
+
+  def qrcode_from(response)
+    response.parsed_response.dig('data', 'QRCode')
+  end
+
+  def parse_status(response)
+    data = response.parsed_response['data'] || {}
+    { connected: truthy?(data['connected']), logged_in: truthy?(data['loggedIn']) }
+  end
+
   def create_session(name:, webhook:, events: DEFAULT_EVENTS, proxy_url: nil)
     remote_token = SecureRandom.hex(24)
     payload = { name: name, token: remote_token, webhook: webhook, events: events }
@@ -323,23 +340,27 @@ class UnofficialWhatsapp::Providers::WuzapiService < UnofficialWhatsapp::Provide
   end
 
   def user_get(path)
-    HTTParty.get("#{endpoint}#{path}", headers: user_headers)
+    HTTParty.get("#{endpoint}#{path}", headers: user_headers, timeout: 20)
   end
 
   def user_post(path, body)
-    HTTParty.post("#{endpoint}#{path}", headers: user_headers, body: body.to_json)
+    HTTParty.post("#{endpoint}#{path}", headers: user_headers, body: body.to_json, timeout: 20)
   end
 
   def admin_post(path, body)
-    HTTParty.post("#{endpoint}#{path}", headers: admin_headers, body: body.to_json)
+    HTTParty.post("#{endpoint}#{path}", headers: admin_headers, body: body.to_json, timeout: 20)
   end
 
   def admin_delete(path)
-    HTTParty.delete("#{endpoint}#{path}", headers: admin_headers)
+    HTTParty.delete("#{endpoint}#{path}", headers: admin_headers, timeout: 20)
   end
 
   def admin_put(path, body)
-    HTTParty.put("#{endpoint}#{path}", headers: admin_headers, body: body.to_json)
+    HTTParty.put("#{endpoint}#{path}", headers: admin_headers, body: body.to_json, timeout: 20)
+  end
+
+  def truthy?(value)
+    value == true || value.to_s == 'true'
   end
 
   class WuzapiError < StandardError; end

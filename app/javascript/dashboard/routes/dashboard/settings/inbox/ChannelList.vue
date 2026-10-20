@@ -10,18 +10,24 @@ import ChannelItem from 'dashboard/components/widgets/ChannelItem.vue';
 
 const { t } = useI18n();
 const router = useRouter();
-const { accountId, currentAccount, isOnChatwootCloud } = useAccount();
+const { accountId, currentAccount } = useAccount();
 
 const globalConfig = useMapGetter('globalConfig/get');
 
 const enabledFeatures = computed(() => currentAccount.value?.features || {});
 
-const hasTiktokConfigured = computed(() => {
-  return window.chatwootConfig?.tiktokAppId;
+const hasUnofficialWhatsappProvider = computed(() => {
+  const features = enabledFeatures.value;
+  return Boolean(
+    features.saas_channel_wuzapi ||
+      features.saas_channel_evolution ||
+      features.saas_channel_uzapi
+  );
 });
 
 const channelList = computed(() => {
   const { apiChannelName } = globalConfig.value;
+  const features = enabledFeatures.value;
   const channels = [
     {
       key: 'website',
@@ -29,26 +35,36 @@ const channelList = computed(() => {
       description: t('INBOX_MGMT.ADD.AUTH.CHANNEL.WEBSITE.DESCRIPTION'),
       icon: 'i-woot-website',
     },
-    {
+  ];
+
+  if (features.channel_facebook) {
+    channels.push({
       key: 'facebook',
       title: t('INBOX_MGMT.ADD.AUTH.CHANNEL.FACEBOOK.TITLE'),
       description: t('INBOX_MGMT.ADD.AUTH.CHANNEL.FACEBOOK.DESCRIPTION'),
       icon: 'i-woot-messenger',
-    },
-    {
-      key: 'whatsapp',
-      title: t('INBOX_MGMT.ADD.AUTH.CHANNEL.WHATSAPP.TITLE'),
-      description: t('INBOX_MGMT.ADD.AUTH.CHANNEL.WHATSAPP.DESCRIPTION'),
-      icon: 'i-woot-whatsapp',
-    },
-    {
+    });
+  }
+
+  channels.push({
+    key: 'whatsapp',
+    title: t('INBOX_MGMT.ADD.AUTH.CHANNEL.WHATSAPP.TITLE'),
+    description: t('INBOX_MGMT.ADD.AUTH.CHANNEL.WHATSAPP.DESCRIPTION'),
+    icon: 'i-woot-whatsapp',
+  });
+
+  if (hasUnofficialWhatsappProvider.value) {
+    channels.push({
       key: 'unofficial_whatsapp',
       title: t('INBOX_MGMT.ADD.AUTH.CHANNEL.UNOFFICIAL_WHATSAPP.TITLE'),
       description: t(
         'INBOX_MGMT.ADD.AUTH.CHANNEL.UNOFFICIAL_WHATSAPP.DESCRIPTION'
       ),
       icon: 'i-woot-whatsapp',
-    },
+    });
+  }
+
+  channels.push(
     {
       key: 'sms',
       title: t('INBOX_MGMT.ADD.AUTH.CHANNEL.SMS.TITLE'),
@@ -72,42 +88,44 @@ const channelList = computed(() => {
       title: t('INBOX_MGMT.ADD.AUTH.CHANNEL.TELEGRAM.TITLE'),
       description: t('INBOX_MGMT.ADD.AUTH.CHANNEL.TELEGRAM.DESCRIPTION'),
       icon: 'i-woot-telegram',
-    },
-    {
+    }
+  );
+
+  if (features.channel_instagram) {
+    channels.push({
       key: 'instagram',
       title: t('INBOX_MGMT.ADD.AUTH.CHANNEL.INSTAGRAM.TITLE'),
       description: t('INBOX_MGMT.ADD.AUTH.CHANNEL.INSTAGRAM.DESCRIPTION'),
       icon: 'i-woot-instagram',
-    },
-  ];
+    });
+  }
 
-  if (hasTiktokConfigured.value) {
+  if (features.channel_tiktok) {
     channels.push({
       key: 'tiktok',
       title: t('INBOX_MGMT.ADD.AUTH.CHANNEL.TIKTOK.TITLE'),
-      description:
-        currentAccount.value &&
-        isOnChatwootCloud.value &&
-        !enabledFeatures.value.channel_tiktok
-          ? t('INBOX_MGMT.ADD.AUTH.CHANNEL.TIKTOK.ACCESS_REQUEST_DESCRIPTION')
-          : t('INBOX_MGMT.ADD.AUTH.CHANNEL.TIKTOK.DESCRIPTION'),
+      description: t('INBOX_MGMT.ADD.AUTH.CHANNEL.TIKTOK.DESCRIPTION'),
       icon: 'i-woot-tiktok',
     });
   }
 
-  channels.push({
-    key: 'voice',
-    title: t('INBOX_MGMT.ADD.AUTH.CHANNEL.VOICE.TITLE'),
-    description: t('INBOX_MGMT.ADD.AUTH.CHANNEL.VOICE.DESCRIPTION'),
-    icon: 'i-woot-voice',
-  });
+  if (features.channel_voice) {
+    channels.push({
+      key: 'voice',
+      title: t('INBOX_MGMT.ADD.AUTH.CHANNEL.VOICE.TITLE'),
+      description: t('INBOX_MGMT.ADD.AUTH.CHANNEL.VOICE.DESCRIPTION'),
+      icon: 'i-woot-voice',
+    });
+  }
 
-  channels.push({
-    key: 'whatsapp_call',
-    title: t('INBOX_MGMT.ADD.AUTH.CHANNEL.WHATSAPP_CALL.TITLE'),
-    description: t('INBOX_MGMT.ADD.AUTH.CHANNEL.WHATSAPP_CALL.DESCRIPTION'),
-    icon: 'i-woot-whatsapp',
-  });
+  if (features.saas_channel_wacalls) {
+    channels.push({
+      key: 'whatsapp_call',
+      title: t('INBOX_MGMT.ADD.AUTH.CHANNEL.WHATSAPP_CALL.TITLE'),
+      description: t('INBOX_MGMT.ADD.AUTH.CHANNEL.WHATSAPP_CALL.DESCRIPTION'),
+      icon: 'i-woot-whatsapp',
+    });
+  }
 
   return channels;
 });

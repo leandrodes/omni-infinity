@@ -37,6 +37,7 @@ services:
     restart: always
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d:ro
     environment:
       - POSTGRES_DB=chatwoot
       - POSTGRES_USER=postgres
@@ -78,6 +79,47 @@ services:
       - WUZAPI_ADMIN_TOKEN=${WUZAPI_ADMIN_TOKEN:-changeme}
     ports:
       - '127.0.0.1:8080:8080'
+
+  evolution:
+    profiles: ["evolution"]
+    image: evoapicloud/evolution-api:v2.1.1
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=1
+      - net.ipv6.conf.default.disable_ipv6=1
+    restart: always
+    depends_on:
+      - postgres
+      - redis
+    env_file: .env
+    environment:
+      - SERVER_URL=http://evolution:8080
+      - AUTHENTICATION_API_KEY=${EVOLUTION_API_KEY}
+      - DATABASE_PROVIDER=postgresql
+      - DATABASE_CONNECTION_URI=postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/evolution?schema=public
+      - DATABASE_SAVE_DATA_INSTANCE=true
+      - DATABASE_SAVE_DATA_NEW_MESSAGE=true
+      - DATABASE_SAVE_MESSAGE_UPDATE=true
+      - DATABASE_SAVE_DATA_CONTACTS=false
+      - DATABASE_SAVE_DATA_CHATS=false
+      - DATABASE_SAVE_DATA_HISTORIC=false
+      - DATABASE_SAVE_DATA_LABELS=false
+      - CACHE_REDIS_ENABLED=false
+      - CACHE_LOCAL_ENABLED=true
+      - CONFIG_SESSION_PHONE_CLIENT=Omni Infinity
+      - CONFIG_SESSION_PHONE_NAME=Chrome
+      - CONFIG_SESSION_PHONE_VERSION=2.3000.1050968285
+      - NODE_OPTIONS=--dns-result-order=ipv4first
+      - QRCODE_LIMIT=30
+      - QRCODE_COLOR=#198754
+      - LANGUAGE=pt-BR
+      - WEBHOOK_GLOBAL_ENABLED=false
+      - DEL_INSTANCE=false
+      - LOG_LEVEL=ERROR
+      - LOG_BAILEYS=error
+    ports:
+      - '127.0.0.1:8081:8080'
+    volumes:
+      - evolution_instances:/evolution/instances
 
   wacalls:
     profiles: ["wacalls"]
@@ -126,6 +168,7 @@ volumes:
   redis_data:
   wuzapi_data:
   wuzapi_files:
+  evolution_instances:
   wacalls_data:
   portainer_data:
   whisper_cache:

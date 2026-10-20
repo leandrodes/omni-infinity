@@ -161,10 +161,14 @@ pt_BR:
         permission_request_failed: 'Falha ao enviar solicitação de permissão de chamada'
     openai:
       invalid_api_key: 'A chave da API da OpenAI é inválida ou revogada. Por favor, verifique sua chave no seu painel da OpenAI.'
+    integrations:
+      not_configured: 'Esta integração ainda não está configurada no servidor. Fale com o Suporte.'
     inboxes:
       limit_exceeded: 'Você atingiu o número máximo de caixas de entrada permitido para esta conta. Entre em contato com o suporte.'
       unofficial_whatsapp:
-        not_configured: 'A integração de WhatsApp não oficial (WuzAPI) não está configurada. Peça a um super administrador para definir o endpoint e o token de administrador do WuzAPI.'
+        not_configured: 'A integração de WhatsApp não oficial não está configurada. Peça a um super administrador para definir o endpoint e o token de administrador.'
+        provider_not_enabled: 'A API selecionada não está habilitada para esta conta. Fale com o Suporte para adquirir.'
+        provider_not_configured: 'A API selecionada não está configurada no servidor. Fale com o Suporte.'
       imap:
         socket_error: Por favor, verifique a conexão de rede, endereço IMAP e tente novamente.
         no_response_error: Por favor, verifique as credenciais de IMAP e tente novamente.

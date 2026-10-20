@@ -135,6 +135,6 @@ class Integrations::App
   end
 
   def notion_enabled?(account)
-    account.feature_enabled?('notion_integration') && GlobalConfigService.load('NOTION_CLIENT_ID', nil).present?
+    account.feature_enabled?('notion_integration')
   end
 end

@@ -21,6 +21,10 @@ class UnofficialWhatsapp extends ApiClient {
   logout(inboxId) {
     return axios.post(`${this.url}/${inboxId}/logout`);
   }
+
+  updateProvider(inboxId, provider) {
+    return axios.patch(`${this.url}/${inboxId}/provider`, { provider });
+  }
 }
 
 export default new UnofficialWhatsapp();

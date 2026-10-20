@@ -38,12 +38,18 @@
         "ERROR": "Por favor, insira um nome completo válido"
       },
       "UNOFFICIAL_WHATSAPP": {
-        "TITLE": "WhatsApp Não Oficial",
-        "DESCRIPTION": "Conecte um número de WhatsApp não oficial. Você escaneará um código QR com o celular para vincular a conta. Esta não é a API oficial do WhatsApp Business.",
+        "TITLE": "WhatsApp API Não Oficial",
+        "DESCRIPTION": "Conecte um número de Whatsapp via QR Code",
         "PROVIDER": {
-          "LABEL": "Provedor de conexão",
-          "PLACEHOLDER": "Selecione o provedor",
-          "ERROR": "Selecione um provedor de conexão",
+          "LABEL": "API",
+          "PLACEHOLDER": "Selecione a API",
+          "ERROR": "Selecione uma API",
+          "DISABLED": "API não habilitada. Fale com o Suporte para adquirir.",
+          "UNAVAILABLE": "API indisponível no momento. Fale com o Suporte.",
+          "SETTINGS_TITLE": "API de conexão",
+          "SETTINGS_HELP": "Troque a API usada por esta caixa de entrada. A conexão atual será encerrada e você precisará ler um novo QR Code.",
+          "SAVE": "Salvar e reconectar",
+          "CHANGED": "API alterada. Escaneie o novo QR Code para conectar.",
           "WUZAPI": "WuzAPI",
           "EVOLUTION": "Evolution API",
           "UZAPI": "UzAPI",
@@ -620,7 +626,7 @@
             "DESCRIPTION": "Atenda seus clientes no WhatsApp"
           },
           "UNOFFICIAL_WHATSAPP": {
-            "TITLE": "WhatsApp via QR Code",
+            "TITLE": "WhatsApp API Não Oficial",
             "DESCRIPTION": "Conecte um número de Whatsapp via QR Code"
           },
           "WHATSAPP_CALL": {

@@ -28,13 +28,7 @@
     <% end %>
 
     <div class="flex items-center justify-between gap-3 p-3 bg-white rounded-lg shadow-sm outline outline-1 outline-n-container">
-      <div class="flex flex-col">
-        <span class="text-sm text-slate-700">Transcrição de Áudio</span>
-        <span class="text-xs text-slate-500">
-          Habilita o uso do nosso Whisper interno (cobrado à parte). Se desabilitado,
-          a conta ainda pode configurar um provedor externo próprio (Groq, OpenAI, Whisper etc.).
-        </span>
-      </div>
+      <span class="text-sm text-slate-700">Transcrição de Áudio</span>
       <span class="flex-shrink-0">
         <%= hidden_field_tag 'account[transcription_allow_system]', '0' %>
         <%= check_box_tag 'account[transcription_allow_system]', '1', f.object.transcription_allow_system,

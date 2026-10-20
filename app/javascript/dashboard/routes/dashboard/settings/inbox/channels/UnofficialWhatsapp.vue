@@ -6,6 +6,7 @@ import { required } from '@vuelidate/validators';
 import router from '../../../../index';
 import { isPhoneE164OrEmpty } from 'shared/helpers/Validators';
 import UnofficialWhatsappAPI from 'dashboard/api/unofficialWhatsapp';
+import { useAccount } from 'dashboard/composables/useAccount';
 
 import NextButton from 'dashboard/components-next/button/Button.vue';
 
@@ -16,13 +17,14 @@ export default {
     NextButton,
   },
   setup() {
-    return { v$: useVuelidate() };
+    const { currentAccount } = useAccount();
+    return { v$: useVuelidate(), currentAccount };
   },
   data() {
     return {
       inboxName: '',
       phoneNumber: '',
-      provider: 'wuzapi',
+      provider: '',
       step: 'form',
       qrCode: '',
       connectionStatus: 'initial',
@@ -38,6 +40,16 @@ export default {
     },
     isConnected() {
       return this.connectionStatus === 'connected';
+    },
+    enabledFeatures() {
+      return this.currentAccount?.features || {};
+    },
+    providerEnabled() {
+      return {
+        wuzapi: Boolean(this.enabledFeatures.saas_channel_wuzapi),
+        evolution: Boolean(this.enabledFeatures.saas_channel_evolution),
+        uzapi: false,
+      };
     },
   },
   validations: {
@@ -55,9 +67,9 @@ export default {
         return;
       }
 
-      if (this.provider === 'uzapi') {
+      if (!this.providerEnabled[this.provider]) {
         useAlert(
-          this.$t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.PROVIDER.UZAPI_NOTICE')
+          this.$t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.PROVIDER.DISABLED')
         );
         return;
       }
@@ -201,25 +213,50 @@ export default {
                   $t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.PROVIDER.PLACEHOLDER')
                 }}
               </option>
-              <option value="wuzapi">
+              <option
+                value="wuzapi"
+                :disabled="!providerEnabled.wuzapi"
+                :class="{ 'text-red-600': !providerEnabled.wuzapi }"
+              >
                 {{ $t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.PROVIDER.WUZAPI') }}
               </option>
-              <option value="evolution">
+              <option
+                value="evolution"
+                :disabled="!providerEnabled.evolution"
+                :class="{ 'text-red-600': !providerEnabled.evolution }"
+              >
                 {{ $t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.PROVIDER.EVOLUTION') }}
               </option>
-              <option value="uzapi" class="text-red-600" disabled>
+              <option
+                value="uzapi"
+                :disabled="!providerEnabled.uzapi"
+                :class="{ 'text-red-600': !providerEnabled.uzapi }"
+              >
                 {{ $t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.PROVIDER.UZAPI') }}
               </option>
             </select>
             <span v-if="v$.provider.$error" class="message">
               {{ $t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.PROVIDER.ERROR') }}
             </span>
-            <span class="mt-2 block text-xs text-red-600">
-              {{
-                $t(
-                  'INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.PROVIDER.UZAPI_NOTICE'
-                )
-              }}
+            <span
+              v-if="!providerEnabled.wuzapi"
+              class="mt-2 block text-xs text-red-600"
+            >
+              WuzAPI — {{ $t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.PROVIDER.DISABLED') }}
+            </span>
+            <span
+              v-if="!providerEnabled.evolution"
+              class="mt-2 block text-xs text-red-600"
+            >
+              Evolution API —
+              {{ $t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.PROVIDER.DISABLED') }}
+            </span>
+            <span
+              v-if="!providerEnabled.uzapi"
+              class="mt-2 block text-xs text-red-600"
+            >
+              UzAPI —
+              {{ $t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.PROVIDER.UNAVAILABLE') }}
             </span>
           </label>
         </div>

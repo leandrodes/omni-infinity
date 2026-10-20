@@ -2,6 +2,11 @@ class Api::V1::Accounts::Notion::AuthorizationsController < Api::V1::Accounts::O
   include NotionConcern
 
   def create
+    if GlobalConfigService.load('NOTION_CLIENT_ID', nil).blank?
+      return render json: { success: false, message: I18n.t('errors.integrations.not_configured') },
+                    status: :unprocessable_entity
+    end
+
     redirect_url = notion_client.auth_code.authorize_url(
       {
         redirect_uri: "#{base_url}/notion/callback",

@@ -186,10 +186,14 @@ en:
         permission_request_failed: 'Failed to send call permission request'
     openai:
       invalid_api_key: 'OpenAI API key is invalid or revoked. Please check your key in your OpenAI dashboard.'
+    integrations:
+      not_configured: 'This integration is not configured on the server yet. Contact Support.'
     inboxes:
       limit_exceeded: 'You have reached the maximum number of inboxes allowed for this account. Please contact support.'
       unofficial_whatsapp:
-        not_configured: 'The unofficial WhatsApp (WuzAPI) integration is not configured. Ask a super admin to set the WuzAPI endpoint and admin token.'
+        not_configured: 'The unofficial WhatsApp integration is not configured. Ask a super admin to set the endpoint and admin token.'
+        provider_not_enabled: 'The selected API is not enabled for this account. Contact support to purchase it.'
+        provider_not_configured: 'The selected API is not configured on the server. Contact support.'
       imap:
         socket_error: Please check the network connection, IMAP address and try again.
         no_response_error: Please check the IMAP credentials and try again.

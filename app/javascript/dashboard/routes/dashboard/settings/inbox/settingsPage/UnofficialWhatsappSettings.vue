@@ -1,6 +1,7 @@
 <script>
 import { mapGetters } from 'vuex';
 import { useAlert } from 'dashboard/composables';
+import { useAccount } from 'dashboard/composables/useAccount';
 import UnofficialWhatsappAPI from 'dashboard/api/unofficialWhatsapp';
 import SettingsFieldSection from 'dashboard/components-next/Settings/SettingsFieldSection.vue';
 import NextButton from 'dashboard/components-next/button/Button.vue';
@@ -18,12 +19,19 @@ export default {
       default: () => ({}),
     },
   },
+  setup() {
+    const { currentAccount } = useAccount();
+    return { currentAccount };
+  },
   data() {
     return {
       connectionStatus: this.inbox.connection_status || 'initial',
       qrCode: '',
       pollTimer: null,
       isWorking: false,
+      activeProvider: this.inbox.provider || '',
+      selectedProvider: this.inbox.provider || '',
+      isSavingProvider: false,
     };
   },
   computed: {
@@ -37,6 +45,22 @@ export default {
     },
     isWaitingForScan() {
       return !this.isConnected;
+    },
+    enabledFeatures() {
+      return this.currentAccount?.features || {};
+    },
+    providerEnabled() {
+      return {
+        wuzapi: Boolean(this.enabledFeatures.saas_channel_wuzapi),
+        evolution: Boolean(this.enabledFeatures.saas_channel_evolution),
+        uzapi: false,
+      };
+    },
+    providerChanged() {
+      return (
+        this.selectedProvider &&
+        this.selectedProvider !== this.activeProvider
+      );
     },
   },
   mounted() {
@@ -58,13 +82,58 @@ export default {
         // keep the last known status
       }
     },
-    applyStatus({ connection_status: status, logged_in: loggedIn }) {
+    applyStatus({ connection_status: status, logged_in: loggedIn, provider }) {
+      if (provider) {
+        if (
+          !this.selectedProvider ||
+          this.selectedProvider === this.activeProvider
+        ) {
+          this.selectedProvider = provider;
+        }
+        this.activeProvider = provider;
+      }
       if (status) {
         this.connectionStatus = status;
       }
       if (status === 'connected' || loggedIn) {
         this.connectionStatus = 'connected';
         this.stopPolling();
+      }
+    },
+    async saveProvider() {
+      if (
+        !this.selectedProvider ||
+        !this.providerEnabled[this.selectedProvider]
+      ) {
+        useAlert(
+          this.$t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.PROVIDER.DISABLED')
+        );
+        return;
+      }
+      if (!this.providerChanged) return;
+
+      this.isSavingProvider = true;
+      try {
+        await UnofficialWhatsappAPI.updateProvider(
+          this.inbox.id,
+          this.selectedProvider
+        );
+        this.activeProvider = this.selectedProvider;
+        useAlert(
+          this.$t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.PROVIDER.CHANGED')
+        );
+        this.connectionStatus = 'initial';
+        this.qrCode = '';
+        this.stopPolling();
+        await this.reconnect();
+      } catch (error) {
+        useAlert(
+          error?.response?.data?.message ||
+            error?.message ||
+            this.$t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.FAILED')
+        );
+      } finally {
+        this.isSavingProvider = false;
       }
     },
     async reconnect() {
@@ -128,49 +197,120 @@ export default {
 </script>
 
 <template>
-  <SettingsFieldSection
-    :label="$t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.TITLE')"
-    :help-text="$t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.DESCRIPTION')"
-  >
-    <div class="flex flex-col gap-4">
-      <div class="flex items-center gap-2">
+  <div class="flex flex-col gap-8">
+    <SettingsFieldSection
+      :label="$t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.PROVIDER.SETTINGS_TITLE')"
+      :help-text="$t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.PROVIDER.SETTINGS_HELP')"
+    >
+      <div class="flex flex-col gap-4">
+        <select v-model="selectedProvider" class="w-full max-w-md">
+          <option value="" disabled>
+            {{
+              $t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.PROVIDER.PLACEHOLDER')
+            }}
+          </option>
+          <option
+            value="wuzapi"
+            :disabled="!providerEnabled.wuzapi"
+            :class="{ 'text-red-600': !providerEnabled.wuzapi }"
+          >
+            {{ $t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.PROVIDER.WUZAPI') }}
+          </option>
+          <option
+            value="evolution"
+            :disabled="!providerEnabled.evolution"
+            :class="{ 'text-red-600': !providerEnabled.evolution }"
+          >
+            {{ $t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.PROVIDER.EVOLUTION') }}
+          </option>
+          <option
+            value="uzapi"
+            :disabled="!providerEnabled.uzapi"
+            :class="{ 'text-red-600': !providerEnabled.uzapi }"
+          >
+            {{ $t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.PROVIDER.UZAPI') }}
+          </option>
+        </select>
+
         <span
-          class="inline-block rounded-full size-2"
-          :class="isConnected ? 'bg-n-teal-9' : 'bg-n-amber-9'"
-        />
-        <span class="text-body-main text-n-slate-12">{{ statusLabel }}</span>
-      </div>
+          v-if="!providerEnabled.wuzapi"
+          class="text-xs text-red-600"
+        >
+          WuzAPI —
+          {{ $t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.PROVIDER.DISABLED') }}
+        </span>
+        <span
+          v-if="!providerEnabled.evolution"
+          class="text-xs text-red-600"
+        >
+          Evolution API —
+          {{ $t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.PROVIDER.DISABLED') }}
+        </span>
+        <span
+          v-if="!providerEnabled.uzapi"
+          class="text-xs text-red-600"
+        >
+          UzAPI —
+          {{ $t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.PROVIDER.UNAVAILABLE') }}
+        </span>
 
-      <div
-        v-if="isWaitingForScan && qrCode"
-        class="flex items-center justify-center p-3 bg-white border rounded-2xl size-56 border-n-weak"
-      >
-        <img
-          :src="qrCode"
-          alt="WhatsApp QR"
-          class="object-contain size-full"
-        />
+        <div>
+          <NextButton
+            :disabled="!providerChanged || isSavingProvider"
+            :is-loading="isSavingProvider"
+            solid
+            blue
+            :label="$t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.PROVIDER.SAVE')"
+            @click="saveProvider"
+          />
+        </div>
       </div>
+    </SettingsFieldSection>
 
-      <div class="flex gap-3">
-        <NextButton
-          v-if="!isConnected"
-          :disabled="isWorking"
-          :is-loading="isWorking"
-          solid
-          blue
-          :label="$t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.SUBMIT_BUTTON')"
-          @click="reconnect"
-        />
-        <NextButton
-          v-else
-          :disabled="isWorking"
-          :is-loading="isWorking"
-          ruby
-          :label="$t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.LOGOUT')"
-          @click="disconnect"
-        />
+    <SettingsFieldSection
+      :label="$t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.TITLE')"
+      :help-text="$t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.DESCRIPTION')"
+    >
+      <div class="flex flex-col gap-4">
+        <div class="flex items-center gap-2">
+          <span
+            class="inline-block rounded-full size-2"
+            :class="isConnected ? 'bg-n-teal-9' : 'bg-n-amber-9'"
+          />
+          <span class="text-body-main text-n-slate-12">{{ statusLabel }}</span>
+        </div>
+
+        <div
+          v-if="isWaitingForScan && qrCode"
+          class="flex items-center justify-center p-3 bg-white border rounded-2xl size-56 border-n-weak"
+        >
+          <img
+            :src="qrCode"
+            alt="WhatsApp QR"
+            class="object-contain size-full"
+          />
+        </div>
+
+        <div class="flex gap-3">
+          <NextButton
+            v-if="!isConnected"
+            :disabled="isWorking"
+            :is-loading="isWorking"
+            solid
+            blue
+            :label="$t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.SUBMIT_BUTTON')"
+            @click="reconnect"
+          />
+          <NextButton
+            v-else
+            :disabled="isWorking"
+            :is-loading="isWorking"
+            ruby
+            :label="$t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.LOGOUT')"
+            @click="disconnect"
+          />
+        </div>
       </div>
-    </div>
-  </SettingsFieldSection>
+    </SettingsFieldSection>
+  </div>
 </template>

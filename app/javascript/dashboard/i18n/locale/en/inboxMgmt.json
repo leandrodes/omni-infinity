@@ -38,12 +38,18 @@
         "ERROR": "Please enter a valid inbox name"
       },
       "UNOFFICIAL_WHATSAPP": {
-        "TITLE": "WhatsApp Unofficial",
-        "DESCRIPTION": "Connect an unofficial WhatsApp number. You will scan a QR code with your phone to link the account. This is not the official WhatsApp Business API.",
+        "TITLE": "Unofficial WhatsApp API",
+        "DESCRIPTION": "Connect a WhatsApp number via QR Code",
         "PROVIDER": {
-          "LABEL": "Connection provider",
-          "PLACEHOLDER": "Select a provider",
-          "ERROR": "Please select a connection provider",
+          "LABEL": "API",
+          "PLACEHOLDER": "Select the API",
+          "ERROR": "Please select an API",
+          "DISABLED": "API not enabled. Contact Support to purchase it.",
+          "UNAVAILABLE": "API currently unavailable. Contact Support.",
+          "SETTINGS_TITLE": "Connection API",
+          "SETTINGS_HELP": "Switch the API used by this inbox. The current connection will be closed and you will need to scan a new QR Code.",
+          "SAVE": "Save and reconnect",
+          "CHANGED": "API changed. Scan the new QR Code to connect.",
           "WUZAPI": "WuzAPI",
           "EVOLUTION": "Evolution API",
           "UZAPI": "UzAPI",
@@ -623,7 +629,7 @@
             "DESCRIPTION": "Support your customers on WhatsApp"
           },
           "UNOFFICIAL_WHATSAPP": {
-            "TITLE": "WhatsApp via QR Code",
+            "TITLE": "Unofficial WhatsApp API",
             "DESCRIPTION": "Connect a WhatsApp number via QR Code"
           },
           "WHATSAPP_CALL": {

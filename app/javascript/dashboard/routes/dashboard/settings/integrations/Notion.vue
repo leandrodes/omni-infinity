@@ -9,6 +9,7 @@ import { useI18n } from 'vue-i18n';
 
 import ButtonNext from 'next/button/Button.vue';
 import notionClient from 'dashboard/api/notion_auth.js';
+import { useAlert } from 'dashboard/composables';
 
 import Integration from './Integration.vue';
 import SettingsLayout from '../SettingsLayout.vue';
@@ -31,12 +32,19 @@ const integrationAction = computed(() => {
 });
 
 const authorize = async () => {
-  const response = await notionClient.generateAuthorization();
-  const {
-    data: { url },
-  } = response;
+  try {
+    const response = await notionClient.generateAuthorization();
+    const {
+      data: { url },
+    } = response;
 
-  window.location.href = url;
+    window.location.href = url;
+  } catch (error) {
+    useAlert(
+      error?.response?.data?.message ||
+        t('INTEGRATION_SETTINGS.NOTION.NOT_CONFIGURED')
+    );
+  }
 };
 
 const initializeNotionIntegration = async () => {

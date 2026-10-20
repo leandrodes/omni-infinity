@@ -5,6 +5,11 @@ class Webhooks::UnofficialWhatsappEventsJob < ApplicationJob
     channel = Channel::UnofficialWhatsapp.find_by(identifier: identifier)
     return if channel.blank? || channel.inbox.blank?
 
-    UnofficialWhatsapp::IncomingMessageService.new(inbox: channel.inbox, params: payload).perform
+    service = if channel.provider == 'evolution'
+                UnofficialWhatsapp::EvolutionIncomingMessageService
+              else
+                UnofficialWhatsapp::IncomingMessageService
+              end
+    service.new(inbox: channel.inbox, params: payload).perform
   end
 end
