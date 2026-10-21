@@ -387,7 +387,7 @@ pt_BR:
   integration_apps:
     #Note: webhooks and dashboard_apps don't need short_description as they use different modal components
     dashboard_apps:
-      name: 'Painel de Aplicativos'
+      name: 'Web'
       description: 'O Painel de Aplicativos permite que você crie e incorpore aplicativos que exibem informações, pedidos ou histórico de pagamento, fornecendo mais contexto aos seus agentes de suporte ao cliente.'
     dyte:
       name: 'Cloudflare RealtimeKit'
@@ -418,18 +418,10 @@ pt_BR:
       short_description: 'Crie e vincule issues do Linear diretamente de conversas.'
       description: 'Crie issues em Linear diretamente da sua janela de conversa. Alternativamente, vincule as issues lineares existentes para um processo de rastreamento de problemas mais simples e eficiente.'
       attachment_link_title: 'Conversa (#%{conversation_id}) com %{name}'
-    notion:
-      name: 'Notion'
-      short_description: 'Integre banco de dados, documentos e páginas diretamente com o Capitão.'
-      description: 'Conecte o seu espaço de trabalho Notion para permitir que o Capitão acesse e gere respostas inteligentes usando o conteúdo de seus bancos de dados, documentos e páginas para fornecer suporte ao cliente mais contextual.'
     shopify:
       name: 'Shopify'
       short_description: 'Acessar detalhes do pedido e dados de clientes da sua loja Shopify.'
       description: 'Conecte sua loja Shopify para acessar detalhes de pedidos, informações de clientes e dados de produtos diretamente em suas conversas e ajudar sua equipe de suporte a fornecer um atendimento mais rápido e contextual aos seus clientes.'
-    leadsquared:
-      name: 'LeadSquared'
-      short_description: 'Sincronize seus contatos e conversas com LeadSquared CRM.'
-      description: 'Sincronize seus contatos e conversas com LeadSquared CRM. Essa integração cria automaticamente leads em LeadSquared quando novos contatos são adicionados, e registra a atividade de conversação para fornecer à sua equipe de vendas um contexto completo.'
   captain:
     copilot_message_required: A mensagem é obrigatória
     copilot_error: 'Conecte com um assistente a esta caixa de entrada para usar Copilot'

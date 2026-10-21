@@ -64,10 +64,6 @@ class Integrations::App
       account.feature_enabled?('linear_integration') && GlobalConfigService.load('LINEAR_CLIENT_ID', nil).present?
     when 'shopify'
       shopify_enabled?(account)
-    when 'leadsquared'
-      account.feature_enabled?('crm_integration')
-    when 'notion'
-      notion_enabled?(account)
     else
       true
     end
@@ -132,9 +128,5 @@ class Integrations::App
   def shopify_enabled?(account)
     Shopify::FeatureGate.enabled?(account: account) &&
       GlobalConfigService.load('SHOPIFY_CLIENT_ID', nil).present?
-  end
-
-  def notion_enabled?(account)
-    account.feature_enabled?('notion_integration')
   end
 end

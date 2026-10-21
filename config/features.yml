@@ -41,7 +41,7 @@
   enabled: false
 - name: help_center
   display_name: Help Center
-  enabled: true
+  enabled: false
   help_url: https://chwt.app/hc/help-center
 - name: agent_bots
   display_name: Agent Bots
@@ -81,7 +81,7 @@
   help_url: https://chwt.app/hc/integrations
 - name: voice_recorder
   display_name: Voice Recorder
-  enabled: true
+  enabled: false
 - name: report_rollup
   display_name: Report Rollup
   enabled: false
@@ -101,7 +101,7 @@
   enabled: true
 - name: auto_resolve_conversations
   display_name: Auto Resolve Conversations
-  enabled: true
+  enabled: false
 - name: custom_reply_email
   display_name: Custom Reply Email
   enabled: false
@@ -150,7 +150,7 @@
   premium: true
 - name: chatwoot_v4
   display_name: Chatwoot V4
-  enabled: true
+  enabled: false
 - name: captain_v1_action_classifier
   display_name: Captain V1 Action Classifier
   enabled: false
@@ -300,7 +300,7 @@
   enabled: true
   column: feature_flags_ext_1
 - name: saas_channel_uzapi
-  display_name: UzAPI
+  display_name: UazAPI
   enabled: false
   column: feature_flags_ext_1
 - name: saas_channel_wacalls

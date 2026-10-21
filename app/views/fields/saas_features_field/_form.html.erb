@@ -1,12 +1,9 @@
-<div class="field-unit__label">
-  <label>Funcionalidades e Recursos de IA</label>
-</div>
 <div class="field-unit__field feature-container">
   <%
     display_names = SuperAdmin::AccountFeaturesHelper.feature_display_names
   %>
 
-  <h3 class="mb-3 text-sm font-semibold text-slate-700">Funcionalidades</h3>
+  <h3 class="mb-3 text-sm font-semibold text-slate-700">API's WhatsApp Não Oficial</h3>
   <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
     <% SaasFeaturesField::FUNCTIONALITY_FEATURES.each do |feature_key| %>
       <% val = field.data[feature_key] %>

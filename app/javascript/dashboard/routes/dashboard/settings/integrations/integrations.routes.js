@@ -7,7 +7,6 @@ import Webhook from './Webhooks/Index.vue';
 import DashboardApps from './DashboardApps/Index.vue';
 import Slack from './Slack.vue';
 import Linear from './Linear.vue';
-import Notion from './Notion.vue';
 import Shopify from './Shopify.vue';
 
 export default {
@@ -64,15 +63,6 @@ export default {
           path: 'linear',
           name: 'settings_integrations_linear',
           component: Linear,
-          meta: {
-            permissions: ['administrator'],
-          },
-          props: route => ({ code: route.query.code }),
-        },
-        {
-          path: 'notion',
-          name: 'settings_integrations_notion',
-          component: Notion,
           meta: {
             permissions: ['administrator'],
           },

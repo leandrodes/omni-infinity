@@ -250,7 +250,7 @@ export default {
           v-if="!providerEnabled.uzapi"
           class="text-xs text-red-600"
         >
-          UzAPI —
+          UazAPI —
           {{ $t('INBOX_MGMT.ADD.UNOFFICIAL_WHATSAPP.PROVIDER.UNAVAILABLE') }}
         </span>
 

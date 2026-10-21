@@ -52,7 +52,7 @@
           "CHANGED": "API changed. Scan the new QR Code to connect.",
           "WUZAPI": "WuzAPI",
           "EVOLUTION": "Evolution API",
-          "UZAPI": "UzAPI",
+          "UZAPI": "UazAPI",
           "UZAPI_NOTICE": "To purchase resources for this API, contact Infinity Telecom Support to have it enabled (this API has an additional cost of R$10.00 billed monthly)"
         },
         "INBOX_NAME": {
