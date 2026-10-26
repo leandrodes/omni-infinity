@@ -2,6 +2,7 @@
 import { h, ref, computed, onMounted, watch } from 'vue';
 import { provideSidebarContext, useSidebarResize } from './provider';
 import { useAccount } from 'dashboard/composables/useAccount';
+import { useAdmin } from 'dashboard/composables/useAdmin';
 import { useConfig } from 'dashboard/composables/useConfig';
 import { useKbd } from 'dashboard/composables/utils/useKbd';
 import { useMapGetter } from 'dashboard/composables/store';
@@ -45,6 +46,7 @@ const emit = defineEmits([
 ]);
 
 const { accountScopedRoute, isOnChatwootCloud, currentAccount } = useAccount();
+const { isAdmin } = useAdmin();
 const { isEnterprise } = useConfig();
 const store = useStore();
 
@@ -725,12 +727,16 @@ const menuItems = computed(() => {
           icon: 'i-lucide-briefcase',
           to: accountScopedRoute('general_settings_index'),
         },
-        {
-          name: 'Settings Attendance Settings',
-          label: t('SIDEBAR.ATTENDANCE_SETTINGS'),
-          icon: 'i-lucide-settings-2',
-          to: accountScopedRoute('attendance_settings_index'),
-        },
+        ...(isAdmin.value
+          ? [
+              {
+                name: 'Settings Attendance Settings',
+                label: t('SIDEBAR.ATTENDANCE_SETTINGS'),
+                icon: 'i-lucide-settings-2',
+                to: accountScopedRoute('attendance_settings_index'),
+              },
+            ]
+          : []),
         // {
         //   name: 'Settings Captain',
         //   label: t('SIDEBAR.CAPTAIN_AI'),
@@ -840,12 +846,16 @@ const menuItems = computed(() => {
           icon: 'i-lucide-blocks',
           to: accountScopedRoute('settings_applications'),
         },
-        {
-          name: 'Settings Bot Builder',
-          label: 'Chatbot',
-          icon: 'i-lucide-bot-message-square',
-          href: `/bot-builder?account_id=${accountId.value}`,
-        },
+        ...(isAdmin.value
+          ? [
+              {
+                name: 'Settings Bot Builder',
+                label: 'Chatbot',
+                icon: 'i-lucide-bot-message-square',
+                href: `/bot-builder?account_id=${accountId.value}`,
+              },
+            ]
+          : []),
         ...(hasDataImport.value
           ? [
               {
