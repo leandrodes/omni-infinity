@@ -88,6 +88,12 @@ class Api::V1::Accounts::ConversationsController < Api::V1::Accounts::BaseContro
 
   def toggle_status
     # FIXME: move this logic into a service object
+    if reopening_conversation? && !current_account_administrator? &&
+       !(Current.account.settings || {})['agents_can_reopen_conversations']
+      render json: { error: 'Reopening conversations is disabled for agents' }, status: :forbidden
+      return
+    end
+
     if bot_handoff?
       @conversation.bot_handoff!
     elsif params[:status].present?
@@ -245,6 +251,16 @@ class Api::V1::Accounts::ConversationsController < Api::V1::Accounts::BaseContro
 
   def conversation_finder
     @conversation_finder ||= ConversationFinder.new(Current.user, params)
+  end
+
+  def reopening_conversation?
+    return false unless @conversation.resolved?
+
+    params[:status].blank? || params[:status].to_s == 'open'
+  end
+
+  def current_account_administrator?
+    Current.account.account_users.find_by(user_id: Current.user.id)&.administrator? == true
   end
 
   def clear_read_notifications

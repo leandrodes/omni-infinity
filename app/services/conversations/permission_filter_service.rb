@@ -19,14 +19,42 @@ class Conversations::PermissionFilterService
   def accessible_conversations
     return hinted_accessible_conversations if @plan_hint_selective_filter
 
-    conversations.where(inbox: user.inboxes.where(account_id: account.id))
+    scope = conversations.where(inbox: user.inboxes.where(account_id: account.id))
+    apply_visibility_filters(scope)
+  end
+
+  def apply_visibility_filters(scope)
+    scope = apply_assigned_visibility(scope)
+    apply_team_visibility(scope)
+  end
+
+  def apply_assigned_visibility(scope)
+    return scope unless (account.settings || {})['hide_conversations_assigned_to_others']
+
+    user_id = user.id
+    conditions = ['conversations.assignee_id IS NULL', 'conversations.assignee_id = :user_id']
+
+    unless (account.settings || {})['hide_resolved_conversations_assigned_to_others']
+      conditions << 'conversations.status = :resolved_status'
+    end
+
+    scope.where("(#{conditions.join(' OR ')})", user_id: user_id, resolved_status: Conversation.statuses[:resolved])
+  end
+
+  def apply_team_visibility(scope)
+    return scope unless (account.settings || {})['show_conversations_only_from_user_teams']
+
+    team_ids = user.teams.where(account_id: account.id).pluck(:id)
+    return scope.none if team_ids.blank?
+
+    scope.where(team_id: team_ids)
   end
 
   # Same rows as accessible_conversations. `inbox_id + 0` keeps the planner from
   # driving the query through an inbox scan, which it grossly misestimates when a
   # highly selective filter (e.g. labels) is present on large accounts (CW-7787).
   def hinted_accessible_conversations
-    conversations.where(
+    scope = conversations.where(
       '(conversations.inbox_id + 0) IN (
         SELECT inbox_members.inbox_id FROM inbox_members
         INNER JOIN inboxes ON inboxes.id = inbox_members.inbox_id
@@ -34,6 +62,7 @@ class Conversations::PermissionFilterService
       )',
       user_id: user.id, account_id: account.id
     )
+    apply_visibility_filters(scope)
   end
 
   def account_user

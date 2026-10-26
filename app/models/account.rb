@@ -53,6 +53,7 @@ class Account < ApplicationRecord
   validate :validate_support_email_format, if: :will_save_change_to_support_email?
 
   store_accessor :settings, :auto_resolve_after, :auto_resolve_message, :auto_resolve_ignore_waiting
+store_accessor :settings, :hide_conversations_assigned_to_others, :hide_resolved_conversations_assigned_to_others, :show_conversations_only_from_user_teams
 
   store_accessor :settings, :audio_transcriptions, :auto_resolve_label, :signature_enabled, :signature_agents_can_disable
   store_accessor :settings, :captain_models, :captain_features

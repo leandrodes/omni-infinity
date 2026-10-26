@@ -708,6 +708,12 @@ const menuItems = computed(() => {
           icon: 'i-lucide-briefcase',
           to: accountScopedRoute('general_settings_index'),
         },
+        {
+          name: 'Settings Attendance Settings',
+          label: t('SIDEBAR.ATTENDANCE_SETTINGS'),
+          icon: 'i-lucide-settings-2',
+          to: accountScopedRoute('attendance_settings_index'),
+        },
         // {
         //   name: 'Settings Captain',
         //   label: t('SIDEBAR.CAPTAIN_AI'),

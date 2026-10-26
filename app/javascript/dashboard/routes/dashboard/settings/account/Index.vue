@@ -14,7 +14,6 @@ import AccountId from './components/AccountId.vue';
 import BuildInfo from './components/BuildInfo.vue';
 import AccountDelete from './components/AccountDelete.vue';
 import AudioTranscription from './components/AudioTranscription.vue';
-import MessageSignature from './components/MessageSignature.vue';
 import SectionLayout from './components/SectionLayout.vue';
 
 export default {
@@ -25,7 +24,6 @@ export default {
     BuildInfo,
     AccountDelete,
     AudioTranscription,
-    MessageSignature,
     SectionLayout,
     WithLabel,
     NextInput,
@@ -115,7 +113,7 @@ export default {
           this.$root.$i18n.locale = effectiveLocale;
         }
         this.name = name;
-        this.locale = locale;
+        this.locale = 'pt_BR';
         this.id = id;
         this.domain = domain;
         this.supportEmail = support_email;
@@ -157,6 +155,7 @@ export default {
   <div class="flex flex-col w-full max-w-2xl ltr:mr-auto rtl:ml-auto">
     <BaseSettingsHeader :title="$t('GENERAL_SETTINGS.TITLE')" />
     <div class="flex-grow flex-shrink min-w-0 mt-3">
+      <AccountId />
       <SectionLayout
         :title="$t('GENERAL_SETTINGS.FORM.GENERAL_SECTION.TITLE')"
         :description="$t('GENERAL_SETTINGS.FORM.GENERAL_SECTION.NOTE')"
@@ -180,22 +179,6 @@ export default {
               :placeholder="$t('GENERAL_SETTINGS.FORM.NAME.PLACEHOLDER')"
               @blur="v$.name.$touch"
             />
-          </WithLabel>
-          <WithLabel
-            name="site-language"
-            :has-error="v$.locale.$error"
-            :label="$t('GENERAL_SETTINGS.FORM.LANGUAGE.LABEL')"
-            :error-message="$t('GENERAL_SETTINGS.FORM.LANGUAGE.ERROR')"
-          >
-            <select v-model="locale" class="!mb-0 text-sm">
-              <option
-                v-for="lang in languagesSortedByCode"
-                :key="lang.iso_639_1_code"
-                :value="lang.iso_639_1_code"
-              >
-                {{ lang.name }}
-              </option>
-            </select>
           </WithLabel>
           <WithLabel
             v-if="featureCustomReplyDomainEnabled"
@@ -245,8 +228,7 @@ export default {
       <woot-loading-state v-if="uiFlags.isFetchingItem" />
     </div>
     <AudioTranscription v-if="showAudioTranscriptionConfig" />
-    <MessageSignature />
-    <AccountId />
+
     <div v-if="!uiFlags.isFetchingItem && isOnChatwootCloud">
       <AccountDelete />
     </div>

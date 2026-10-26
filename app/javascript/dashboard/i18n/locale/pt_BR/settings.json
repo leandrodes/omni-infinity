@@ -348,6 +348,7 @@
     "DATA": "Dados",
     "PROFILE_SETTINGS": "Configurações do Perfil",
     "ACCOUNT_SETTINGS": "Conta",
+    "ATTENDANCE_SETTINGS": "Configurações de Atendimento",
     "APPLICATIONS": "Aplicações",
     "LABELS": "Etiquetas",
     "CUSTOM_ATTRIBUTES": "Atributos Personalizados",
@@ -1080,6 +1081,49 @@
       "DESCRIPTION": "Tem certeza de que deseja excluir esta política? Essa ação não pode ser desfeita.",
       "CONFIRM_BUTTON_LABEL": "Excluir",
       "CANCEL_BUTTON_LABEL": "Cancelar"
+    }
+  },
+  "ATTENDANCE_SETTINGS": {
+    "DISPLAY": {
+      "TITLE": "Exibição",
+      "NOTE": "Opções de exibição",
+      "ENABLE_CHATBOT_CONVERSATIONS_FILTER": "Habilitar filtro conversas no chatbot",
+      "ENABLE_RESOLVED_CONVERSATIONS_FILTER": "Habilitar filtro conversas resolvidas",
+      "SHOW_INBOX_NAME_IN_CONVERSATION_LIST": "Habilitar nome da caixa de entrada na lista",
+      "LIST_ONLY_LAST_RESOLVED_CONVERSATION_PER_CONTACT": "Listar somente última conversa resolvida do contato"
+    },
+    "VISIBILITY": {
+      "TITLE": "Visualização",
+      "NOTE": "Opções de visualização",
+      "HIDE_CONVERSATIONS_ASSIGNED_TO_OTHERS": "Não visualizar conversas atribuídas a outros usuários",
+      "HIDE_RESOLVED_CONVERSATIONS_ASSIGNED_TO_OTHERS": "Ocultar conversas resolvidas atribuídas a outros usuários",
+      "SHOW_CONVERSATIONS_ONLY_FROM_USER_TEAMS": "Visualizar conversas apenas das filas que o usuário pertence"
+    },
+    "PERMISSIONS": {
+      "TITLE": "Permissão",
+      "NOTE": "Opções de permissão",
+      "SIGNATURE_AGENTS_CAN_DISABLE": "Agentes podem desabilitar assinatura",
+      "AGENTS_CAN_REOPEN_CONVERSATIONS": "Agentes podem reabrir conversas",
+      "AGENTS_CAN_JOIN_CONVERSATIONS_AS_PARTICIPANT": "Agentes podem ingressar como participante"
+    },
+    "GROUPS": {
+      "TITLE": "Grupos WhatsApp",
+      "NOTE": "Opções de grupos",
+      "IGNORE_WHATSAPP_GROUPS": "Ignorar grupos",
+      "ENABLE_WHATSAPP_GROUPS_FILTER": "Filtro de grupos",
+      "ALLOW_CREATE_WHATSAPP_GROUPS": "Criar grupos",
+      "ALLOW_END_WHATSAPP_GROUPS": "Encerrar grupos",
+      "ALLOW_TRANSFER_WHATSAPP_GROUPS": "Transferir grupos"
+    },
+    "OTHERS": {
+      "TITLE": "Outros",
+      "NOTE": "Outras opções",
+      "REACTIONS_APPEAR_AS_RESPONSE": "Reações aparecem como resposta"
+    },
+    "SAVE": {
+      "BUTTON": "Salvar",
+      "SUCCESS": "Configurações atualizadas",
+      "ERROR": "Falha ao atualizar configurações"
     }
   }
 }

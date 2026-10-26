@@ -2,6 +2,7 @@ class Api::V1::Accounts::Conversations::ParticipantsController < Api::V1::Accoun
   include Events::Types
 
   before_action :validate_participant_ids, only: [:create, :update]
+  before_action :validate_join_permission, only: [:create, :update]
 
   def show
     @participants = @conversation.conversation_participants
@@ -38,6 +39,19 @@ class Api::V1::Accounts::Conversations::ParticipantsController < Api::V1::Accoun
     end
     notify_unread_count_change if participant_ids_to_remove.any?
     head :ok
+  end
+
+  def validate_join_permission
+    return if current_account_administrator?
+    return if (Current.account.settings || {})['agents_can_join_conversations_as_participant']
+
+    if participant_ids.include?(Current.user.id)
+      render json: { error: 'Joining conversations as participant is disabled for agents' }, status: :forbidden
+    end
+  end
+
+  def current_account_administrator?
+    Current.account.account_users.find_by(user_id: Current.user.id)&.administrator? == true
   end
 
   private

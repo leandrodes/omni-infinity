@@ -8,7 +8,12 @@ class ConversationPolicy < ApplicationPolicy
   end
 
   def show?
-    administrator? || agent_bot? || agent_can_view_conversation?
+    return true if administrator? || agent_bot?
+    return false unless agent_can_view_conversation?
+    return false if hidden_assigned_conversation?
+    return false if team_only_visibility? && !team_access?
+
+    true
   end
 
   private
@@ -33,6 +38,18 @@ class ConversationPolicy < ApplicationPolicy
     return false if record.team_id.blank?
 
     user.teams.where(account_id: account&.id).exists?(id: record.team_id)
+  end
+
+  def hidden_assigned_conversation?
+    return false unless (account.settings || {})['hide_conversations_assigned_to_others']
+    return false if record.assignee_id.blank? || record.assignee_id == user.id
+    return false if !(account.settings || {})['hide_resolved_conversations_assigned_to_others'] && record.resolved?
+
+    true
+  end
+
+  def team_only_visibility?
+    (account.settings || {})['show_conversations_only_from_user_teams'] == true
   end
 
   def assigned_to_user?

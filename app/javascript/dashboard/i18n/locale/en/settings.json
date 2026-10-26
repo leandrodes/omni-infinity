@@ -349,6 +349,7 @@
     "DATA": "Data",
     "PROFILE_SETTINGS": "Profile Settings",
     "ACCOUNT_SETTINGS": "Account Settings",
+    "ATTENDANCE_SETTINGS": "Attendance Settings",
     "APPLICATIONS": "Applications",
     "LABELS": "Labels",
     "CUSTOM_ATTRIBUTES": "Custom Attributes",
@@ -1114,6 +1115,49 @@
       "DESCRIPTION": "Are you sure you want to delete this policy? This action cannot be undone.",
       "CONFIRM_BUTTON_LABEL": "Delete",
       "CANCEL_BUTTON_LABEL": "Cancel"
+    }
+  },
+  "ATTENDANCE_SETTINGS": {
+    "DISPLAY": {
+      "TITLE": "Display",
+      "NOTE": "Display options",
+      "ENABLE_CHATBOT_CONVERSATIONS_FILTER": "Enable chatbot conversations filter",
+      "ENABLE_RESOLVED_CONVERSATIONS_FILTER": "Enable resolved conversations filter",
+      "SHOW_INBOX_NAME_IN_CONVERSATION_LIST": "Show inbox name in conversation list",
+      "LIST_ONLY_LAST_RESOLVED_CONVERSATION_PER_CONTACT": "List only last resolved conversation per contact"
+    },
+    "VISIBILITY": {
+      "TITLE": "Visibility",
+      "NOTE": "Visibility options",
+      "HIDE_CONVERSATIONS_ASSIGNED_TO_OTHERS": "Hide conversations assigned to other users",
+      "HIDE_RESOLVED_CONVERSATIONS_ASSIGNED_TO_OTHERS": "Hide resolved conversations assigned to other users",
+      "SHOW_CONVERSATIONS_ONLY_FROM_USER_TEAMS": "Show conversations only from user teams"
+    },
+    "PERMISSIONS": {
+      "TITLE": "Permissions",
+      "NOTE": "Permission options",
+      "SIGNATURE_AGENTS_CAN_DISABLE": "Agents can disable signature",
+      "AGENTS_CAN_REOPEN_CONVERSATIONS": "Agents can reopen conversations",
+      "AGENTS_CAN_JOIN_CONVERSATIONS_AS_PARTICIPANT": "Agents can join as participant"
+    },
+    "GROUPS": {
+      "TITLE": "WhatsApp Groups",
+      "NOTE": "Group options",
+      "IGNORE_WHATSAPP_GROUPS": "Ignore groups",
+      "ENABLE_WHATSAPP_GROUPS_FILTER": "Enable groups filter",
+      "ALLOW_CREATE_WHATSAPP_GROUPS": "Allow create groups",
+      "ALLOW_END_WHATSAPP_GROUPS": "Allow end groups",
+      "ALLOW_TRANSFER_WHATSAPP_GROUPS": "Allow transfer groups"
+    },
+    "OTHERS": {
+      "TITLE": "Others",
+      "NOTE": "Other options",
+      "REACTIONS_APPEAR_AS_RESPONSE": "Reactions appear as response"
+    },
+    "SAVE": {
+      "BUTTON": "Save",
+      "SUCCESS": "Settings updated",
+      "ERROR": "Failed to update settings"
     }
   }
 }

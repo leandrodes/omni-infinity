@@ -121,7 +121,15 @@ class Api::V1::AccountsController < Api::BaseController
 
   def permitted_settings_attributes
     [:auto_resolve_after, :auto_resolve_message, :auto_resolve_ignore_waiting, :audio_transcriptions, :auto_resolve_label,
-     :signature_enabled, :signature_agents_can_disable]
+     :signature_enabled, :signature_agents_can_disable,
+     :enable_chatbot_conversations_filter, :enable_resolved_conversations_filter,
+     :show_inbox_name_in_conversation_list, :list_only_last_resolved_conversation_per_contact,
+     :hide_conversations_assigned_to_others, :hide_resolved_conversations_assigned_to_others,
+     :show_conversations_only_from_user_teams, :agents_can_reopen_conversations,
+     :agents_can_join_conversations_as_participant, :ignore_whatsapp_groups,
+     :enable_whatsapp_groups_filter, :allow_create_whatsapp_groups, :allow_end_whatsapp_groups,
+     :allow_transfer_whatsapp_groups, :reactions_appear_as_response,
+     :conversation_filter_limits]
   end
 
   def check_signup_enabled

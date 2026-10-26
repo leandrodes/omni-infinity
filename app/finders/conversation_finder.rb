@@ -128,6 +128,8 @@ class ConversationFinder
       @conversations = @conversations.where(id: participant_conversation_ids)
     when 'unattended'
       @conversations = @conversations.unattended
+    when 'chatbot'
+      @conversations = @conversations.where(status: :pending).where.not(assignee_agent_bot_id: nil)
     end
     @conversations
   end
