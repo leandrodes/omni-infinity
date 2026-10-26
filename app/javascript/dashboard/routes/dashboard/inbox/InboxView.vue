@@ -78,15 +78,9 @@ const findConversation = () => {
   return conversationById.value(conversationId.value);
 };
 
-const openNotification = async notificationItem => {
+const openNotification = notificationItem => {
   const {
-    id,
-    primary_actor_id: primaryActorId,
-    primary_actor_type: primaryActorType,
-    primary_actor: {
-      meta: { unreadCount } = {},
-      id: conversationIdFromNotification,
-    },
+    primary_actor: { id: conversationIdFromNotification },
     notification_type: notificationType,
   } = notificationItem;
 
@@ -94,21 +88,10 @@ const openNotification = async notificationItem => {
     notificationType,
   });
 
-  try {
-    await store.dispatch('notifications/read', {
-      id,
-      primaryActorId,
-      primaryActorType,
-      unreadCount,
-    });
-
-    router.push({
-      name: 'inbox_view_conversation',
-      params: { type: 'conversation', id: conversationIdFromNotification },
-    });
-  } catch {
-    // error
-  }
+  router.push({
+    name: 'inbox_view_conversation',
+    params: { type: 'conversation', id: conversationIdFromNotification },
+  });
 };
 
 const setActiveChat = async () => {

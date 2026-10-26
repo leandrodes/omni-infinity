@@ -78,6 +78,8 @@ say "Concluído. Containers atualizados."
 # garante que o serviço esteja ativo.
 if command -v caddy >/dev/null 2>&1; then
   if caddy validate --config /etc/caddy/Caddyfile >/dev/null 2>&1; then
+    install -d -o caddy -g caddy /var/log/caddy >/dev/null 2>&1 || true
+    find /var/log/caddy -maxdepth 1 -type f -name '*.log' -exec chown caddy:caddy {} + >/dev/null 2>&1 || true
     systemctl reload caddy >/dev/null 2>&1 || systemctl restart caddy >/dev/null 2>&1 || true
     say "Caddy (host) recarregado."
   else

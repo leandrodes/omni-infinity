@@ -165,11 +165,8 @@ const setSavedFilter = () => {
   store.dispatch('notifications/setNotificationFilters', inboxFilters.value);
 };
 
-const openConversation = async notificationItem => {
+const openConversation = notificationItem => {
   const {
-    id,
-    primaryActorId,
-    primaryActorType,
     primaryActor: { inboxId, id: conversationId },
     notificationType,
   } = notificationItem;
@@ -180,24 +177,10 @@ const openConversation = async notificationItem => {
     notificationType,
   });
 
-  try {
-    await store.dispatch('notifications/read', {
-      id,
-      primaryActorId,
-      primaryActorType,
-      unreadCount: meta.value.unreadCount,
-    });
-
-    // to update the unread count in the store realtime
-    store.dispatch('notifications/unReadCount');
-
-    router.push({
-      name: 'inbox_view_conversation',
-      params: { inboxId, type: 'conversation', id: conversationId },
-    });
-  } catch {
-    // error
-  }
+  router.push({
+    name: 'inbox_view_conversation',
+    params: { inboxId, type: 'conversation', id: conversationId },
+  });
 };
 
 watch(

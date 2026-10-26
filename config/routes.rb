@@ -1,4 +1,13 @@
 Rails.application.routes.draw do
+  # OAuth2 / OpenID Connect provider for the Typebot integration
+  use_doorkeeper
+  use_doorkeeper_openid_connect
+
+  # Chatbot admin page
+  get '/bot-builder/licenses', to: 'bot_builder#licenses', as: :bot_builder_licenses
+  get '/bot-builder/documentation', to: 'bot_builder#documentation', as: :bot_builder_documentation
+  get '/bot-builder', to: 'bot_builder#index', as: :bot_builder
+
   # AUTH STARTS
   mount_devise_token_auth_for 'User', at: 'auth', controllers: {
     confirmations: 'devise_overrides/confirmations',

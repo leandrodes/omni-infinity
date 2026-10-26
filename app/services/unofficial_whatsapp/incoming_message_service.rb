@@ -42,6 +42,8 @@ class UnofficialWhatsapp::IncomingMessageService
     return if content.blank? && media.blank?
 
     set_contact
+    return if @contact.blocked?
+
     set_conversation
 
     return handle_oversized_media(content) if media.present? && media_exceeds_limit?
@@ -151,6 +153,8 @@ class UnofficialWhatsapp::IncomingMessageService
     text = channel.call_block_message.presence || 'Este número está bloqueado para receber chamadas'
 
     set_contact
+    return if @contact.blocked?
+
     set_conversation
 
     @message = @conversation.messages.build(

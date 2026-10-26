@@ -106,6 +106,7 @@ local/
 Procfile.worktree
 .nodeterm/project.json
 deploy/.env
+deploy/typebot.env
 deploy/Caddyfile
 deploy/logs/
 deploy/wuzapi/

@@ -29,6 +29,7 @@ class NotificationListener < BaseListener
 
   def assignee_changed(event)
     conversation, account = extract_conversation_and_account(event)
+    clear_queue_notifications(conversation, account) if conversation.open?
     assignee = conversation.assignee
 
     # NOTE:  The issue was that when a team change results in an assignee being set to nil,
@@ -52,5 +53,14 @@ class NotificationListener < BaseListener
 
     Messages::MentionService.new(message: message).perform
     Messages::NewMessageNotificationService.new(message: message).perform
+  end
+
+  private
+
+  def clear_queue_notifications(conversation, account)
+    Notification::ClearConversationQueueNotificationsService.new(
+      account: account,
+      conversation: conversation
+    ).perform
   end
 end

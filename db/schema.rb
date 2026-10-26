@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_10_16_000000) do
+ActiveRecord::Schema[7.2].define(version: 2026_10_23_000001) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -74,7 +74,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_16_000000) do
     t.jsonb "internal_attributes", default: {}, null: false
     t.jsonb "settings", default: {}
     t.bigint "feature_flags_ext_1", default: 0, null: false
+    t.boolean "transcription_allow_system", default: false, null: false
     t.index ["status"], name: "index_accounts_on_status"
+    t.index ["transcription_allow_system"], name: "index_accounts_on_transcription_allow_system"
   end
 
   create_table "action_mailbox_inbound_emails", force: :cascade do |t|
@@ -725,6 +727,11 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_16_000000) do
     t.integer "account_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "ignore_groups", default: true, null: false
+    t.boolean "block_calls", default: true, null: false
+    t.string "call_block_message", default: "Este número está bloqueado para receber chamadas"
+    t.boolean "proxy_enabled", default: false, null: false
+    t.string "proxy_url"
     t.index ["account_id"], name: "index_channel_unofficial_whatsapp_on_account_id"
     t.index ["identifier"], name: "index_channel_unofficial_whatsapp_on_identifier", unique: true
   end
@@ -816,6 +823,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_16_000000) do
     t.string "country_code", default: ""
     t.boolean "blocked", default: false, null: false
     t.bigint "company_id"
+    t.boolean "csat_disabled", default: false, null: false
     t.index "lower((email)::text), account_id", name: "index_contacts_on_lower_email_account_id"
     t.index ["account_id", "contact_type"], name: "index_contacts_on_account_id_and_contact_type"
     t.index ["account_id", "email", "phone_number", "identifier"], name: "index_contacts_on_nonempty_fields", where: "(((email)::text <> ''::text) OR ((phone_number)::text <> ''::text) OR ((identifier)::text <> ''::text))"
@@ -1170,6 +1178,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_16_000000) do
     t.integer "sender_name_type", default: 0, null: false
     t.string "business_name"
     t.jsonb "csat_config", default: {}, null: false
+    t.boolean "transcribe_audio", default: true, null: false
     t.index ["account_id"], name: "index_inboxes_on_account_id"
     t.index ["channel_id", "channel_type"], name: "index_inboxes_on_channel_id_and_channel_type"
     t.index ["portal_id"], name: "index_inboxes_on_portal_id"
@@ -1340,6 +1349,55 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_16_000000) do
     t.index ["secondary_actor_type", "secondary_actor_id"], name: "uniq_secondary_actor_per_account_notifications"
     t.index ["user_id", "account_id", "snoozed_until", "read_at"], name: "idx_notifications_performance"
     t.index ["user_id"], name: "index_notifications_on_user_id"
+  end
+
+  create_table "oauth_access_grants", force: :cascade do |t|
+    t.bigint "resource_owner_id", null: false
+    t.bigint "application_id", null: false
+    t.string "token", null: false
+    t.integer "expires_in", null: false
+    t.text "redirect_uri", null: false
+    t.string "scopes", default: "", null: false
+    t.datetime "created_at", null: false
+    t.datetime "revoked_at"
+    t.index ["application_id"], name: "index_oauth_access_grants_on_application_id"
+    t.index ["resource_owner_id"], name: "index_oauth_access_grants_on_resource_owner_id"
+    t.index ["token"], name: "index_oauth_access_grants_on_token", unique: true
+  end
+
+  create_table "oauth_access_tokens", force: :cascade do |t|
+    t.bigint "resource_owner_id"
+    t.bigint "application_id", null: false
+    t.string "token", null: false
+    t.string "refresh_token"
+    t.integer "expires_in"
+    t.string "scopes"
+    t.datetime "created_at", null: false
+    t.datetime "revoked_at"
+    t.string "previous_refresh_token", default: "", null: false
+    t.index ["application_id"], name: "index_oauth_access_tokens_on_application_id"
+    t.index ["refresh_token"], name: "index_oauth_access_tokens_on_refresh_token", unique: true
+    t.index ["resource_owner_id"], name: "index_oauth_access_tokens_on_resource_owner_id"
+    t.index ["token"], name: "index_oauth_access_tokens_on_token", unique: true
+  end
+
+  create_table "oauth_applications", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "uid", null: false
+    t.string "secret", null: false
+    t.text "redirect_uri", null: false
+    t.string "scopes", default: "", null: false
+    t.boolean "confidential", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.text "post_logout_redirect_uris"
+    t.index ["uid"], name: "index_oauth_applications_on_uid", unique: true
+  end
+
+  create_table "oauth_openid_requests", force: :cascade do |t|
+    t.bigint "access_grant_id", null: false
+    t.string "nonce", null: false
+    t.index ["access_grant_id"], name: "index_oauth_openid_requests_on_access_grant_id"
   end
 
   create_table "platform_app_permissibles", force: :cascade do |t|
@@ -1521,6 +1579,54 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_16_000000) do
     t.index ["name", "account_id"], name: "index_teams_on_name_and_account_id", unique: true
   end
 
+  create_table "transcription_settings", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "provider", default: "system", null: false
+    t.string "endpoint"
+    t.string "model"
+    t.string "language"
+    t.text "api_key"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_transcription_settings_on_account_id", unique: true
+  end
+
+  create_table "typebot_account_workspaces", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "workspace_id", null: false
+    t.string "workspace_name"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_typebot_account_workspaces_on_account_id", unique: true
+    t.index ["workspace_id"], name: "index_typebot_account_workspaces_on_workspace_id", unique: true
+  end
+
+  create_table "typebot_conversations", force: :cascade do |t|
+    t.bigint "conversation_id", null: false
+    t.string "session_id", null: false
+    t.string "typebot_id"
+    t.datetime "last_activity_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["conversation_id"], name: "index_typebot_conversations_on_conversation_id", unique: true
+    t.index ["session_id"], name: "index_typebot_conversations_on_session_id", unique: true
+  end
+
+  create_table "typebot_inbox_configs", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "inbox_id", null: false
+    t.string "workspace_id", null: false
+    t.string "typebot_id", null: false
+    t.string "public_id"
+    t.boolean "active", default: true, null: false
+    t.boolean "pause_on_assignee", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_typebot_inbox_configs_on_account_id"
+    t.index ["inbox_id"], name: "index_typebot_inbox_configs_on_inbox_id", unique: true
+    t.index ["typebot_id"], name: "index_typebot_inbox_configs_on_typebot_id"
+  end
+
   create_table "user_sessions", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.string "client_id", null: false
@@ -1617,6 +1723,14 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_16_000000) do
   add_foreign_key "campaign_recipients", "contacts", on_delete: :cascade
   add_foreign_key "campaign_recipients", "inboxes", on_delete: :cascade
   add_foreign_key "inboxes", "portals"
+  add_foreign_key "oauth_access_grants", "oauth_applications", column: "application_id"
+  add_foreign_key "oauth_access_tokens", "oauth_applications", column: "application_id"
+  add_foreign_key "oauth_openid_requests", "oauth_access_grants", column: "access_grant_id", on_delete: :cascade
+  add_foreign_key "transcription_settings", "accounts"
+  add_foreign_key "typebot_account_workspaces", "accounts", on_delete: :cascade
+  add_foreign_key "typebot_conversations", "conversations", on_delete: :cascade
+  add_foreign_key "typebot_inbox_configs", "accounts", on_delete: :cascade
+  add_foreign_key "typebot_inbox_configs", "inboxes", on_delete: :cascade
   add_foreign_key "user_sessions", "users"
   create_trigger("accounts_after_insert_row_tr", :generated => true, :compatibility => 1).
       on("accounts").

@@ -116,6 +116,14 @@ class UnofficialWhatsapp::Providers::WuzapiService < UnofficialWhatsapp::Provide
     endpoint.present? && admin_token.present?
   end
 
+  def block_contact(phone_number)
+    user_post('/user/block', { 'Phone' => normalize_block_phone(phone_number) })
+  end
+
+  def unblock_contact(phone_number)
+    user_post('/user/unblock', { 'Phone' => normalize_block_phone(phone_number) })
+  end
+
   def send_message(phone_number, message)
     @message = message
     interactive = interactive_payload(message)

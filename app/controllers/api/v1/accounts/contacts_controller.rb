@@ -95,6 +95,7 @@ class Api::V1::Accounts::ContactsController < Api::V1::Accounts::BaseController
     @contact.assign_attributes(contact_update_params)
     @contact.save!
     process_avatar_from_url
+    sync_contact_block if @contact.saved_change_to_blocked?
   end
 
   def destroy
@@ -132,7 +133,7 @@ class Api::V1::Accounts::ContactsController < Api::V1::Accounts::BaseController
 
   def fetch_contacts(contacts)
     # Build includes hash to avoid separate query when contact_inboxes are needed
-    includes_hash = { avatar_attachment: [:blob] }
+    includes_hash = { avatar_attachment: [:blob], taggings: :tag }
     includes_hash[:contact_inboxes] = { inbox: :channel } if @include_contact_inboxes
 
     filtrate(contacts)
@@ -142,7 +143,7 @@ class Api::V1::Accounts::ContactsController < Api::V1::Accounts::BaseController
   end
 
   def fetch_contacts_with_has_more(contacts)
-    includes_hash = { avatar_attachment: [:blob] }
+    includes_hash = { avatar_attachment: [:blob], taggings: :tag }
     includes_hash[:contact_inboxes] = { inbox: :channel } if @include_contact_inboxes
 
     # Calculate offset manually to fetch one extra record for has_more check
@@ -159,6 +160,11 @@ class Api::V1::Accounts::ContactsController < Api::V1::Accounts::BaseController
     results
   end
 
+  def sync_contact_block
+    blocked = ActiveModel::Type::Boolean.new.cast(permitted_params[:blocked])
+    ::Contacts::BlockService.new(contact: @contact, blocked: blocked).perform
+  end
+
   def build_contact_inbox
     return if params[:inbox_id].blank?
 
@@ -171,7 +177,11 @@ class Api::V1::Accounts::ContactsController < Api::V1::Accounts::BaseController
   end
 
   def permitted_params
-    params.permit(:name, :identifier, :email, :phone_number, :avatar, :blocked, :avatar_url, additional_attributes: {}, custom_attributes: {})
+    params.permit(
+      :name, :identifier, :email, :phone_number, :avatar, :blocked,
+      :csat_disabled, :avatar_url,
+      additional_attributes: {}, custom_attributes: {}
+    )
   end
 
   def contact_custom_attributes

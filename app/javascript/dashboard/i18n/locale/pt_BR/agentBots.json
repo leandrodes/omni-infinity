@@ -2,7 +2,7 @@
   "AGENT_BOTS": {
     "HEADER": "Robôs",
     "LOADING_EDITOR": "Carregando Editor...",
-    "DESCRIPTION": "Robôs agentes são como os membros mais fabulosos de seu time. Eles podem lidar com as pequenas coisas, assim você pode focar nas coisas que importam. Dê uma chance a eles. Você pode gerenciar seus robôs a partir desta página ou criar novos usando o botão 'Criar Robô'.",
+    "DESCRIPTION": "Crie robôs do Typebot informando um nome e a URL de publicação do bot. Depois vincule o robô à caixa de entrada em Configurações > Caixa de Entrada > Configuração do Bot.",
     "LEARN_MORE": "Aprenda sobre os robôs agentes",
     "COUNT": "{n} robô | {n} robôs",
     "SEARCH_PLACEHOLDER": "Pesquisar robôs...",
@@ -14,8 +14,8 @@
       "ERROR_DELETE": "Erro ao excluir o avatar do robô, tente novamente"
     },
     "BOT_CONFIGURATION": {
-      "TITLE": "Selecione um robô de agente",
-      "DESC": "Atribua um Agente Robô à sua caixa de entrada. Eles podem lidar com as conversas iniciais e transferi-las para um agente humano quando necessário.",
+      "TITLE": "Selecione um robô Typebot",
+      "DESC": "Vincule um robô Typebot à caixa de entrada. O robô responde às mensagens iniciais e pode transferir a conversa para um time ou agente.",
       "SUBMIT": "Atualizar",
       "DISCONNECT": "Desconectar Robô",
       "SUCCESS_MESSAGE": "Agente de bot atualizado com sucesso.",
@@ -37,7 +37,7 @@
       "LOADING": "Buscando robôs...",
       "TABLE_HEADER": {
         "DETAILS": "Detalhe do Robô",
-        "URL": "URL do Webhook",
+        "URL": "URL de publicação",
         "ACTIONS": "Ações"
       }
     },
@@ -94,13 +94,13 @@
         "PLACEHOLDER": "O que esse robô faz?"
       },
       "WEBHOOK_URL": {
-        "LABEL": "URL do Webhook",
-        "PLACEHOLDER": "https://example.com/webhook",
-        "REQUIRED": "URL Webhook é necessária"
+        "LABEL": "URL de publicação do Typebot",
+        "PLACEHOLDER": "https://typebot-viewer.infinitytelecom.com.br/seu-bot",
+        "REQUIRED": "A URL de publicação do Typebot é obrigatória"
       },
       "ERRORS": {
         "NAME": "O nome do Robô é obrigatório",
-        "URL": "URL Webhook é necessária",
+        "URL": "A URL de publicação do Typebot é obrigatória",
         "VALID_URL": "Digite uma URL válida começando com http:// ou https://"
       },
       "CANCEL": "Cancelar",
@@ -108,7 +108,7 @@
       "UPDATE": "Atualizar o Robô"
     },
     "WEBHOOK": {
-      "DESCRIPTION": "Configure um robô de Webhook para integrar com seus serviços personalizados. O robô receberá e processará eventos de conversas e pode respondê-los."
+      "DESCRIPTION": "Cole a URL de publicação do Typebot. O Omni-Channel usa essa URL para iniciar e continuar as conversas do bot."
     },
     "TYPES": {
       "WEBHOOK": "Webhook robô"

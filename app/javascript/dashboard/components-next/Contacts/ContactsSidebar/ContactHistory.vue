@@ -22,9 +22,10 @@ const accountLabelsValue = computed(() => accountLabels.value);
 const uiFlags = useMapGetter('contactConversations/getUIFlags');
 const isFetching = computed(() => uiFlags.value.isFetching);
 
-const contactConversations = computed(() =>
-  conversations.value(route.params.contactId)
-);
+const contactConversations = computed(() => {
+  const records = conversations.value(route.params.contactId) || [];
+  return [...records].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+});
 </script>
 
 <template>
@@ -45,6 +46,8 @@ const contactConversations = computed(() =>
       :contact="contactsById(conversation.meta.sender.id)"
       :state-inbox="stateInbox(conversation.inboxId)"
       :account-labels="accountLabelsValue"
+      date-only
+      show-csat
       class="rounded-none hover:rounded-xl hover:bg-n-alpha-1 dark:hover:bg-n-alpha-3"
     />
   </div>

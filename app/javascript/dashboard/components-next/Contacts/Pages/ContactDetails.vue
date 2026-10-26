@@ -11,6 +11,7 @@ import Button from 'dashboard/components-next/button/Button.vue';
 import ContactLabels from 'dashboard/components-next/Contacts/ContactLabels/ContactLabels.vue';
 import ContactsForm from 'dashboard/components-next/Contacts/ContactsForm/ContactsForm.vue';
 import ConfirmContactDeleteDialog from 'dashboard/components-next/Contacts/ContactsForm/ConfirmContactDeleteDialog.vue';
+import Switch from 'dashboard/components-next/switch/Switch.vue';
 import Policy from 'dashboard/components/policy.vue';
 
 const props = defineProps({
@@ -40,6 +41,13 @@ const isUpdating = computed(() => uiFlags.value.isUpdating);
 const isFormInvalid = computed(() => contactsFormRef.value?.isFormInvalid);
 
 const contactData = ref({});
+
+const isCsatDisabled = computed({
+  get: () => !!contactData.value?.csatDisabled,
+  set: value => {
+    contactData.value.csatDisabled = value;
+  },
+});
 
 const getInitialContactData = () => {
   if (!props.selectedContact) return {};
@@ -81,6 +89,23 @@ const updateContact = async () => {
     useAlert(t('CONTACTS_LAYOUT.CARD.EDIT_DETAILS_FORM.SUCCESS_MESSAGE'));
   } catch (error) {
     useAlert(t('CONTACTS_LAYOUT.CARD.EDIT_DETAILS_FORM.ERROR_MESSAGE'));
+  }
+};
+
+const toggleCsatDisabled = async value => {
+  try {
+    await store.dispatch('contacts/update', {
+      id: contactData.value.id,
+      csatDisabled: value,
+    });
+    useAlert(
+      value
+        ? t('CONTACTS_LAYOUT.DETAILS.CSAT_DISABLED.SUCCESS')
+        : t('CONTACTS_LAYOUT.DETAILS.CSAT_ENABLED.SUCCESS')
+    );
+  } catch {
+    isCsatDisabled.value = !value;
+    useAlert(t('CONTACTS_LAYOUT.DETAILS.CSAT_DISABLED.ERROR'));
   }
 };
 
@@ -193,6 +218,23 @@ const handleAvatarDelete = async () => {
         :disabled="isUpdating || isFormInvalid"
         @click="updateContact"
       />
+      <div
+        class="flex items-start justify-between w-full gap-4 pt-6 border-t border-n-strong"
+      >
+        <div class="flex flex-col gap-1">
+          <h6 class="text-sm font-medium text-n-slate-12">
+            {{ t('CONTACTS_LAYOUT.DETAILS.CSAT_DISABLED.TITLE') }}
+          </h6>
+          <span class="text-sm text-n-slate-11">
+            {{ t('CONTACTS_LAYOUT.DETAILS.CSAT_DISABLED.DESCRIPTION') }}
+          </span>
+        </div>
+        <Switch
+          v-model="isCsatDisabled"
+          :class="{ 'pointer-events-none opacity-50': isUpdating }"
+          @change="toggleCsatDisabled"
+        />
+      </div>
     </div>
     <Policy :permissions="['administrator']">
       <div

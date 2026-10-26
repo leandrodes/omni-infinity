@@ -40,6 +40,10 @@ export default {
       type: String,
       default: '',
     },
+    whatsappLink: {
+      type: String,
+      default: '',
+    },
   },
   emits: ['update'],
   data() {
@@ -72,6 +76,10 @@ export default {
     },
     cancelEdit() {
       this.isEditing = false;
+    },
+    openWhatsapp() {
+      if (!this.whatsappLink) return;
+      window.open(this.whatsappLink, '_blank', 'noopener,noreferrer');
     },
   },
 };
@@ -129,6 +137,16 @@ export default {
         @click="onCopy"
       />
       <NextButton
+        v-if="whatsappLink"
+        ghost
+        xs
+        slate
+        class="ltr:-ml-1 rtl:-mr-1"
+        icon="i-ph-whatsapp-logo"
+        :title="$t('CONTACT_PANEL.WHATSAPP_NUMBER')"
+        @click.stop.prevent="openWhatsapp"
+      />
+      <NextButton
         v-if="editable"
         ghost
         xs
@@ -163,6 +181,16 @@ export default {
         class="ltr:-ml-1 rtl:-mr-1"
         icon="i-lucide-clipboard"
         @click="onCopy"
+      />
+      <NextButton
+        v-if="whatsappLink"
+        ghost
+        xs
+        slate
+        class="ltr:-ml-1 rtl:-mr-1"
+        icon="i-ph-whatsapp-logo"
+        :title="$t('CONTACT_PANEL.WHATSAPP_NUMBER')"
+        @click.stop.prevent="openWhatsapp"
       />
       <NextButton
         v-if="editable"

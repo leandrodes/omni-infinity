@@ -220,6 +220,31 @@ describe NotificationListener do
   describe 'assignee_changed' do
     let(:event_name) { :'conversation.assignee_changed' }
 
+    it 'clears queue notifications when an open conversation is assigned' do
+      first_notification = create(
+        :notification, account: account, user: first_agent, primary_actor: conversation,
+                       notification_type: :conversation_assignment, read_at: nil
+      )
+      second_notification = create(
+        :notification, account: account, user: agent_with_out_notification, primary_actor: conversation,
+                       notification_type: :conversation_creation, read_at: nil
+      )
+      notification_builder_mock = instance_double(NotificationBuilder, perform: true)
+      allow(NotificationBuilder).to receive(:new).and_return(notification_builder_mock)
+
+      event = Events::Base.new(
+        event_name,
+        Time.zone.now,
+        conversation: conversation,
+        notifiable_assignee_change: true
+      )
+
+      listener.assignee_changed(event)
+
+      expect(first_notification.reload.read_at).to be_present
+      expect(second_notification.reload.read_at).to be_present
+    end
+
     context 'when notifiable_assignee_change is true but assignee is nil' do
       it 'does not create a notification' do
         conversation_with_nil_assignee = create(:conversation, account: account, inbox: inbox, assignee: nil)

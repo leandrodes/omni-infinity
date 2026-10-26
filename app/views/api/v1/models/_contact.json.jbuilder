@@ -5,10 +5,12 @@ json.id resource.id
 json.name resource.name
 json.phone_number resource.phone_number
 json.blocked resource.blocked
+json.csat_disabled resource.csat_disabled
 json.identifier resource.identifier
 json.company_id resource.company_id if Current.account&.feature_enabled?('companies')
 json.thumbnail resource.avatar_url
 json.custom_attributes resource.custom_attributes
+json.labels resource.label_list if local_assigns.fetch(:include_labels, false)
 json.last_activity_at resource.last_activity_at.to_i if resource[:last_activity_at].present?
 json.created_at resource.created_at.to_i if resource[:created_at].present?
 # we only want to output contact inbox when its /contacts endpoints

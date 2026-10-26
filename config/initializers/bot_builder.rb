@@ -9,7 +9,8 @@
 # Integrated into omni-infinity. Flows are stored as JSON under
 # Rails.root/storage/bot_flows (persisted via the storage_data volume).
 
-module BotFlowStore
+if ENV.fetch('BOT_BUILDER_ENABLED', 'true') == 'true'
+  module BotFlowStore
   WRITE_MUTEX = Mutex.new
 
   class << self
@@ -4330,4 +4331,5 @@ Rails.application.config.after_initialize do
   end
 
   Rails.logger.info('[BotBuilder] Ready.')
+end
 end

@@ -196,9 +196,16 @@ const confirmDeletion = () => {
               hide-offline-status
             />
             <div class="flex flex-col gap-1.5 items-start">
-              <span class="block text-heading-3 text-n-slate-12 capitalize">
-                {{ agent.name }}
-              </span>
+              <div class="flex items-center gap-2">
+                <span class="block text-heading-3 text-n-slate-12 capitalize">
+                  {{ agent.name }}
+                </span>
+                <span
+                  class="rounded-md bg-n-alpha-2 px-1.5 py-0.5 text-xs font-medium text-n-slate-11"
+                >
+                  ID {{ agent.id }}
+                </span>
+              </div>
               <div class="flex items-center gap-2">
                 <span class="text-body-main text-n-slate-11">
                   {{ agent.email }}

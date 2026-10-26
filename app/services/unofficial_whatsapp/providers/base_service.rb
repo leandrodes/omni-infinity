@@ -47,6 +47,14 @@ class UnofficialWhatsapp::Providers::BaseService
     raise 'Overwrite this method in child class'
   end
 
+  def block_contact(_phone_number)
+    raise 'Overwrite this method in child class'
+  end
+
+  def unblock_contact(_phone_number)
+    raise 'Overwrite this method in child class'
+  end
+
   def logout
     raise 'Overwrite this method in child class'
   end

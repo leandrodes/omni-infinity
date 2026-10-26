@@ -3,8 +3,13 @@ import { computed, ref } from 'vue';
 import { getInboxIconByType } from 'dashboard/helper/inbox';
 import { useRouter, useRoute } from 'vue-router';
 import { frontendURL, conversationUrl } from 'dashboard/helper/URLHelper.js';
-import { dynamicTime, shortTimestamp } from 'shared/helpers/timeHelper';
+import {
+  dateFormat,
+  dynamicTime,
+  shortTimestamp,
+} from 'shared/helpers/timeHelper';
 import { useExactTimestamp } from 'shared/composables/useExactTimestamp';
+import { useI18n } from 'vue-i18n';
 
 import Icon from 'dashboard/components-next/icon/Icon.vue';
 import Avatar from 'dashboard/components-next/avatar/Avatar.vue';
@@ -29,9 +34,18 @@ const props = defineProps({
     type: Array,
     required: true,
   },
+  dateOnly: {
+    type: Boolean,
+    default: false,
+  },
+  showCsat: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const exactTimestamp = useExactTimestamp();
+const { t } = useI18n();
 
 const router = useRouter();
 const route = useRoute();
@@ -57,8 +71,12 @@ const inboxIcon = computed(() => {
 
 const lastActivityAt = computed(() => {
   const timestamp = props.conversation?.timestamp;
-  return timestamp ? shortTimestamp(dynamicTime(timestamp)) : '';
+  if (!timestamp) return '';
+  if (props.dateOnly) return dateFormat(timestamp, 'dd/MM/yy');
+  return shortTimestamp(dynamicTime(timestamp));
 });
+
+const csatRating = computed(() => props.conversation?.csatRating);
 
 const hasVisibleLabels = computed(() => {
   const { labels = [] } = props.conversation;
@@ -144,6 +162,17 @@ const onCardClick = e => {
         :account-labels="accountLabels"
         :has-labels="hasVisibleLabels"
       />
+      <div
+        v-if="showCsat && csatRating"
+        class="flex items-center gap-1 text-xs text-n-slate-11"
+      >
+        <Icon icon="i-lucide-star" class="size-3 text-n-amber-9" />
+        <span>
+          {{
+            t('CONTACTS_LAYOUT.SIDEBAR.HISTORY.CSAT', { rating: csatRating })
+          }}
+        </span>
+      </div>
     </div>
   </div>
 </template>

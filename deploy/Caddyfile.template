@@ -12,12 +12,71 @@ ${TLS_DIRECTIVE}
   header {
     Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
     X-Content-Type-Options nosniff
-    X-Frame-Options SAMEORIGIN
     Referrer-Policy strict-origin-when-cross-origin
     Permissions-Policy "geolocation=(), microphone=(self), camera=()"
   }
 
+  @oauth_authorize path /oauth/authorize*
+  header @oauth_authorize -X-Frame-Options
+  header @oauth_authorize Content-Security-Policy "frame-ancestors https://typebot.infinitytelecom.com.br"
+
+  @not_oauth not path /oauth/authorize*
+  header @not_oauth X-Frame-Options SAMEORIGIN
+
+  handle /downloads/* {
+    root * /opt/omni-infinity/public
+    file_server
+  }
+
   reverse_proxy 127.0.0.1:3000 {
+    header_up X-Forwarded-Proto https
+  }
+}
+
+typebot.infinitytelecom.com.br {
+  tls leandro@infinityti.com.br
+
+  encode gzip zstd
+
+  log {
+    output file /var/log/caddy/access-typebot.log
+    format json
+  }
+
+  header {
+    Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+    X-Content-Type-Options nosniff
+    Referrer-Policy strict-origin-when-cross-origin
+    Permissions-Policy "geolocation=(), microphone=(self), camera=()"
+    -X-Frame-Options
+    Content-Security-Policy "frame-ancestors https://omnichannel.infinitytelecom.com.br"
+  }
+
+  reverse_proxy 127.0.0.1:8083 {
+    header_up X-Forwarded-Proto https
+  }
+}
+
+typebot-viewer.infinitytelecom.com.br {
+  tls leandro@infinityti.com.br
+
+  encode gzip zstd
+
+  log {
+    output file /var/log/caddy/access-typebot-viewer.log
+    format json
+  }
+
+  header {
+    Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+    X-Content-Type-Options nosniff
+    Referrer-Policy strict-origin-when-cross-origin
+    Permissions-Policy "geolocation=(), microphone=(self), camera=()"
+    -X-Frame-Options
+    Content-Security-Policy "frame-ancestors *"
+  }
+
+  reverse_proxy 127.0.0.1:8084 {
     header_up X-Forwarded-Proto https
   }
 }

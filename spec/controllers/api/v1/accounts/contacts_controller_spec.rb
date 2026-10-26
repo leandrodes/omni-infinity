@@ -742,6 +742,24 @@ RSpec.describe 'Contacts API', type: :request do
         expect(response).to have_http_status(:success)
       end
 
+      it 'deletes conversations with Typebot sessions' do
+        typebot_conversation = TypebotConversation.create!(
+          conversation: conversation,
+          session_id: SecureRandom.uuid,
+          typebot_id: 'test-typebot'
+        )
+        allow(OnlineStatusTracker).to receive(:get_presence).and_return(false)
+
+        perform_enqueued_jobs(only: ActiveRecord::DestroyAssociationAsyncJob) do
+          delete "/api/v1/accounts/#{account.id}/contacts/#{contact.id}",
+                 headers: admin.create_new_auth_token
+        end
+
+        expect(response).to have_http_status(:success)
+        expect(Conversation.exists?(conversation.id)).to be(false)
+        expect(TypebotConversation.exists?(typebot_conversation.id)).to be(false)
+      end
+
       it 'does not delete the contact if online' do
         allow(OnlineStatusTracker).to receive(:get_presence).and_return(true)
 

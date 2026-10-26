@@ -15,7 +15,7 @@ class Api::V1::Accounts::Contacts::ConversationsController < Api::V1::Accounts::
 
   def permitted_conversations
     conversations = Current.account.conversations.includes(
-      :assignee, :contact, :taggings, :contact_inbox
+      :assignee, :contact, :taggings, :contact_inbox, :csat_survey_response
     ).preload(
       inbox: :channel,
       ai_assignee: { avatar_attachment: [:blob] }

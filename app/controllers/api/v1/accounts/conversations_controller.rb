@@ -1,3 +1,4 @@
+# rubocop:disable Metrics/ClassLength
 class Api::V1::Accounts::ConversationsController < Api::V1::Accounts::BaseController
   include Events::Types
   include DateRangeHelper
@@ -44,7 +45,9 @@ class Api::V1::Accounts::ConversationsController < Api::V1::Accounts::BaseContro
                       ConversationBuilder.new(params: params, contact_inbox: @contact_inbox).perform
       # Reusing an existing WhatsApp conversation only redirects the agent to it;
       # the message composed in the new-conversation form must not be sent.
-      Messages::MessageBuilder.new(Current.user, @conversation, params[:message]).perform if params[:message].present? && @existing_whatsapp_conversation.blank?
+      if params[:message].present? && @existing_whatsapp_conversation.blank?
+        Messages::MessageBuilder.new(Current.user, @conversation, params[:message]).perform
+      end
     end
   end
 
@@ -94,6 +97,7 @@ class Api::V1::Accounts::ConversationsController < Api::V1::Accounts::BaseContro
       @status = @conversation.toggle_status
     end
     handle_human_open if @conversation.open? && Current.user.is_a?(User)
+    clear_read_notifications
   end
 
   def bot_handoff?
@@ -117,8 +121,9 @@ class Api::V1::Accounts::ConversationsController < Api::V1::Accounts::BaseContro
     # High-traffic accounts generate excessive DB writes when agents frequently switch between conversations.
     # Throttle last_seen updates to once per hour when there are no unread messages to reduce DB load.
     # Always update immediately if there are unread messages to maintain accurate read/unread state.
-    # Visiting a conversation should clear any unread inbox notifications for this conversation.
-    Notification::MarkConversationReadService.new(user: Current.user, account: Current.account, conversation: @conversation).perform
+    # Only clear notifications after the conversation is open and assigned to the current agent.
+    # Queue notifications must remain until the agent explicitly takes the conversation.
+    clear_read_notifications
     return update_last_seen_on_conversation(DateTime.now.utc, true) if assignee? && @conversation.assignee_unread_messages.any?
     return update_last_seen_on_conversation(DateTime.now.utc, false) if !assignee? && @conversation.unread_messages.any?
 
@@ -242,9 +247,24 @@ class Api::V1::Accounts::ConversationsController < Api::V1::Accounts::BaseContro
     @conversation_finder ||= ConversationFinder.new(Current.user, params)
   end
 
+  def clear_read_notifications
+    return unless @conversation.open? && assignee?
+
+    Notification::ClearConversationQueueNotificationsService.new(
+      account: Current.account,
+      conversation: @conversation
+    ).perform
+    Notification::MarkConversationReadService.new(
+      user: Current.user,
+      account: Current.account,
+      conversation: @conversation
+    ).perform
+  end
+
   def assignee?
     @conversation.assignee_id? && Current.user == @conversation.assignee
   end
 end
 
+# rubocop:enable Metrics/ClassLength
 Api::V1::Accounts::ConversationsController.prepend_mod_with('Api::V1::Accounts::ConversationsController')

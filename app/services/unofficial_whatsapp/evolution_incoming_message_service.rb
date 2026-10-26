@@ -82,6 +82,8 @@ class UnofficialWhatsapp::EvolutionIncomingMessageService
     return if text.blank? && media.blank?
 
     set_contact(sender_jid, payload['pushName'])
+    return if @contact.blocked?
+
     set_conversation
 
     return handle_oversized_media(media, text) if media.present? && media_exceeds_limit?(media)

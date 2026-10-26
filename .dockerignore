@@ -15,3 +15,8 @@ vendor/bundle
 .DS_Store
 *.swp
 *~
+
+# Typebot runtime secrets
+deploy/.env
+deploy/typebot.env
+deploy/typebot.env.example

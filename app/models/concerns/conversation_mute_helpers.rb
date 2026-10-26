@@ -5,14 +5,14 @@ module ConversationMuteHelpers
     return unless contact
 
     resolved!
-    contact.update(blocked: true)
+    ::Contacts::BlockService.new(contact: contact, blocked: true).perform
     create_muted_message
   end
 
   def unmute!
     return unless contact
 
-    contact.update(blocked: false)
+    ::Contacts::BlockService.new(contact: contact, blocked: false).perform
     create_unmuted_message
   end
 

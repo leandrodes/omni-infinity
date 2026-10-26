@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useMapGetter } from 'dashboard/composables/store';
 
 import CardLayout from 'dashboard/components-next/CardLayout.vue';
 import ContactsForm from 'dashboard/components-next/Contacts/ContactsForm/ContactsForm.vue';
@@ -9,6 +10,7 @@ import Avatar from 'dashboard/components-next/avatar/Avatar.vue';
 import Flag from 'dashboard/components-next/flag/Flag.vue';
 import ContactDeleteSection from 'dashboard/components-next/Contacts/ContactsCard/ContactDeleteSection.vue';
 import Checkbox from 'dashboard/components-next/checkbox/Checkbox.vue';
+import Label from 'dashboard/components-next/label/Label.vue';
 import countries from 'shared/constants/countries';
 
 const props = defineProps({
@@ -17,6 +19,7 @@ const props = defineProps({
   email: { type: String, default: '' },
   companyId: { type: [Number, String], default: '' },
   additionalAttributes: { type: Object, default: () => ({}) },
+  labels: { type: Array, default: () => [] },
   phoneNumber: { type: String, default: '' },
   thumbnail: { type: String, default: '' },
   availabilityStatus: { type: String, default: null },
@@ -36,6 +39,8 @@ const emit = defineEmits([
 
 const { t } = useI18n();
 
+const accountLabels = useMapGetter('labels/getLabels');
+
 const contactsFormRef = ref(null);
 
 const getInitialContactData = () => ({
@@ -50,6 +55,15 @@ const getInitialContactData = () => ({
 const contactData = ref(getInitialContactData());
 
 const isFormInvalid = computed(() => contactsFormRef.value?.isFormInvalid);
+
+const contactLabels = computed(() =>
+  (props.labels || []).map(title => {
+    return (
+      (accountLabels.value || []).find(label => label.title === title) ||
+      String(title)
+    );
+  })
+);
 
 const countriesMap = computed(() => {
   return countries.reduce((acc, country) => {
@@ -188,6 +202,17 @@ const handleAvatarHover = isHovered => {
               variant="link"
               size="xs"
               @click="onClickViewDetails"
+            />
+          </div>
+          <div
+            v-if="contactLabels.length"
+            class="flex flex-wrap items-center gap-1 mt-0.5"
+          >
+            <Label
+              v-for="label in contactLabels"
+              :key="label.id || label"
+              :label="label"
+              compact
             />
           </div>
         </div>

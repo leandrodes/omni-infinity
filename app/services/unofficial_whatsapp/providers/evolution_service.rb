@@ -94,6 +94,14 @@ class UnofficialWhatsapp::Providers::EvolutionService < UnofficialWhatsapp::Prov
     instance_post("/webhook/set/#{instance_name}", webhook_payload(url))
   end
 
+  def block_contact(phone_number)
+    update_block_status(phone_number, 'block')
+  end
+
+  def unblock_contact(phone_number)
+    update_block_status(phone_number, 'unblock')
+  end
+
   def send_message(phone_number, message)
     @message = message
     number = normalize_number(phone_number)
@@ -163,6 +171,14 @@ class UnofficialWhatsapp::Providers::EvolutionService < UnofficialWhatsapp::Prov
   end
 
   private
+
+  def update_block_status(phone_number, status)
+    payload = { number: normalize_number(phone_number), status: status }
+    response = instance_post("/chat/updateBlockStatus/#{instance_name}", payload)
+    return response unless response.code.to_i == 404
+
+    instance_post("/message/updateBlockStatus/#{instance_name}", payload)
+  end
 
   def config_for(key)
     GlobalConfig.get(key)[key].presence || ENV.fetch(key, nil)

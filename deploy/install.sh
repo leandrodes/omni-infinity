@@ -507,6 +507,8 @@ if [[ "$UP" =~ ^[Ss]$ ]]; then
   else
     warn "Caddyfile inválido. Verifique /etc/caddy/Caddyfile (rode: caddy validate --config /etc/caddy/Caddyfile)."
   fi
+  install -d -o caddy -g caddy /var/log/caddy >/dev/null 2>&1 || true
+  find /var/log/caddy -maxdepth 1 -type f -name '*.log' -exec chown caddy:caddy {} + >/dev/null 2>&1 || true
   systemctl enable caddy >/dev/null 2>&1 || true
   systemctl restart caddy >/dev/null 2>&1 || true
   if systemctl is-active --quiet caddy; then

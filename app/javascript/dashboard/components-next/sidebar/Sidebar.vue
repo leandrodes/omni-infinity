@@ -364,8 +364,8 @@ const menuItems = computed(() => {
   return [
     {
       name: 'Inbox',
-      label: t('SIDEBAR.INBOX'),
-      icon: 'i-lucide-inbox',
+      label: t('SIDEBAR.INBOX_NOTIFICATIONS'),
+      icon: 'i-lucide-bell-ring',
       to: accountScopedRoute('inbox_view'),
       activeOn: ['inbox_view', 'inbox_view_conversation'],
       getterKeys: {
@@ -821,7 +821,7 @@ const menuItems = computed(() => {
           name: 'Settings Bot Builder',
           label: 'Chatbot',
           icon: 'i-lucide-bot-message-square',
-          href: '/bot-builder',
+          href: `/bot-builder?account_id=${accountId.value}`,
         },
         ...(hasDataImport.value
           ? [

@@ -615,6 +615,30 @@ RSpec.describe 'Conversations API', type: :request do
         expect(conversation.reload.assignee_id).to eq(agent.id)
       end
 
+      it 'clears queue notifications when the agent opens a pending conversation' do
+        other_agent = create(:user, account: account, role: :agent)
+        create(:inbox_member, user: other_agent, inbox: conversation.inbox)
+        conversation.update!(status: :pending, assignee: nil)
+        agent_notification = create(
+          :notification, account: account, user: agent, primary_actor: conversation,
+                         notification_type: :conversation_assignment, read_at: nil
+        )
+        other_notification = create(
+          :notification, account: account, user: other_agent, primary_actor: conversation,
+                         notification_type: :conversation_assignment, read_at: nil
+        )
+
+        post "/api/v1/accounts/#{account.id}/conversations/#{conversation.display_id}/toggle_status",
+             headers: agent.create_new_auth_token,
+             params: { status: 'open' },
+             as: :json
+
+        expect(response).to have_http_status(:success)
+        expect(conversation.reload.assignee).to eq(agent)
+        expect(agent_notification.reload.read_at).to be_present
+        expect(other_notification.reload.read_at).to be_present
+      end
+
       it 'does not self assign and clears the agent bot owner if admin changes the conversation status to open' do
         conversation.update!(status: 'pending', assignee: nil, ai_assignee: agent_bot)
 
@@ -898,8 +922,9 @@ RSpec.describe 'Conversations API', type: :request do
         expect(conversation.reload.assignee_last_seen_at).not_to be_nil
       end
 
-      it 'marks unread notifications as read when updating last seen' do
+      it 'marks unread notifications as read for an open conversation assigned to the agent' do
         allow(Rails.configuration.dispatcher).to receive(:dispatch)
+        conversation.update!(assignee_id: agent.id)
         notification = create(:notification, account: account, user: agent, primary_actor: conversation, read_at: nil)
 
         post "/api/v1/accounts/#{account.id}/conversations/#{conversation.display_id}/update_last_seen",
@@ -913,6 +938,30 @@ RSpec.describe 'Conversations API', type: :request do
           kind_of(Time),
           hash_including(notification: have_attributes(id: notification.id))
         )
+      end
+
+      it 'keeps unread notifications while a pending conversation is not taken over' do
+        conversation.update!(assignee_id: agent.id, status: :pending)
+        notification = create(:notification, account: account, user: agent, primary_actor: conversation, read_at: nil)
+
+        post "/api/v1/accounts/#{account.id}/conversations/#{conversation.display_id}/update_last_seen",
+             headers: agent.create_new_auth_token,
+             as: :json
+
+        expect(response).to have_http_status(:success)
+        expect(notification.reload.read_at).to be_nil
+      end
+
+      it 'keeps unread notifications while an open conversation is unassigned' do
+        conversation.update!(status: :open, assignee: nil)
+        notification = create(:notification, account: account, user: agent, primary_actor: conversation, read_at: nil)
+
+        post "/api/v1/accounts/#{account.id}/conversations/#{conversation.display_id}/update_last_seen",
+             headers: agent.create_new_auth_token,
+             as: :json
+
+        expect(response).to have_http_status(:success)
+        expect(notification.reload.read_at).to be_nil
       end
 
       it 'throttles updates within an hour when there are no unread messages' do

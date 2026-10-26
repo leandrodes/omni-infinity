@@ -82,6 +82,10 @@ export default {
       }
       return this.findCountryFlag(countryCode, cityAndCountry);
     },
+    whatsappLink() {
+      const digits = (this.contact.phone_number || '').replace(/\D/g, '');
+      return digits ? `https://wa.me/${digits}` : '';
+    },
     socialProfiles() {
       const {
         social_profiles: socialProfiles,
@@ -97,17 +101,6 @@ export default {
         twitter,
         telegram,
       };
-    },
-    whatsappUsername() {
-      const username =
-        this.socialProfiles.whatsapp ||
-        this.additionalAttributes.social_whatsapp_user_name ||
-        '';
-
-      return username.toString().replace(/^@+/, '');
-    },
-    formattedWhatsappUsername() {
-      return this.whatsappUsername ? `@${this.whatsappUsername}` : '';
     },
   },
   watch: {
@@ -281,17 +274,10 @@ export default {
             icon="call"
             emoji="📞"
             :title="$t('CONTACT_PANEL.PHONE_NUMBER')"
+            :whatsapp-link="whatsappLink"
             show-copy
             editable
             @update="value => onFieldUpdate('phone_number', value)"
-          />
-          <ContactInfoRow
-            v-if="formattedWhatsappUsername"
-            :value="formattedWhatsappUsername"
-            icon="brand-whatsapp"
-            emoji="💬"
-            :title="$t('CONTACT_PANEL.WHATSAPP_USERNAME')"
-            show-copy
           />
           <ContactInfoRow
             v-if="contact.identifier"

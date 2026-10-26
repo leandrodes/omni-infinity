@@ -19,6 +19,22 @@ RSpec.describe Conversation do
     it { is_expected.to belong_to(:ai_assignee).optional }
     it { is_expected.to belong_to(:team).optional }
     it { is_expected.to belong_to(:campaign).optional }
+    it { is_expected.to have_many(:typebot_conversations).dependent(:delete_all) }
+  end
+
+  describe '#destroy' do
+    let(:conversation) { create(:conversation) }
+
+    it 'destroys the associated Typebot conversation' do
+      typebot_conversation = TypebotConversation.create!(
+        conversation: conversation,
+        session_id: SecureRandom.uuid,
+        typebot_id: 'test-typebot'
+      )
+
+      expect { conversation.destroy! }.to change(TypebotConversation, :count).by(-1)
+      expect(TypebotConversation.exists?(typebot_conversation.id)).to be(false)
+    end
   end
 
   describe 'concerns' do

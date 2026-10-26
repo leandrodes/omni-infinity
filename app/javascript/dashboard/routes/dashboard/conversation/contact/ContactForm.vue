@@ -6,18 +6,15 @@ import {
 } from 'shared/helpers/CustomErrors';
 import { required, email } from '@vuelidate/validators';
 import { useVuelidate } from '@vuelidate/core';
-import countries from 'shared/constants/countries.js';
 import { isPhoneNumberValid } from 'shared/helpers/Validators';
 import parsePhoneNumber from 'libphonenumber-js';
 import NextButton from 'dashboard/components-next/button/Button.vue';
 import Avatar from 'next/avatar/Avatar.vue';
-import ComboBox from 'dashboard/components-next/combobox/ComboBox.vue';
 
 export default {
   components: {
     NextButton,
     Avatar,
-    ComboBox,
   },
   props: {
     contact: {
@@ -39,35 +36,27 @@ export default {
   },
   data() {
     return {
-      countries: countries,
       companyName: '',
-      description: '',
       email: '',
       name: '',
       phoneNumber: '',
       activeDialCode: '',
       avatarFile: null,
       avatarUrl: '',
-      country: {
-        id: '',
-        name: '',
-      },
-      city: '',
       socialProfileUserNames: {
         facebook: '',
         twitter: '',
         linkedin: '',
         github: '',
         telegram: '',
+        instagram: '',
+        tiktok: '',
+        whatsapp: '',
       },
       socialProfileKeys: [
         { key: 'facebook', prefixURL: 'https://facebook.com/' },
-        { key: 'twitter', prefixURL: 'https://twitter.com/' },
-        { key: 'linkedin', prefixURL: 'https://linkedin.com/' },
-        { key: 'github', prefixURL: 'https://github.com/' },
         { key: 'telegram', prefixURL: 'https://t.me/' },
         { key: 'whatsapp', prefixURL: '@' },
-        { key: 'tiktok', prefixURL: 'https://tiktok.com/@' },
       ],
     };
   },
@@ -75,13 +64,11 @@ export default {
     name: {
       required,
     },
-    description: {},
     email: {
       email,
     },
     companyName: {},
     phoneNumber: {},
-    bio: {},
   },
   computed: {
     parsePhoneNumber() {
@@ -136,17 +123,6 @@ export default {
     onSuccess() {
       this.$emit('success');
     },
-    countryNameWithCode({ name, id }) {
-      if (!id) return name;
-      if (!name && !id) return '';
-      return `${name} (${id})`;
-    },
-    onCountryChange(value) {
-      const selected = this.countries.find(c => c.id === value);
-      this.country = selected
-        ? { id: selected.id, name: selected.name }
-        : { id: '', name: '' };
-    },
     setDialCode() {
       if (
         this.phoneNumber !== '' &&
@@ -169,14 +145,6 @@ export default {
       this.email = emailAddress || '';
       this.phoneNumber = phoneNumber || '';
       this.companyName = additionalAttributes.company_name || '';
-      this.country = {
-        id: additionalAttributes.country_code || '',
-        name:
-          additionalAttributes.country ||
-          this.$t('CONTACT_FORM.FORM.COUNTRY.SELECT_COUNTRY'),
-      };
-      this.city = additionalAttributes.city || '';
-      this.description = additionalAttributes.description || '';
       this.avatarUrl = this.contact.thumbnail || '';
       const {
         social_profiles: socialProfiles = {},
@@ -199,12 +167,6 @@ export default {
       };
     },
     getContactObject() {
-      if (this.country === null) {
-        this.country = {
-          id: '',
-          name: '',
-        };
-      }
       const socialProfileUserNames = {
         ...this.socialProfileUserNames,
         whatsapp: this.normalizeWhatsAppUsername(
@@ -218,15 +180,7 @@ export default {
         phone_number: this.setPhoneNumber,
         additional_attributes: {
           ...this.contact.additional_attributes,
-          description: this.description,
           company_name: this.companyName,
-          country_code: this.country.id,
-          country:
-            this.country.name ===
-            this.$t('CONTACT_FORM.FORM.COUNTRY.SELECT_COUNTRY')
-              ? ''
-              : this.country.name,
-          city: this.city,
           social_profiles: socialProfileUserNames,
         },
       };
@@ -345,17 +299,6 @@ export default {
         </label>
       </div>
     </div>
-    <div class="w-full">
-      <label :class="{ error: v$.description.$error }">
-        {{ $t('CONTACT_FORM.FORM.BIO.LABEL') }}
-        <textarea
-          v-model="description"
-          type="text"
-          :placeholder="$t('CONTACT_FORM.FORM.BIO.PLACEHOLDER')"
-          @input="v$.description.$touch"
-        />
-      </label>
-    </div>
     <div>
       <div class="w-full">
         <label
@@ -390,31 +333,6 @@ export default {
       :label="$t('CONTACT_FORM.FORM.COMPANY_NAME.LABEL')"
       :placeholder="$t('CONTACT_FORM.FORM.COMPANY_NAME.PLACEHOLDER')"
     />
-    <div class="w-full mb-4">
-      <label>
-        {{ $t('CONTACT_FORM.FORM.COUNTRY.LABEL') }}
-      </label>
-      <ComboBox
-        :model-value="country.id"
-        :options="
-          countries.map(c => ({
-            value: c.id,
-            label: countryNameWithCode(c),
-          }))
-        "
-        class="[&>div>button]:!bg-n-alpha-black2"
-        :placeholder="$t('CONTACT_FORM.FORM.COUNTRY.PLACEHOLDER')"
-        :search-placeholder="$t('CONTACT_FORM.FORM.COUNTRY.SELECT_PLACEHOLDER')"
-        @update:model-value="onCountryChange"
-      />
-    </div>
-    <woot-input
-      v-model="city"
-      class="w-full"
-      :label="$t('CONTACT_FORM.FORM.CITY.LABEL')"
-      :placeholder="$t('CONTACT_FORM.FORM.CITY.PLACEHOLDER')"
-    />
-
     <div class="w-full">
       <label>{{ $t('CONTACTS_PAGE.LIST.TABLE_HEADER.SOCIAL_PROFILES') }}</label>
       <div

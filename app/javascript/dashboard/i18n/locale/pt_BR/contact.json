@@ -4,6 +4,7 @@
     "EMAIL_ADDRESS": "Endereço de e-mail",
     "PHONE_NUMBER": "Número de telefone",
     "WHATSAPP_USERNAME": "Nome de usuário do WhatsApp",
+    "WHATSAPP_NUMBER": "WhatsApp",
     "IDENTIFIER": "Identificador",
     "COPY_SUCCESSFUL": "Copiado para área de transferência com sucesso",
     "COMPANY": "Empresa",
@@ -487,6 +488,15 @@
     "DETAILS": {
       "CREATED_AT": "Criado {date}",
       "LAST_ACTIVITY": "Última atividade {date}",
+      "CSAT_DISABLED": {
+        "TITLE": "Desativar pesquisa CSAT",
+        "DESCRIPTION": "Não enviar pesquisas de satisfação para este contato.",
+        "SUCCESS": "Pesquisa CSAT desativada para este contato",
+        "ERROR": "Não foi possível atualizar a pesquisa CSAT. Tente novamente mais tarde."
+      },
+      "CSAT_ENABLED": {
+        "SUCCESS": "Pesquisa CSAT reativada para este contato"
+      },
       "DELETE_CONTACT_DESCRIPTION": "Excluir permanentemente este contato. Esta ação é irreversível",
       "DELETE_CONTACT": "Excluir contato",
       "DELETE_DIALOG": {
@@ -518,7 +528,8 @@
         "MERGE": "Mesclar"
       },
       "HISTORY": {
-        "EMPTY_STATE": "Não há conversas anteriores associadas a este contato"
+        "EMPTY_STATE": "Não há conversas anteriores associadas a este contato",
+        "CSAT": "CSAT {rating}/5"
       },
       "ATTRIBUTES": {
         "SEARCH_PLACEHOLDER": "Pesquisar atributos",

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Documentação do Chatbot · <%= @account.name %></title>
+  <style>
+    :root { color-scheme: light; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f6f7f9; color: #1f2937; }
+    a { color: #4f46e5; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 22px; background: #fff; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 10; }
+    .topbar h1 { font-size: 16px; margin: 0; font-weight: 650; }
+    .topbar p { margin: 3px 0 0; color: #6b7280; font-size: 12px; }
+    .topbar nav { display: flex; align-items: center; gap: 18px; }
+    .topbar nav a { color: #4f46e5; text-decoration: none; font-size: 13px; font-weight: 600; }
+    main { max-width: 1040px; margin: 0 auto; padding: 28px 22px 56px; }
+    h2 { font-size: 22px; margin: 34px 0 10px; letter-spacing: -0.02em; }
+    h3 { font-size: 15px; margin: 22px 0 8px; }
+    p, li { font-size: 14px; line-height: 1.65; }
+    ul, ol { padding-left: 22px; }
+    .hero { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 24px; }
+    .hero h2 { margin-top: 0; }
+    .hero .lead { font-size: 15px; color: #374151; max-width: 820px; }
+    .callout { border-radius: 10px; padding: 12px 14px; margin: 14px 0; font-size: 13px; line-height: 1.6; background: #eef2ff; color: #3730a3; }
+    .callout.warn { background: #fff7ed; color: #9a3412; }
+    .callout.ok { background: #ecfdf5; color: #065f46; }
+    code { background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 5px; padding: 1px 5px; font-family: "SFMono-Regular", Consolas, monospace; font-size: 12.5px; }
+    pre { background: #111827; color: #f9fafb; border-radius: 10px; padding: 14px 16px; overflow-x: auto; font-size: 12.5px; line-height: 1.55; }
+    pre code { background: transparent; border: 0; padding: 0; color: inherit; }
+    table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; margin: 10px 0 18px; }
+    th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid #eef0f3; font-size: 13px; vertical-align: top; }
+    th { background: #f9fafb; color: #374151; font-size: 12px; text-transform: uppercase; letter-spacing: .03em; }
+    tr:last-child td { border-bottom: 0; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+    .footer { max-width: 1040px; margin: 0 auto; padding: 0 22px 32px; color: #6b7280; font-size: 11px; line-height: 1.6; }
+    @media (max-width: 700px) {
+      .topbar { align-items: flex-start; flex-direction: column; }
+      .topbar nav { flex-wrap: wrap; }
+      main { padding: 20px 14px 40px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>Chatbot · <%= @account.name %></h1>
+      <p>Documentação · variáveis e comandos do Chatbot</p>
+    </div>
+    <nav>
+      <a href="<%= bot_builder_path(account_id: @account.id) %>">Abrir editor</a>
+      <a href="/app/accounts/<%= @account.id %>/dashboard">Voltar ao Omni-Channel Infinity</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h2 id="variaveis-do-chatwoot">Variáveis do Chatwoot no Chatbot</h2>
+      <p class="lead">
+        O Omni-Channel envia os dados do contato, da conversa e da caixa de entrada como
+        <strong>variáveis pré-preenchidas</strong> para o Chatbot. Use essas variáveis em
+        mensagens, condições e chamadas de API para consultar o cliente pelo telefone,
+        nome, documento ou qualquer outro dado disponível.
+      </p>
+      <div class="callout">
+        <strong>Antes de usar:</strong> crie a variável no painel <strong>Variables</strong> do Chatbot
+        com exatamente o mesmo nome mostrado abaixo (por exemplo, <code>contact_phone</code>).
+        Variáveis não declaradas no Chatbot são ignoradas.
+      </div>
+    </section>
+
+    <h2>Como usar</h2>
+    <ol>
+      <li>No editor do Chatbot, abra <strong>Variables</strong> e crie as variáveis que deseja usar.</li>
+      <li>Em blocos de texto, condições ou HTTP Request, use a variável no formato <code>{{nome_da_variavel}}</code>.</li>
+      <li>Para transferir a conversa, use um bloco de texto com o comando <code>[[...]]</code> mostrado abaixo.</li>
+      <li>Clique em <strong>Publish</strong>. O Omni-Channel sempre executa a versão publicada.</li>
+    </ol>
+    <pre><code>Olá, {{contact_name}}!
+Seu telefone cadastrado é {{contact_phone}}.</code></pre>
+
+    <h2 id="variaveis-do-contato">Variáveis do contato</h2>
+    <table>
+      <thead><tr><th>Variável</th><th>Conteúdo</th></tr></thead>
+      <tbody>
+        <tr><td><code>contact_name</code></td><td>Nome completo do contato.</td></tr>
+        <tr><td><code>contact_first_name</code></td><td>Primeiro nome.</td></tr>
+        <tr><td><code>contact_last_name</code></td><td>Sobrenome.</td></tr>
+        <tr><td><code>contact_phone</code></td><td>Telefone no formato E.164, por exemplo <code>+5511987654321</code>.</td></tr>
+        <tr><td><code>contact_email</code></td><td>E-mail do contato.</td></tr>
+        <tr><td><code>contact_id</code></td><td>ID interno do contato.</td></tr>
+        <tr><td><code>contact_identifier</code></td><td>Identificador externo do contato, quando existir.</td></tr>
+        <tr><td><code>contact_type</code></td><td>Tipo do contato (lead, customer, etc.).</td></tr>
+        <tr><td><code>contact_country_code</code></td><td>Código do país.</td></tr>
+        <tr><td><code>contact_city</code></td><td>Cidade do contato.</td></tr>
+        <tr><td><code>contact_country</code></td><td>País do contato.</td></tr>
+        <tr><td><code>contact_description</code></td><td>Descrição/observações do contato.</td></tr>
+        <tr><td><code>contact_company_name</code></td><td>Empresa informada no contato.</td></tr>
+        <tr><td><code>contact_labels</code></td><td>Etiquetas do contato separadas por vírgula.</td></tr>
+        <tr><td><code>contact_custom_attributes</code></td><td>Todos os atributos personalizados em JSON.</td></tr>
+        <tr><td><code>contact_custom_&lt;chave&gt;</code></td><td>Cada atributo personalizado individualmente. Ex.: <code>contact_custom_cpf_cnpj</code>.</td></tr>
+        <tr><td><code>contact_additional_&lt;chave&gt;</code></td><td>Cada atributo adicional individualmente. Ex.: <code>contact_additional_company_name</code>.</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="variaveis-da-conversa">Variáveis da conversa</h2>
+    <table>
+      <thead><tr><th>Variável</th><th>Conteúdo</th></tr></thead>
+      <tbody>
+        <tr><td><code>conversation_id</code></td><td>ID interno da conversa.</td></tr>
+        <tr><td><code>conversation_display_id</code></td><td>Número amigável da conversa exibido no Omni-Channel.</td></tr>
+        <tr><td><code>conversation_status</code></td><td>Status atual: <code>open</code>, <code>pending</code> ou <code>resolved</code>.</td></tr>
+        <tr><td><code>conversation_priority</code></td><td>Prioridade da conversa, quando definida.</td></tr>
+        <tr><td><code>conversation_labels</code></td><td>Etiquetas da conversa separadas por vírgula.</td></tr>
+        <tr><td><code>conversation_custom_attributes</code></td><td>Atributos personalizados da conversa em JSON.</td></tr>
+        <tr><td><code>conversation_custom_&lt;chave&gt;</code></td><td>Cada atributo personalizado da conversa individualmente.</td></tr>
+        <tr><td><code>conversation_additional_&lt;chave&gt;</code></td><td>Cada atributo adicional da conversa individualmente.</td></tr>
+        <tr><td><code>team_id</code> / <code>team_name</code></td><td>Time atualmente atribuído à conversa.</td></tr>
+        <tr><td><code>assignee_id</code> / <code>assignee_name</code></td><td>Agente humano atualmente atribuído à conversa.</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="variaveis-da-conta">Variáveis da caixa de entrada e da conta</h2>
+    <table>
+      <thead><tr><th>Variável</th><th>Conteúdo</th></tr></thead>
+      <tbody>
+        <tr><td><code>inbox_id</code> / <code>inbox_name</code></td><td>ID e nome da caixa de entrada.</td></tr>
+        <tr><td><code>inbox_channel_type</code></td><td>Tipo do canal, por exemplo <code>Channel::UnofficialWhatsapp</code>.</td></tr>
+        <tr><td><code>inbox_phone_number</code></td><td>Telefone do canal, quando disponível.</td></tr>
+        <tr><td><code>inbox_timezone</code></td><td>Fuso horário configurado na caixa de entrada.</td></tr>
+        <tr><td><code>account_id</code> / <code>account_name</code></td><td>ID e nome da conta.</td></tr>
+        <tr><td><code>account_locale</code></td><td>Idioma da conta, por exemplo <code>pt_BR</code>.</td></tr>
+        <tr><td><code>account_timezone</code></td><td>Fuso horário configurado na conta.</td></tr>
+        <tr><td><code>chatbot_id</code></td><td>publicId do chatbot publicado.</td></tr>
+        <tr><td><code>chatbot_workspace_id</code></td><td>ID do workspace do chatbot da conta.</td></tr>
+        <tr><td><code>typebot_id</code></td><td>Alias de <code>chatbot_id</code>, mantido por compatibilidade.</td></tr>
+        <tr><td><code>typebot_workspace_id</code></td><td>Alias de <code>chatbot_workspace_id</code>, mantido por compatibilidade.</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="exemplos-api">Exemplos de uso em API</h2>
+    <p>
+      Em um bloco <strong>HTTP Request</strong> do Chatbot, use as variáveis diretamente na URL,
+      nos headers ou no corpo da requisição. O Chatbot substitui os valores antes de enviar.
+    </p>
+    <h3>Consulta por telefone e documento</h3>
+    <pre><code>GET https://api.exemplo.com/clientes?telefone={{contact_phone}}&amp;documento={{contact_custom_cpf_cnpj}}
+Authorization: Bearer SEU_TOKEN</code></pre>
+    <h3>Envio de dados no corpo JSON</h3>
+    <pre><code>{
+  "nome": "{{contact_name}}",
+  "telefone": "{{contact_phone}}",
+  "conversa": "{{conversation_display_id}}",
+  "time": "{{team_name}}"
+}</code></pre>
+    <div class="callout">
+      Se a variável chegar vazia, confirme o nome exato no painel Variables do Chatbot e se o
+      contato realmente possui aquele dado preenchido no Omni-Channel.
+    </div>
+
+    <h2 id="comandos-de-transferencia">Comandos de transferência</h2>
+    <p>
+      Coloque o comando em um bloco de texto. O comando é removido da mensagem e a conversa é
+      transferida. Se quiser enviar uma despedida, escreva o texto junto:
+    </p>
+    <pre><code>Encaminhando para o time comercial... [[queue:1, agent:1]]</code></pre>
+    <table>
+      <thead><tr><th>Comando</th><th>Resultado</th></tr></thead>
+      <tbody>
+        <tr><td><code>[[queue:1]]</code></td><td>Transfere somente para o time/fila 1.</td></tr>
+        <tr><td><code>[[fila:1]]</code></td><td>Apelido para transferir somente para o time/fila 1.</td></tr>
+        <tr><td><code>[[team:1]]</code></td><td>Apelido para transferir somente para o time 1.</td></tr>
+        <tr><td><code>[[agent:1]]</code></td><td>Transfere somente para o agente 1.</td></tr>
+        <tr><td><code>[[agente:1]]</code></td><td>Apelido para transferir somente para o agente 1.</td></tr>
+        <tr><td><code>[[queue:1, agent:1]]</code></td><td>Transfere para o time 1 e atribui ao agente 1.</td></tr>
+        <tr><td><code>[[fila:1, agente:1]]</code></td><td>Apelido para transferir para o time 1 e agente 1.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout warn">
+      <strong>Não use <code>{{...}}</code> nos comandos.</strong> O Chatbot interpreta chaves duplas
+      como variável e remove o conteúdo. Para comandos, use sempre colchetes duplos:
+      <code>[[queue:1, agent:1]]</code>.
+    </div>
+
+    <div class="callout ok">
+      <strong>Após a transferência, o bot é desativado nesta conversa.</strong> Novas mensagens
+      continuam com o time/agente humano e não reiniciam o Chatbot. Para testar novamente,
+      inicie uma nova conversa.
+    </div>
+
+    <h2 id="ids-desta-conta">IDs desta conta</h2>
+    <p>Use os IDs abaixo nos comandos de transferência.</p>
+    <div class="grid">
+      <div>
+        <h3>Times</h3>
+        <% if @teams.any? %>
+          <table>
+            <thead><tr><th>ID</th><th>Nome</th><th>Comando</th></tr></thead>
+            <tbody>
+              <% @teams.each do |team| %>
+                <tr>
+                  <td><%= team.id %></td>
+                  <td><%= team.name %></td>
+                  <td><code>[[queue:<%= team.id %>]]</code></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        <% else %>
+          <p>Nenhum time cadastrado.</p>
+        <% end %>
+      </div>
+      <div>
+        <h3>Agentes</h3>
+        <% if @agents.any? %>
+          <table>
+            <thead><tr><th>ID</th><th>Nome</th><th>Comando</th></tr></thead>
+            <tbody>
+              <% @agents.each do |agent| %>
+                <tr>
+                  <td><%= agent.id %></td>
+                  <td><%= agent.name %></td>
+                  <td><code>[[agent:<%= agent.id %>]]</code></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        <% else %>
+          <p>Nenhum agente cadastrado.</p>
+        <% end %>
+      </div>
+    </div>
+    <p>
+      O agente precisa ser membro da caixa de entrada ou administrador da conta para poder
+      receber a conversa. Os IDs também aparecem em <strong>Configurações &gt; Times</strong> e
+      <strong>Configurações &gt; Agentes</strong>.
+    </p>
+
+    <h2 id="limitacoes">Limitações e boas práticas</h2>
+    <ul>
+      <li>As variáveis são preenchidas no <strong>início da conversa</strong>. O <code>continueChat</code> do Chatbot não atualiza variáveis.</li>
+      <li>Se precisar de dados atualizados no meio da conversa, use um bloco HTTP Request para consultar a API e salvar o retorno em uma variável do Chatbot.</li>
+      <li>O Chatbot executa a versão publicada. Depois de editar, clique em <strong>Publish</strong>.</li>
+      <li>Blocos <strong>Redirect</strong> não são processados pelo nosso runtime. Use um bloco de texto com o comando <code>[[...]]</code>.</li>
+      <li>A URL do robô em <strong>Configurações &gt; Robôs</strong> deve ser a URL pública do viewer, não a URL do editor.</li>
+      <li>Após um handoff, o bot não volta a responder nesta conversa, mesmo que o time ou agente seja removido depois.</li>
+    </ul>
+
+    <h2>Links úteis</h2>
+    <ul>
+      <li><a href="#variaveis-do-contato">Variáveis do contato</a></li>
+      <li><a href="#variaveis-da-conversa">Variáveis da conversa</a></li>
+      <li><a href="#comandos-de-transferencia">Comandos de transferência</a></li>
+      <li><a href="/downloads/chatbot-source-2.28.2.tar.gz">Código-fonte desta instalação</a></li>
+    </ul>
+  </main>
+
+  <div class="footer">
+    Chatbot 2.28.2 · Software livre licenciado sob AGPLv3.
+    <a href="/downloads/chatbot-source-2.28.2.tar.gz">Código-fonte desta instalação</a>
+    · <a href="<%= bot_builder_licenses_path(account_id: @account.id) %>">Licenças</a>
+  </div>
+</body>
+</html>

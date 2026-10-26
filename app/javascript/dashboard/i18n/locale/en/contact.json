@@ -4,6 +4,7 @@
     "EMAIL_ADDRESS": "Email Address",
     "PHONE_NUMBER": "Phone number",
     "WHATSAPP_USERNAME": "WhatsApp username",
+    "WHATSAPP_NUMBER": "WhatsApp",
     "IDENTIFIER": "Identifier",
     "COPY_SUCCESSFUL": "Copied to clipboard successfully",
     "COMPANY": "Company",
@@ -489,6 +490,15 @@
     "DETAILS": {
       "CREATED_AT": "Created {date}",
       "LAST_ACTIVITY": "Last active {date}",
+      "CSAT_DISABLED": {
+        "TITLE": "Disable CSAT survey",
+        "DESCRIPTION": "Do not send satisfaction surveys to this contact.",
+        "SUCCESS": "CSAT survey disabled for this contact",
+        "ERROR": "Could not update the CSAT survey. Please try again later."
+      },
+      "CSAT_ENABLED": {
+        "SUCCESS": "CSAT survey enabled for this contact"
+      },
       "DELETE_CONTACT_DESCRIPTION": "Permanently delete this contact. This action is irreversible",
       "DELETE_CONTACT": "Delete contact",
       "DELETE_DIALOG": {
@@ -520,7 +530,8 @@
         "MERGE": "Merge"
       },
       "HISTORY": {
-        "EMPTY_STATE": "There are no previous conversations associated to this contact"
+        "EMPTY_STATE": "There are no previous conversations associated to this contact",
+        "CSAT": "CSAT {rating}/5"
       },
       "ATTRIBUTES": {
         "SEARCH_PLACEHOLDER": "Search for attributes",

@@ -3,6 +3,7 @@ x-base: &base
   env_file: .env
   volumes:
     - storage_data:/app/storage
+    - /opt/omni-secrets/oidc_signing_key.pem:/app/config/oidc_signing_key.pem:ro
 
 services:
   rails:
@@ -60,6 +61,41 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  typebot-db:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      - POSTGRES_DB=typebot
+      - POSTGRES_USER=typebot
+      - POSTGRES_PASSWORD=${TYPEBOT_DATABASE_PASSWORD}
+    volumes:
+      - typebot_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U typebot -d typebot']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  typebot-builder:
+    image: chatbot-typebot-builder:2.28.2
+    restart: always
+    depends_on:
+      typebot-db:
+        condition: service_healthy
+    env_file: typebot.env
+    ports:
+      - '127.0.0.1:8083:3000'
+
+  typebot-viewer:
+    image: chatbot-typebot-viewer:2.28.2
+    restart: always
+    depends_on:
+      typebot-db:
+        condition: service_healthy
+    env_file: typebot.env
+    ports:
+      - '127.0.0.1:8084:3000'
 
   # Caddy NÃO roda mais como container: é instalado e gerenciado no host
   # (systemd) pelo install.sh. O Caddy do host faz o reverse proxy/HTTPS para
@@ -171,3 +207,4 @@ volumes:
   wacalls_data:
   portainer_data:
   whisper_cache:
+  typebot_pg_data:
