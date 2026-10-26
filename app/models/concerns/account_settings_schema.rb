@@ -33,9 +33,6 @@ module AccountSettingsSchema
         'allow_transfer_whatsapp_groups': { 'type': %w[boolean null] },
         'reactions_appear_as_response': { 'type': %w[boolean null] },
         'conversation_filter_limits': { 'type': %w[object null] },
-        'hide_conversations_assigned_to_others': { 'type': %w[boolean null] },
-        'hide_resolved_conversations_assigned_to_others': { 'type': %w[boolean null] },
-        'show_conversations_only_from_user_teams': { 'type': %w[boolean null] },
         'captain_auto_resolve_mode': { 'type': %w[string null], 'enum': ['evaluated', 'legacy', 'disabled', nil] },
         'captain_false_promise_harness_enabled': { 'type': %w[boolean null] },
         'conversation_required_attributes': {

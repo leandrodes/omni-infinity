@@ -34,9 +34,7 @@ class Conversations::PermissionFilterService
     user_id = user.id
     conditions = ['conversations.assignee_id IS NULL', 'conversations.assignee_id = :user_id']
 
-    unless (account.settings || {})['hide_resolved_conversations_assigned_to_others']
-      conditions << 'conversations.status = :resolved_status'
-    end
+    conditions << 'conversations.status = :resolved_status' unless (account.settings || {})['hide_resolved_conversations_assigned_to_others']
 
     scope.where("(#{conditions.join(' OR ')})", user_id: user_id, resolved_status: Conversation.statuses[:resolved])
   end

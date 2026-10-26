@@ -6,6 +6,7 @@ class Api::V1::Accounts::ConversationsController < Api::V1::Accounts::BaseContro
   include ConversationCustomAttributesConcern
 
   before_action :conversation, except: [:index, :meta, :search, :create, :filter]
+  before_action :check_reopen_permission, only: [:toggle_status]
   before_action :inbox, :contact, :contact_inbox, only: [:create]
 
   ATTACHMENT_RESULTS_PER_PAGE = 100
@@ -88,12 +89,6 @@ class Api::V1::Accounts::ConversationsController < Api::V1::Accounts::BaseContro
 
   def toggle_status
     # FIXME: move this logic into a service object
-    if reopening_conversation? && !current_account_administrator? &&
-       !(Current.account.settings || {})['agents_can_reopen_conversations']
-      render json: { error: 'Reopening conversations is disabled for agents' }, status: :forbidden
-      return
-    end
-
     if bot_handoff?
       @conversation.bot_handoff!
     elsif params[:status].present?
@@ -261,6 +256,14 @@ class Api::V1::Accounts::ConversationsController < Api::V1::Accounts::BaseContro
 
   def current_account_administrator?
     Current.account.account_users.find_by(user_id: Current.user.id)&.administrator? == true
+  end
+
+  def check_reopen_permission
+    return unless reopening_conversation?
+    return if current_account_administrator?
+    return if (Current.account.settings || {})['agents_can_reopen_conversations']
+
+    render json: { error: 'Reopening conversations is disabled for agents' }, status: :forbidden
   end
 
   def clear_read_notifications

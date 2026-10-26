@@ -45,9 +45,9 @@ class Api::V1::Accounts::Conversations::ParticipantsController < Api::V1::Accoun
     return if current_account_administrator?
     return if (Current.account.settings || {})['agents_can_join_conversations_as_participant']
 
-    if participant_ids.include?(Current.user.id)
-      render json: { error: 'Joining conversations as participant is disabled for agents' }, status: :forbidden
-    end
+    return unless participant_ids.include?(Current.user.id)
+
+    render json: { error: 'Joining conversations as participant is disabled for agents' }, status: :forbidden
   end
 
   def current_account_administrator?

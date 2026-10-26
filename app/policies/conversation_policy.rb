@@ -42,10 +42,13 @@ class ConversationPolicy < ApplicationPolicy
 
   def hidden_assigned_conversation?
     return false unless (account.settings || {})['hide_conversations_assigned_to_others']
-    return false if record.assignee_id.blank? || record.assignee_id == user.id
-    return false if !(account.settings || {})['hide_resolved_conversations_assigned_to_others'] && record.resolved?
+    return false if record.assignee_id.blank?
+    return false if record.assignee_id == user.id
 
-    true
+    hide_resolved = (account.settings || {})['hide_resolved_conversations_assigned_to_others']
+    return true if hide_resolved
+
+    !record.resolved?
   end
 
   def team_only_visibility?

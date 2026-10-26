@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useAccount } from 'dashboard/composables/useAccount';
 import { useAlert } from 'dashboard/composables';
@@ -8,7 +8,7 @@ import Switch from 'next/switch/Switch.vue';
 import NextButton from 'dashboard/components-next/button/Button.vue';
 
 const { t } = useI18n();
-const { accountId, currentAccount, updateAccount } = useAccount();
+const { currentAccount, updateAccount } = useAccount();
 
 const defaultSettings = {
   enable_chatbot_conversations_filter: false,
@@ -59,8 +59,19 @@ const saveSettings = async () => {
         with-border
       >
         <div class="flex flex-col gap-4">
-          <div v-for="key in ['enable_chatbot_conversations_filter','enable_resolved_conversations_filter','show_inbox_name_in_conversation_list','list_only_last_resolved_conversation_per_contact']" :key="key" class="flex items-center justify-between gap-4">
-            <span class="text-sm">{{ t(`ATTENDANCE_SETTINGS.DISPLAY.${key.toUpperCase()}`) }}</span>
+          <div
+            v-for="key in [
+              'enable_chatbot_conversations_filter',
+              'enable_resolved_conversations_filter',
+              'show_inbox_name_in_conversation_list',
+              'list_only_last_resolved_conversation_per_contact',
+            ]"
+            :key="key"
+            class="flex items-center justify-between gap-4"
+          >
+            <span class="text-sm">{{
+              t(`ATTENDANCE_SETTINGS.DISPLAY.${key.toUpperCase()}`)
+            }}</span>
             <Switch v-model="settings[key]" />
           </div>
         </div>
@@ -72,8 +83,18 @@ const saveSettings = async () => {
         with-border
       >
         <div class="flex flex-col gap-4">
-          <div v-for="key in ['hide_conversations_assigned_to_others','hide_resolved_conversations_assigned_to_others','show_conversations_only_from_user_teams']" :key="key" class="flex items-center justify-between gap-4">
-            <span class="text-sm">{{ t(`ATTENDANCE_SETTINGS.VISIBILITY.${key.toUpperCase()}`) }}</span>
+          <div
+            v-for="key in [
+              'hide_conversations_assigned_to_others',
+              'hide_resolved_conversations_assigned_to_others',
+              'show_conversations_only_from_user_teams',
+            ]"
+            :key="key"
+            class="flex items-center justify-between gap-4"
+          >
+            <span class="text-sm">{{
+              t(`ATTENDANCE_SETTINGS.VISIBILITY.${key.toUpperCase()}`)
+            }}</span>
             <Switch v-model="settings[key]" />
           </div>
         </div>
@@ -85,8 +106,18 @@ const saveSettings = async () => {
         with-border
       >
         <div class="flex flex-col gap-4">
-          <div v-for="key in ['signature_agents_can_disable','agents_can_reopen_conversations','agents_can_join_conversations_as_participant']" :key="key" class="flex items-center justify-between gap-4">
-            <span class="text-sm">{{ t(`ATTENDANCE_SETTINGS.PERMISSIONS.${key.toUpperCase()}`) }}</span>
+          <div
+            v-for="key in [
+              'signature_agents_can_disable',
+              'agents_can_reopen_conversations',
+              'agents_can_join_conversations_as_participant',
+            ]"
+            :key="key"
+            class="flex items-center justify-between gap-4"
+          >
+            <span class="text-sm">{{
+              t(`ATTENDANCE_SETTINGS.PERMISSIONS.${key.toUpperCase()}`)
+            }}</span>
             <Switch v-model="settings[key]" />
           </div>
         </div>
@@ -98,8 +129,20 @@ const saveSettings = async () => {
         with-border
       >
         <div class="flex flex-col gap-4">
-          <div v-for="key in ['ignore_whatsapp_groups','enable_whatsapp_groups_filter','allow_create_whatsapp_groups','allow_end_whatsapp_groups','allow_transfer_whatsapp_groups']" :key="key" class="flex items-center justify-between gap-4">
-            <span class="text-sm">{{ t(`ATTENDANCE_SETTINGS.GROUPS.${key.toUpperCase()}`) }}</span>
+          <div
+            v-for="key in [
+              'ignore_whatsapp_groups',
+              'enable_whatsapp_groups_filter',
+              'allow_create_whatsapp_groups',
+              'allow_end_whatsapp_groups',
+              'allow_transfer_whatsapp_groups',
+            ]"
+            :key="key"
+            class="flex items-center justify-between gap-4"
+          >
+            <span class="text-sm">{{
+              t(`ATTENDANCE_SETTINGS.GROUPS.${key.toUpperCase()}`)
+            }}</span>
             <Switch v-model="settings[key]" />
           </div>
         </div>
@@ -112,7 +155,9 @@ const saveSettings = async () => {
       >
         <div class="flex flex-col gap-4">
           <div class="flex items-center justify-between gap-4">
-            <span class="text-sm">{{ t('ATTENDANCE_SETTINGS.OTHERS.REACTIONS_APPEAR_AS_RESPONSE') }}</span>
+            <span class="text-sm">{{
+              t('ATTENDANCE_SETTINGS.OTHERS.REACTIONS_APPEAR_AS_RESPONSE')
+            }}</span>
             <Switch v-model="settings.reactions_appear_as_response" />
           </div>
         </div>
