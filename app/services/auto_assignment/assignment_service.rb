@@ -72,7 +72,20 @@ class AutoAssignment::AssignmentService
     agents = filter_agents_by_rate_limit(agents)
     return nil if agents.empty?
 
-    round_robin_selector.select_agent(agents)
+    selector_for(conversation).select_agent(agents)
+  end
+
+  def selector_for(conversation)
+    algorithm = conversation&.team&.auto_assignment_algorithm || 'round_robin'
+
+    case algorithm
+    when 'balanced'
+      AutoAssignment::BalancedSelector.new(inbox: inbox)
+    when 'priority'
+      AutoAssignment::PrioritySelector.new(inbox: inbox, team: conversation&.team)
+    else
+      round_robin_selector
+    end
   end
 
   def filter_agents_by_team(agents, conversation)

@@ -47,6 +47,7 @@ export default {
       description = '',
       name: title = '',
       allow_auto_assign: allowAutoAssign = true,
+      auto_assignment_algorithm: autoAssignmentAlgorithm = 'round_robin',
       icon = '',
       icon_color: iconColor = '',
     } = formData;
@@ -55,6 +56,7 @@ export default {
       description,
       title,
       allowAutoAssign,
+      autoAssignmentAlgorithm,
       icon,
       iconColor,
     });
@@ -84,6 +86,7 @@ export default {
         description: this.state.description,
         name: this.state.title,
         allow_auto_assign: this.state.allowAutoAssign,
+        auto_assignment_algorithm: this.state.autoAssignmentAlgorithm,
         icon: this.state.icon,
         icon_color: this.state.iconColor,
       });
@@ -164,6 +167,23 @@ export default {
         <label for="conversation_creation">
           {{ $t('TEAMS_SETTINGS.FORM.AUTO_ASSIGN.LABEL') }}
         </label>
+      </div>
+
+      <div v-if="state.allowAutoAssign" class="w-full">
+        <label class="block text-sm mb-1">
+          {{ $t('TEAMS_SETTINGS.FORM.AUTO_ASSIGN.ALGORITHM.LABEL') }}
+        </label>
+        <select v-model="state.autoAssignmentAlgorithm" class="w-full text-sm">
+          <option value="round_robin">
+            {{ $t('TEAMS_SETTINGS.FORM.AUTO_ASSIGN.ALGORITHM.ROUND_ROBIN') }}
+          </option>
+          <option value="balanced">
+            {{ $t('TEAMS_SETTINGS.FORM.AUTO_ASSIGN.ALGORITHM.BALANCED') }}
+          </option>
+          <option value="priority">
+            {{ $t('TEAMS_SETTINGS.FORM.AUTO_ASSIGN.ALGORITHM.PRIORITY') }}
+          </option>
+        </select>
       </div>
       <div class="flex flex-row justify-end gap-2 py-2 px-0 w-full">
         <div class="w-full">

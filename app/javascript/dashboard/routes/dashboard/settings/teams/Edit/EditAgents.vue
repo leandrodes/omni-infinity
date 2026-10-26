@@ -27,6 +27,7 @@ export default {
   data() {
     return {
       selectedAgents: [],
+      priorityLevels: {},
       isCreating: false,
     };
   },
@@ -66,6 +67,9 @@ export default {
       });
       const members = this.teamMembers.map(item => item.id);
       this.updateSelectedAgents(members);
+      this.teamMembers.forEach(member => {
+        this.priorityLevels[member.id] = member.priority_level || 1;
+      });
     } catch {
       this.updateSelectedAgents([]);
     }
@@ -75,6 +79,14 @@ export default {
     updateSelectedAgents(newAgentList) {
       this.v$.selectedAgents.$touch();
       this.selectedAgents = [...newAgentList];
+      newAgentList.forEach(agentId => {
+        if (this.priorityLevels[agentId] === undefined) {
+          this.priorityLevels[agentId] = 1;
+        }
+      });
+    },
+    updatePriorityLevel(agentId, value) {
+      this.priorityLevels[agentId] = Number(value) || 1;
     },
     async addAgents() {
       this.isCreating = true;
@@ -84,6 +96,7 @@ export default {
         await this.$store.dispatch('teamMembers/update', {
           teamId,
           agentsList: selectedAgents,
+          priorities: this.priorityLevels,
         });
         router.replace({
           name: 'settings_teams_edit_finish',
@@ -121,6 +134,8 @@ export default {
           :agent-list="agentList"
           :selected-agents="selectedAgents"
           :update-selected-agents="updateSelectedAgents"
+          :priority-levels="priorityLevels"
+          :update-priority-level="updatePriorityLevel"
           :is-working="isCreating"
           :submit-button-text="
             $t('TEAMS_SETTINGS.EDIT_FLOW.AGENTS.BUTTON_TEXT')

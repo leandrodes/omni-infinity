@@ -73,7 +73,8 @@
       "ADD_AGENTS": "Adicionando agentes à sua caixa de entrada...",
       "SELECT": "Selecionar",
       "SELECT_ALL": "Selecionar todos os agentes",
-      "SELECTED_COUNT": "{selected} de {total} agentes selecionados."
+      "SELECTED_COUNT": "{selected} de {total} agentes selecionados.",
+      "PRIORITY_LEVEL": "Nível de atendimento"
     },
     "ADD": {
       "TITLE": "Adicionar agentes ao time: {teamName}",
@@ -116,7 +117,13 @@
         "PLACEHOLDER": "Breve descrição sobre este time."
       },
       "AUTO_ASSIGN": {
-        "LABEL": "Permitir atribuição automática para este time."
+        "LABEL": "Atribuição Automática",
+        "ALGORITHM": {
+          "LABEL": "Algoritmo de distribuição",
+          "ROUND_ROBIN": "Sequencial (Round Robin)",
+          "BALANCED": "Balanceada",
+          "PRIORITY": "Prioridade"
+        }
       },
       "SUBMIT_CREATE": "Criar novo time"
     }

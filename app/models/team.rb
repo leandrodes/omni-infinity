@@ -21,6 +21,8 @@ class Team < ApplicationRecord
   include AccountCacheRevalidator
 
   belongs_to :account
+
+  enum :auto_assignment_algorithm, { round_robin: 0, balanced: 1, priority: 2 }, default: :round_robin
   has_many :team_members, dependent: :destroy_async
   has_many :members, through: :team_members, source: :user
   has_many :conversations, dependent: :nullify

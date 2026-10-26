@@ -21,6 +21,14 @@ const props = defineProps({
     type: Function,
     default: () => {},
   },
+  priorityLevels: {
+    type: Object,
+    default: () => ({}),
+  },
+  updatePriorityLevel: {
+    type: Function,
+    default: () => {},
+  },
   isWorking: {
     type: Boolean,
     default: false,
@@ -77,6 +85,7 @@ const headers = computed(() => [
   '',
   t('TEAMS_SETTINGS.AGENTS.AGENT'),
   t('TEAMS_SETTINGS.AGENTS.EMAIL'),
+  t('TEAMS_SETTINGS.AGENTS.PRIORITY_LEVEL'),
 ]);
 </script>
 
@@ -126,6 +135,18 @@ const headers = computed(() => [
             <span class="text-body-main text-n-slate-11 truncate block">
               {{ agent.email || '---' }}
             </span>
+          </BaseTableCell>
+
+          <BaseTableCell class="min-w-0">
+            <input
+              v-if="isAgentSelected(agent.id)"
+              type="number"
+              min="1"
+              max="10"
+              class="w-16 text-right border rounded px-2 py-1"
+              :value="priorityLevels[agent.id] || 1"
+              @change="updatePriorityLevel(agent.id, $event.target.value)"
+            />
           </BaseTableCell>
         </template>
       </BaseTableRow>

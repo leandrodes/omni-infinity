@@ -4,12 +4,12 @@ class Api::V1::Accounts::TeamMembersController < Api::V1::Accounts::BaseControll
   before_action :validate_member_id_params, only: [:create, :update, :destroy]
 
   def index
-    @team_members = @team.team_members.map(&:user)
+    @team_members = @team.team_members.includes(:user)
   end
 
   def create
     ActiveRecord::Base.transaction do
-      @team_members = @team.add_members(members_to_be_added_ids)
+      @team_members = @team.team_members.includes(:user).where(user_id: members_to_be_added_ids)
     end
   end
 
@@ -17,6 +17,8 @@ class Api::V1::Accounts::TeamMembersController < Api::V1::Accounts::BaseControll
     ActiveRecord::Base.transaction do
       @team.add_members(members_to_be_added_ids)
       @team.remove_members(members_to_be_removed_ids)
+
+      update_priority_levels if params[:priorities].present?
     end
     @team_members = @team.members
     render action: 'create'
@@ -41,6 +43,13 @@ class Api::V1::Accounts::TeamMembersController < Api::V1::Accounts::BaseControll
 
   def current_members_ids
     @current_members_ids ||= @team.members.pluck(:id)
+  end
+
+  def update_priority_levels
+    priorities = params.permit(priorities: {})[:priorities] || {}
+    priorities.each do |user_id, priority_level|
+      @team.team_members.find_by(user_id: user_id)&.update!(priority_level: priority_level)
+    end
   end
 
   def fetch_team

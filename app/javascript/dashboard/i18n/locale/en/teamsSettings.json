@@ -73,7 +73,8 @@
       "ADD_AGENTS": "Adding Agents to your Team...",
       "SELECT": "select",
       "SELECT_ALL": "select all agents",
-      "SELECTED_COUNT": "{selected} out of {total} agents selected."
+      "SELECTED_COUNT": "{selected} out of {total} agents selected.",
+      "PRIORITY_LEVEL": "Priority level"
     },
     "ADD": {
       "TITLE": "Add agents to team - {teamName}",
@@ -116,7 +117,13 @@
         "PLACEHOLDER": "Short description about this team."
       },
       "AUTO_ASSIGN": {
-        "LABEL": "Allow auto assign for this team."
+        "LABEL": "Auto assignment",
+        "ALGORITHM": {
+          "LABEL": "Assignment algorithm",
+          "ROUND_ROBIN": "Sequential (Round Robin)",
+          "BALANCED": "Balanced",
+          "PRIORITY": "Priority"
+        }
       },
       "SUBMIT_CREATE": "Create team"
     }
