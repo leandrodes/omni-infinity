@@ -1091,7 +1091,8 @@
       "ENABLE_CHATBOT_CONVERSATIONS_FILTER": "Habilitar filtro conversas no chatbot",
       "ENABLE_RESOLVED_CONVERSATIONS_FILTER": "Habilitar filtro conversas resolvidas",
       "SHOW_INBOX_NAME_IN_CONVERSATION_LIST": "Habilitar nome da caixa de entrada na lista",
-      "LIST_ONLY_LAST_RESOLVED_CONVERSATION_PER_CONTACT": "Listar somente última conversa resolvida do contato"
+      "LIST_ONLY_LAST_RESOLVED_CONVERSATION_PER_CONTACT": "Listar somente última conversa resolvida do contato",
+      "SHOW_CONVERSATION_STATUS_IN_CONVERSATION_LIST": "Habilitar status da conversa na lista de conversas"
     },
     "VISIBILITY": {
       "TITLE": "Visualização",

@@ -1125,7 +1125,8 @@
       "ENABLE_CHATBOT_CONVERSATIONS_FILTER": "Enable chatbot conversations filter",
       "ENABLE_RESOLVED_CONVERSATIONS_FILTER": "Enable resolved conversations filter",
       "SHOW_INBOX_NAME_IN_CONVERSATION_LIST": "Show inbox name in conversation list",
-      "LIST_ONLY_LAST_RESOLVED_CONVERSATION_PER_CONTACT": "List only last resolved conversation per contact"
+      "LIST_ONLY_LAST_RESOLVED_CONVERSATION_PER_CONTACT": "List only last resolved conversation per contact",
+      "SHOW_CONVERSATION_STATUS_IN_CONVERSATION_LIST": "Show conversation status in conversation list"
     },
     "VISIBILITY": {
       "TITLE": "Visibility",
