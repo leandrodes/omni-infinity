@@ -143,6 +143,11 @@
     "SHOW_QUOTED_TEXT": "Mostrar Texto Citado",
     "MESSAGE_READ": "Lida",
     "SENDING": "Enviando",
-    "UNREAD_COUNT_OVERFLOW": "9+"
+    "UNREAD_COUNT_OVERFLOW": "9+",
+    "STATUS": {
+      "OPEN": "Aberta",
+      "PENDING": "Pendente",
+      "RESOLVED": "Resolvida"
+    }
   }
 }

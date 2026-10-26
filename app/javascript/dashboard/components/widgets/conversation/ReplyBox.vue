@@ -530,9 +530,10 @@ export default {
     },
     isEditorDisabled() {
       return (
-        (this.isAWhatsAppChannel || this.isAPIInbox) &&
-        !this.isOnPrivateNote &&
-        !this.currentChat.can_reply
+        this.currentChat?.status === wootConstants.STATUS_TYPE.RESOLVED ||
+        ((this.isAWhatsAppChannel || this.isAPIInbox) &&
+          !this.isOnPrivateNote &&
+          !this.currentChat.can_reply)
       );
     },
   },

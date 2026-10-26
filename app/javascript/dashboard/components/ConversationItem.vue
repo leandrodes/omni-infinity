@@ -2,6 +2,7 @@
 import { computed, ref, watch, inject } from 'vue';
 import { useRouter } from 'vue-router';
 import { useStore, useMapGetter } from 'dashboard/composables/store';
+import { useI18n } from 'vue-i18n';
 import { useAccount } from 'dashboard/composables/useAccount';
 import { frontendURL, conversationUrl } from 'dashboard/helper/URLHelper';
 import ConversationCard from './widgets/conversation/ConversationCard.vue';
@@ -21,6 +22,7 @@ const props = defineProps({
 
 const router = useRouter();
 const store = useStore();
+const { t } = useI18n();
 
 const selectConversation = inject('selectConversation');
 const deSelectConversation = inject('deSelectConversation');
@@ -82,6 +84,25 @@ const showInboxName = computed(() => {
   }
 
   return !activeInbox.value && inboxesList.value.length > 1;
+});
+
+const showConversationStatus = computed(
+  () =>
+    currentAccount.value?.settings
+      ?.show_conversation_status_in_conversation_list === true
+);
+
+const statusLabel = computed(() => {
+  switch (props.source.status) {
+    case 'open':
+      return t('CHAT_LIST.STATUS.OPEN');
+    case 'pending':
+      return t('CHAT_LIST.STATUS.PENDING');
+    case 'resolved':
+      return t('CHAT_LIST.STATUS.RESOLVED');
+    default:
+      return props.source.status;
+  }
 });
 const isInboxView = computed(() => !!activeInbox.value);
 const showAssigneeForExpandedCard = computed(
@@ -188,40 +209,49 @@ const onDeleteConversation = () => {
 </script>
 
 <template>
-  <!-- Expanded layout: wide screen + expanded setting -->
-  <ConversationCardExpanded
-    v-if="showExpanded"
-    :chat="source"
-    :current-contact="currentContact"
-    :assignee="assignee"
-    :inbox="inbox"
-    :selected="isConversationSelected(source.id)"
-    :is-active-chat="isActiveChat"
-    :show-assignee="showAssigneeForExpandedCard"
-    :show-inbox-name="showInboxName"
-    :is-inbox-view="isInboxView"
-    @select-conversation="onExpandedSelect"
-    @de-select-conversation="onExpandedSelect"
-    @click="onCardClick"
-    @contextmenu="openContextMenu"
-  />
+  <div class="flex flex-col">
+    <!-- Expanded layout: wide screen + expanded setting -->
+    <ConversationCardExpanded
+      v-if="showExpanded"
+      :chat="source"
+      :current-contact="currentContact"
+      :assignee="assignee"
+      :inbox="inbox"
+      :selected="isConversationSelected(source.id)"
+      :is-active-chat="isActiveChat"
+      :show-assignee="showAssigneeForExpandedCard"
+      :show-inbox-name="showInboxName"
+      :is-inbox-view="isInboxView"
+      @select-conversation="onExpandedSelect"
+      @de-select-conversation="onExpandedSelect"
+      @click="onCardClick"
+      @contextmenu="openContextMenu"
+    />
 
-  <!-- Default (condensed) layout -->
-  <ConversationCard
-    v-else
-    :chat="source"
-    :current-contact="currentContact"
-    :assignee="assignee"
-    :inbox="inbox"
-    :selected="isConversationSelected(source.id)"
-    :is-active-chat="isActiveChat"
-    :show-assignee="showAssignee"
-    :show-inbox-name="showInboxName"
-    @click="onCardClick"
-    @contextmenu="openContextMenu"
-    @select-conversation="selectConversation"
-    @de-select-conversation="deSelectConversation"
-  />
+    <!-- Default (condensed) layout -->
+    <ConversationCard
+      v-else
+      :chat="source"
+      :current-contact="currentContact"
+      :assignee="assignee"
+      :inbox="inbox"
+      :selected="isConversationSelected(source.id)"
+      :is-active-chat="isActiveChat"
+      :show-assignee="showAssignee"
+      :show-inbox-name="showInboxName"
+      @click="onCardClick"
+      @contextmenu="openContextMenu"
+      @select-conversation="selectConversation"
+      @de-select-conversation="deSelectConversation"
+    />
+
+    <div
+      v-if="showConversationStatus"
+      class="px-3 pb-2 text-xs font-medium text-n-slate-11"
+    >
+      {{ statusLabel }}
+    </div>
+  </div>
 
   <!-- Shared context menu for both layouts -->
   <ContextMenu

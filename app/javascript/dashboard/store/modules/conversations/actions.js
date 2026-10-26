@@ -267,7 +267,8 @@ const actions = {
       });
       dispatch('markMessagesRead', { id: conversationId }, { root: true });
     } catch (error) {
-      // Handle error
+      // Propagate permission errors so callers can show a specific message.
+      throw error;
     }
   },
 

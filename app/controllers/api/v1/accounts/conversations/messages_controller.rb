@@ -6,6 +6,11 @@ class Api::V1::Accounts::Conversations::MessagesController < Api::V1::Accounts::
   end
 
   def create
+    if @conversation.resolved? && (params[:message_type].blank? || params[:message_type].to_s == 'outgoing' || ActiveModel::Type::Boolean.new.cast(params[:private]))
+      render json: { error: 'Reopen the conversation before sending a message' }, status: :unprocessable_entity
+      return
+    end
+
     user = Current.user || @resource
     mb = Messages::MessageBuilder.new(user, @conversation, params)
     @message = mb.perform
