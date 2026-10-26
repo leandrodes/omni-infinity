@@ -747,9 +747,16 @@ function toggleConversationStatus(
     payload.customAttributes = customAttributes;
   }
 
-  store.dispatch('toggleStatus', payload).then(() => {
-    useAlert(t('CONVERSATION.CHANGE_STATUS'));
-  });
+  store
+    .dispatch('toggleStatus', payload)
+    .then(() => {
+      useAlert(t('CONVERSATION.CHANGE_STATUS'));
+    })
+    .catch(error => {
+      if (error?.response?.status === 403) {
+        useAlert(t('CONVERSATION.NO_PERMISSION_REOPEN'));
+      }
+    });
 }
 
 function handleResolveConversation(conversationId, status, snoozedUntil) {

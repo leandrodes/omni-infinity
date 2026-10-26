@@ -95,10 +95,18 @@ const toggleStatus = (status, snoozedUntil, customAttributes = null) => {
     payload.customAttributes = customAttributes;
   }
 
-  store.dispatch('toggleStatus', payload).then(() => {
-    useAlert(t('CONVERSATION.CHANGE_STATUS'));
-    isLoading.value = false;
-  });
+  store
+    .dispatch('toggleStatus', payload)
+    .then(() => {
+      useAlert(t('CONVERSATION.CHANGE_STATUS'));
+      isLoading.value = false;
+    })
+    .catch(error => {
+      if (error?.response?.status === 403) {
+        useAlert(t('CONVERSATION.NO_PERMISSION_REOPEN'));
+      }
+      isLoading.value = false;
+    });
 };
 
 const handleResolveWithAttributes = ({ attributes, context }) => {

@@ -95,10 +95,18 @@ const onClickSelfAssign = async () => {
 };
 
 const reopenConversation = async () => {
-  await store.dispatch('toggleStatus', {
-    conversationId: currentChat.value?.id,
-    status: 'open',
-  });
+  try {
+    await store.dispatch('toggleStatus', {
+      conversationId: currentChat.value?.id,
+      status: 'open',
+    });
+    return true;
+  } catch (error) {
+    if (error?.response?.status === 403) {
+      useAlert(t('CONVERSATION.NO_PERMISSION_REOPEN'));
+    }
+    return false;
+  }
 };
 
 const onClickBotHandoff = async () => {
@@ -106,7 +114,8 @@ const onClickBotHandoff = async () => {
     const shouldAssignToCurrentUser =
       isAgentBotOwned.value || needsAssignmentToCurrentUser.value;
 
-    await reopenConversation();
+    const reopened = await reopenConversation();
+    if (!reopened) return;
 
     if (shouldAssignToCurrentUser) {
       await selfAssignConversation();
