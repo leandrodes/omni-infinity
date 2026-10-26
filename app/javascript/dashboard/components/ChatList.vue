@@ -19,6 +19,7 @@ import TeleportWithDirection from 'dashboard/components-next/TeleportWithDirecti
 import ConversationResolveAttributesModal from 'dashboard/components-next/ConversationWorkflow/ConversationResolveAttributesModal.vue';
 
 import { useUISettings } from 'dashboard/composables/useUISettings';
+import { useAccount } from 'dashboard/composables/useAccount';
 import { useAlert } from 'dashboard/composables';
 import { useBulkActions } from 'dashboard/composables/chatlist/useBulkActions';
 import { useFilter } from 'shared/composables/useFilter';
@@ -61,6 +62,7 @@ const props = defineProps({
 
 const emit = defineEmits(['conversationLoad']);
 const { uiSettings } = useUISettings();
+const { currentAccount } = useAccount();
 const { t } = useI18n();
 const router = useRouter();
 const store = useStore();
@@ -77,7 +79,12 @@ watch(
   value => {
     if (value === 'resolved') {
       activeStatus.value = wootConstants.STATUS_TYPE.RESOLVED;
-    } else if (activeStatus.value === wootConstants.STATUS_TYPE.RESOLVED) {
+    } else if (value === 'chatbot') {
+      activeStatus.value = wootConstants.STATUS_TYPE.PENDING;
+    } else if (
+      activeStatus.value === wootConstants.STATUS_TYPE.RESOLVED ||
+      activeStatus.value === wootConstants.STATUS_TYPE.PENDING
+    ) {
       activeStatus.value = wootConstants.STATUS_TYPE.OPEN;
     }
   },
@@ -255,6 +262,23 @@ const conversationListPagination = computed(() => {
   return currentPage.value + 1;
 });
 
+const filterLimit = computed(() => {
+  const limits = currentAccount.value?.settings?.conversation_filter_limits || {};
+  const key = props.conversationType || 'all';
+  const value = limits[key] ?? limits.all;
+  return value ? Number(value) : undefined;
+});
+
+const perPageOverride = computed(() => {
+  if (filterLimit.value) {
+    return { per_page: filterLimit.value };
+  }
+  if (props.conversationType === 'resolved') {
+    return { per_page: 50 };
+  }
+  return {};
+});
+
 const conversationFilters = computed(() => {
   return {
     inboxId: props.conversationInbox ? props.conversationInbox : undefined,
@@ -265,7 +289,7 @@ const conversationFilters = computed(() => {
     labels: props.label ? [props.label] : undefined,
     teamId: props.teamId || undefined,
     conversationType: props.conversationType || undefined,
-    ...(props.conversationType === 'resolved' ? { per_page: 50 } : {}),
+    ...perPageOverride.value,
   };
 });
 

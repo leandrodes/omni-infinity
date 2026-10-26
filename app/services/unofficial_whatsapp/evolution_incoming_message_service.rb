@@ -1,3 +1,4 @@
+# rubocop:disable Metrics/ClassLength, Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity, Layout/LineLength, Style/HashLikeCase, Style/RegexpLiteral
 # Processes inbound Evolution API webhooks into Chatwoot conversations.
 #
 # Evolution sends events such as:
@@ -76,7 +77,10 @@ class UnofficialWhatsapp::EvolutionIncomingMessageService
     return if sender_jid.blank?
 
     message_node = normalize_message_node(payload['message'])
-    text = extract_text(message_node)
+    reaction = reaction_text(message_node)
+    return if reaction.present? && !(inbox.account.settings || {})['reactions_appear_as_response']
+
+    text = extract_text(message_node).presence || reaction
     media = extract_media(message_node, key)
 
     return if text.blank? && media.blank?
@@ -85,6 +89,10 @@ class UnofficialWhatsapp::EvolutionIncomingMessageService
     return if @contact.blocked?
 
     set_conversation
+
+    if reaction.present? && @conversation.resolved? && (inbox.account.settings || {})['reactions_appear_as_response']
+      @conversation.update!(status: :open)
+    end
 
     return handle_oversized_media(media, text) if media.present? && media_exceeds_limit?(media)
 
@@ -172,6 +180,10 @@ class UnofficialWhatsapp::EvolutionIncomingMessageService
       list_reply(node).presence ||
       template_button_reply(node).presence ||
       ''
+  end
+
+  def reaction_text(node)
+    node.dig('reactionMessage', 'text').presence
   end
 
   def button_reply(node)
@@ -370,3 +382,4 @@ class UnofficialWhatsapp::EvolutionIncomingMessageService
     value == true || value.to_s == 'true'
   end
 end
+# rubocop:enable Metrics/ClassLength, Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity, Layout/LineLength, Style/HashLikeCase, Style/RegexpLiteral

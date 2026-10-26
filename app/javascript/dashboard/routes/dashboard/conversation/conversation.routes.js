@@ -211,6 +211,29 @@ export default {
       }),
     },
     {
+      path: frontendURL('accounts/:accountId/chatbot/conversations'),
+      name: 'conversation_chatbot',
+      meta: {
+        permissions: CONVERSATION_PERMISSIONS,
+      },
+      component: ConversationView,
+      props: () => ({ conversationType: 'chatbot' }),
+    },
+    {
+      path: frontendURL(
+        'accounts/:accountId/chatbot/conversations/:conversationId'
+      ),
+      name: 'conversation_through_chatbot',
+      meta: {
+        permissions: CONVERSATION_PERMISSIONS,
+      },
+      component: ConversationView,
+      props: route => ({
+        conversationId: route.params.conversationId,
+        conversationType: 'chatbot',
+      }),
+    },
+    {
       path: frontendURL('accounts/:accountId/unattended/conversations'),
       name: 'conversation_unattended',
       meta: {

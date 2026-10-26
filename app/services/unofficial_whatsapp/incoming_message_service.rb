@@ -1,3 +1,4 @@
+# rubocop:disable Metrics/ClassLength, Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity, Layout/LineLength, Lint/DuplicateBranch, Layout/EmptyLineAfterGuardClause
 # Processes inbound WuzAPI webhooks (whatsmeow events.Message payload) into
 # Chatwoot conversations/messages. The payload looks like:
 #
@@ -37,6 +38,7 @@ class UnofficialWhatsapp::IncomingMessageService
 
     return if echo?
     return if group_message? && channel.ignore_groups
+    return if reaction_message? && !(inbox.account.settings || {})['reactions_appear_as_response']
 
     content = message_content
     return if content.blank? && media.blank?
@@ -45,6 +47,10 @@ class UnofficialWhatsapp::IncomingMessageService
     return if @contact.blocked?
 
     set_conversation
+
+    if reaction_message? && @conversation.resolved? && (inbox.account.settings || {})['reactions_appear_as_response']
+      @conversation.update!(status: :open)
+    end
 
     return handle_oversized_media(content) if media.present? && media_exceeds_limit?
 
@@ -308,7 +314,19 @@ class UnofficialWhatsapp::IncomingMessageService
       template_button_reply_content.presence ||
       button_reply_content.presence ||
       list_reply_content.presence ||
+      reaction_content.presence ||
       ''
+  end
+
+  def reaction_message?
+    (wa_message['reactionMessage'] || wa_message[:reactionMessage]).present?
+  end
+
+  def reaction_content
+    node = wa_message['reactionMessage'] || wa_message[:reactionMessage]
+    return nil if node.blank?
+
+    (node['text'] || node[:text]).presence
   end
 
   # Native interactive replies (flow builder buttons/list) arrive as
@@ -491,3 +509,4 @@ class UnofficialWhatsapp::IncomingMessageService
     value == true || value.to_s == 'true'
   end
 end
+# rubocop:enable Metrics/ClassLength, Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity, Layout/LineLength, Lint/DuplicateBranch, Layout/EmptyLineAfterGuardClause

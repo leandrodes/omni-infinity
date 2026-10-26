@@ -418,7 +418,8 @@
     "DOCS": "Read docs",
     "SECURITY": "Security",
     "CAPTAIN_AI": "Captain",
-    "CONVERSATION_WORKFLOW": "Conversation Workflow"
+    "CONVERSATION_WORKFLOW": "Conversation Workflow",
+    "CHATBOT_CONVERSATIONS": "Chatbot"
   },
   "DATA_IMPORTS": {
     "HEADER": "Data",
@@ -1124,9 +1125,10 @@
       "NOTE": "Display options",
       "ENABLE_CHATBOT_CONVERSATIONS_FILTER": "Enable chatbot conversations filter",
       "ENABLE_RESOLVED_CONVERSATIONS_FILTER": "Enable resolved conversations filter",
-      "SHOW_INBOX_NAME_IN_CONVERSATION_LIST": "Show inbox name in conversation list",
+      "SHOW_INBOX_NAME_IN_CONVERSATION_LIST": "Enable inbox name in conversation list",
       "LIST_ONLY_LAST_RESOLVED_CONVERSATION_PER_CONTACT": "List only last resolved conversation per contact",
-      "SHOW_CONVERSATION_STATUS_IN_CONVERSATION_LIST": "Show conversation status in conversation list"
+      "SHOW_CONVERSATION_STATUS_IN_CONVERSATION_LIST": "Show conversation status in conversation list",
+      "SHOW_CONVERSATION_ID_IN_CONVERSATION_LIST": "Enable conversation ID in conversation list"
     },
     "VISIBILITY": {
       "TITLE": "Visibility",
@@ -1154,7 +1156,16 @@
     "OTHERS": {
       "TITLE": "Others",
       "NOTE": "Other options",
-      "REACTIONS_APPEAR_AS_RESPONSE": "Reactions appear as response"
+      "REACTIONS_APPEAR_AS_RESPONSE": "Reactions appear as response",
+      "FILTER_LIMITS_TITLE": "Filter limits",
+      "FILTER_NAME": "Filter",
+      "FILTER_LIMIT": "Limit",
+      "FILTER_ALL": "All conversations",
+      "FILTER_MENTIONS": "Mentions",
+      "FILTER_PARTICIPATING": "Participating",
+      "FILTER_UNATTENDED": "Unattended",
+      "FILTER_CHATBOT": "Chatbot",
+      "FILTER_RESOLVED": "Resolved"
     },
     "SAVE": {
       "BUTTON": "Save",

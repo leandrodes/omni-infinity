@@ -92,6 +92,12 @@ const showConversationStatus = computed(
       ?.show_conversation_status_in_conversation_list === true
 );
 
+const showConversationId = computed(
+  () =>
+    currentAccount.value?.settings
+      ?.show_conversation_id_in_conversation_list === true
+);
+
 const statusLabel = computed(() => {
   switch (props.source.status) {
     case 'open':
@@ -250,6 +256,12 @@ const onDeleteConversation = () => {
       class="px-3 pb-2 text-xs font-medium text-n-slate-11"
     >
       {{ statusLabel }}
+    </div>
+    <div
+      v-if="showConversationId"
+      class="px-3 pb-2 text-xs font-medium text-n-slate-11"
+    >
+      {{ '#' + props.source.id }}
     </div>
   </div>
 

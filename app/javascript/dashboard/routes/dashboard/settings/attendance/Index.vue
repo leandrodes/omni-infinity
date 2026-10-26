@@ -14,6 +14,7 @@ const defaultSettings = {
   enable_chatbot_conversations_filter: false,
   enable_resolved_conversations_filter: false,
   show_inbox_name_in_conversation_list: false,
+  show_conversation_id_in_conversation_list: false,
   show_conversation_status_in_conversation_list: false,
   list_only_last_resolved_conversation_per_contact: false,
   hide_conversations_assigned_to_others: false,
@@ -28,6 +29,7 @@ const defaultSettings = {
   allow_end_whatsapp_groups: false,
   allow_transfer_whatsapp_groups: false,
   reactions_appear_as_response: false,
+  conversation_filter_limits: {},
 };
 
 const settings = ref({ ...defaultSettings });
@@ -35,11 +37,30 @@ const settings = ref({ ...defaultSettings });
 const syncSettings = () => {
   const accountSettings = currentAccount.value?.settings || {};
   Object.keys(defaultSettings).forEach(key => {
-    settings.value[key] = accountSettings[key] === true;
+    if (key === 'conversation_filter_limits') {
+      settings.value[key] = accountSettings[key] || {};
+    } else {
+      settings.value[key] = accountSettings[key] === true;
+    }
   });
 };
 
 watch(() => currentAccount.value?.id, syncSettings, { immediate: true });
+
+const filterLimitRows = [
+  { key: 'all', label: t('ATTENDANCE_SETTINGS.OTHERS.FILTER_ALL') },
+  { key: 'mentions', label: t('ATTENDANCE_SETTINGS.OTHERS.FILTER_MENTIONS') },
+  {
+    key: 'participating',
+    label: t('ATTENDANCE_SETTINGS.OTHERS.FILTER_PARTICIPATING'),
+  },
+  {
+    key: 'unattended',
+    label: t('ATTENDANCE_SETTINGS.OTHERS.FILTER_UNATTENDED'),
+  },
+  { key: 'chatbot', label: t('ATTENDANCE_SETTINGS.OTHERS.FILTER_CHATBOT') },
+  { key: 'resolved', label: t('ATTENDANCE_SETTINGS.OTHERS.FILTER_RESOLVED') },
+];
 
 const saveSettings = async () => {
   try {
@@ -65,6 +86,7 @@ const saveSettings = async () => {
               'enable_chatbot_conversations_filter',
               'enable_resolved_conversations_filter',
               'show_inbox_name_in_conversation_list',
+              'show_conversation_id_in_conversation_list',
               'show_conversation_status_in_conversation_list',
               'list_only_last_resolved_conversation_per_contact',
             ]"
@@ -162,6 +184,40 @@ const saveSettings = async () => {
             }}</span>
             <Switch v-model="settings.reactions_appear_as_response" />
           </div>
+        </div>
+
+        <div class="mt-4">
+          <h4 class="text-sm font-medium mb-2">
+            {{ t('ATTENDANCE_SETTINGS.OTHERS.FILTER_LIMITS_TITLE') }}
+          </h4>
+          <table class="w-full text-sm">
+            <thead>
+              <tr>
+                <th class="text-left py-1">
+                  {{ t('ATTENDANCE_SETTINGS.OTHERS.FILTER_NAME') }}
+                </th>
+                <th class="text-right py-1">
+                  {{ t('ATTENDANCE_SETTINGS.OTHERS.FILTER_LIMIT') }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="filter in filterLimitRows" :key="filter.key">
+                <td class="py-1">{{ filter.label }}</td>
+                <td class="py-1 text-right">
+                  <input
+                    v-model.number="
+                      settings.conversation_filter_limits[filter.key]
+                    "
+                    type="number"
+                    min="1"
+                    max="50"
+                    class="w-20 text-right border rounded px-2 py-1"
+                  />
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </SectionLayout>
 

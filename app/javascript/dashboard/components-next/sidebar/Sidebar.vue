@@ -242,6 +242,12 @@ const showResolvedFilter = computed(
     currentAccount.value?.settings?.enable_resolved_conversations_filter ===
     true
 );
+
+const showChatbotFilter = computed(
+  () =>
+    isAdmin.value &&
+    currentAccount.value?.settings?.enable_chatbot_conversations_filter === true
+);
 const getFolderUnreadCount = useMapGetter(
   'conversationUnreadCounts/getFolderUnreadCount'
 );
@@ -423,6 +429,17 @@ const menuItems = computed(() => {
             : 0,
           to: accountScopedRoute('conversation_unattended'),
         },
+        ...(showChatbotFilter.value
+          ? [
+              {
+                name: 'Chatbot',
+                label: t('SIDEBAR.CHATBOT_CONVERSATIONS'),
+                icon: 'i-lucide-bot',
+                activeOn: ['conversation_through_chatbot'],
+                to: accountScopedRoute('conversation_chatbot'),
+              },
+            ]
+          : []),
         ...(showResolvedFilter.value
           ? [
               {

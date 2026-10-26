@@ -10,6 +10,7 @@ import {
   isOnParticipatingView,
   isOnUnattendedView,
   isOnResolvedView,
+  isOnChatbotView,
   isOnFoldersView,
 } from './helpers/actionHelpers';
 import messageReadActions from './actions/messageReadActions';
@@ -508,6 +509,7 @@ const actions = {
       !isOnParticipatingView(rootState) &&
       !isOnUnattendedView(rootState) &&
       !isOnResolvedView(rootState) &&
+      !isOnChatbotView(rootState) &&
       isMatchingInboxFilter
     ) {
       commit(types.ADD_CONVERSATION, conversation);
