@@ -192,6 +192,21 @@ class ConversationFinder
     params[:page] || 1
   end
 
+  def apply_last_resolved_per_contact_filter(scope)
+    return scope unless params[:status].to_s == 'resolved'
+    return scope unless (current_user.account.settings || {})['list_only_last_resolved_conversation_per_contact']
+
+    distinct_ids = scope.select('DISTINCT ON (contact_id) conversations.id').order('contact_id, last_activity_at DESC').pluck(:id)
+    filtered_scope = conversations_base_query.where(id: distinct_ids)
+    Conversations::SortService.apply(filtered_scope, params[:sort_by])
+  end
+
+  def conversation_per_page
+    per_page = params[:per_page].presence || ENV.fetch('CONVERSATION_RESULTS_PER_PAGE', '25')
+    per_page = [per_page.to_i, 50].min
+    [per_page, 1].max
+  end
+
   def conversations_base_query
     @conversations.includes(
       :taggings, :team, :contact_inbox, { assignee: { avatar_attachment: [:blob] } }, { contact: { avatar_attachment: [:blob] } }
@@ -201,11 +216,12 @@ class ConversationFinder
   def conversations
     @conversations = conversations_base_query
     @conversations = Conversations::SortService.apply(@conversations, params[:sort_by])
+    @conversations = apply_last_resolved_per_contact_filter(@conversations)
 
     if params[:updated_within].present?
       @conversations.where('conversations.updated_at > ?', Time.zone.now - params[:updated_within].to_i.seconds)
     else
-      @conversations.page(current_page).per(ENV.fetch('CONVERSATION_RESULTS_PER_PAGE', '25').to_i)
+      @conversations.page(current_page).per(conversation_per_page)
     end
   end
 end

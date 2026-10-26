@@ -44,7 +44,7 @@ const emit = defineEmits([
   'closeMobileSidebar',
 ]);
 
-const { accountScopedRoute, isOnChatwootCloud } = useAccount();
+const { accountScopedRoute, isOnChatwootCloud, currentAccount } = useAccount();
 const { isEnterprise } = useConfig();
 const store = useStore();
 
@@ -234,6 +234,12 @@ const participatingUnreadCount = useMapGetter(
 const unattendedUnreadCount = useMapGetter(
   'conversationUnreadCounts/getUnattendedUnreadCount'
 );
+
+const showResolvedFilter = computed(
+  () =>
+    currentAccount.value?.settings?.enable_resolved_conversations_filter ===
+    true
+);
 const getFolderUnreadCount = useMapGetter(
   'conversationUnreadCounts/getFolderUnreadCount'
 );
@@ -415,6 +421,17 @@ const menuItems = computed(() => {
             : 0,
           to: accountScopedRoute('conversation_unattended'),
         },
+        ...(showResolvedFilter.value
+          ? [
+              {
+                name: 'Resolved',
+                label: t('SIDEBAR.RESOLVED_CONVERSATIONS'),
+                icon: 'i-lucide-check-check',
+                activeOn: ['conversation_through_resolved'],
+                to: accountScopedRoute('conversation_resolved'),
+              },
+            ]
+          : []),
         {
           name: 'Folders',
           label: t('SIDEBAR.CUSTOM_VIEWS_FOLDER'),

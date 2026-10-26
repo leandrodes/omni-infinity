@@ -71,6 +71,18 @@ const resolveAttributesModalRef = ref(null);
 const activeAssigneeTab = ref(wootConstants.ASSIGNEE_TYPE.ME);
 const activeStatus = ref(wootConstants.STATUS_TYPE.OPEN);
 const activeSortBy = ref(wootConstants.SORT_BY_TYPE.LAST_ACTIVITY_AT_DESC);
+
+watch(
+  () => props.conversationType,
+  value => {
+    if (value === 'resolved') {
+      activeStatus.value = wootConstants.STATUS_TYPE.RESOLVED;
+    } else if (activeStatus.value === wootConstants.STATUS_TYPE.RESOLVED) {
+      activeStatus.value = wootConstants.STATUS_TYPE.OPEN;
+    }
+  },
+  { immediate: true }
+);
 const showAdvancedFilters = ref(false);
 // chatsOnView is to store the chats that are currently visible on the screen,
 // which mirrors the conversationList.
@@ -253,6 +265,7 @@ const conversationFilters = computed(() => {
     labels: props.label ? [props.label] : undefined,
     teamId: props.teamId || undefined,
     conversationType: props.conversationType || undefined,
+    ...(props.conversationType === 'resolved' ? { per_page: 50 } : {}),
   };
 });
 

@@ -2,6 +2,7 @@
 import { computed, ref, watch, inject } from 'vue';
 import { useRouter } from 'vue-router';
 import { useStore, useMapGetter } from 'dashboard/composables/store';
+import { useAccount } from 'dashboard/composables/useAccount';
 import { frontendURL, conversationUrl } from 'dashboard/helper/URLHelper';
 import ConversationCard from './widgets/conversation/ConversationCard.vue';
 import ConversationCardExpanded from 'dashboard/components-next/Conversation/ConversationCard/ConversationCardExpanded.vue';
@@ -54,6 +55,7 @@ watch(
 const currentChat = useMapGetter('getSelectedChat');
 const inboxesList = useMapGetter('inboxes/getInboxes');
 const activeInbox = useMapGetter('getSelectedInbox');
+const { currentAccount } = useAccount();
 const accountId = useMapGetter('getCurrentAccountId');
 
 const chatMetadata = computed(() => props.source.meta || {});
@@ -71,9 +73,16 @@ const inbox = computed(() => {
   return inboxId ? store.getters['inboxes/getInbox'](inboxId) : {};
 });
 
-const showInboxName = computed(
-  () => !activeInbox.value && inboxesList.value.length > 1
-);
+const showInboxName = computed(() => {
+  if (
+    currentAccount.value?.settings?.show_inbox_name_in_conversation_list ===
+    true
+  ) {
+    return true;
+  }
+
+  return !activeInbox.value && inboxesList.value.length > 1;
+});
 const isInboxView = computed(() => !!activeInbox.value);
 const showAssigneeForExpandedCard = computed(
   () => props.showExpanded || props.showAssignee
