@@ -568,5 +568,12 @@
   },
   "GALLERY_VIEW": {
     "ERROR_DOWNLOADING": "Não foi possível baixar o anexo. Por favor, tente novamente"
+  },
+  "CONVERSATION_WORKFLOW": {
+    "REQUIRED_ATTRIBUTES": {
+      "TEAMS": {
+        "ALL": "Todos os times/filas"
+      }
+    }
   }
 }

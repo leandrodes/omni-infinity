@@ -581,5 +581,12 @@
   },
   "GALLERY_VIEW": {
     "ERROR_DOWNLOADING": "Unable to download attachment. Please try again"
+  },
+  "CONVERSATION_WORKFLOW": {
+    "REQUIRED_ATTRIBUTES": {
+      "TEAMS": {
+        "ALL": "All teams/queues"
+      }
+    }
   }
 }

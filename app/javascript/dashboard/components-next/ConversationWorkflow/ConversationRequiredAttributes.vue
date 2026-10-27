@@ -1,9 +1,9 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useToggle } from '@vueuse/core';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
-import { useMapGetter } from 'dashboard/composables/store';
+import { useMapGetter, useStore } from 'dashboard/composables/store';
 import { useAccount } from 'dashboard/composables/useAccount';
 import { useAlert } from 'dashboard/composables';
 import Button from 'dashboard/components-next/button/Button.vue';
@@ -26,9 +26,11 @@ const { currentAccount, accountId, isOnChatwootCloud, updateAccount } =
   useAccount();
 const [showDropdown, toggleDropdown] = useToggle(false);
 const [isSaving, toggleSaving] = useToggle(false);
+const store = useStore();
 const conversationAttributes = useMapGetter(
   'attributes/getConversationAttributes'
 );
+const teamsList = useMapGetter('teams/getTeams');
 const currentUser = useMapGetter('getCurrentUser');
 
 const isSuperAdmin = computed(() => currentUser.value.type === 'SuperAdmin');
@@ -50,6 +52,11 @@ const handleClick = () => {
 
 const selectedAttributeKeys = computed(
   () => currentAccount.value?.settings?.conversation_required_attributes || []
+);
+
+const attributeTeams = computed(
+  () =>
+    currentAccount.value?.settings?.conversation_required_attribute_teams || {}
 );
 
 const allAttributeOptions = computed(() =>
@@ -74,8 +81,19 @@ const conversationRequiredAttributes = computed(() => {
     allAttributeOptions.value.map(attr => [attr.value, attr])
   );
   return selectedAttributeKeys.value
-    .map(key => attributeMap.get(key))
+    .map(key => {
+      const attribute = attributeMap.get(key);
+      if (!attribute) return null;
+      return {
+        ...attribute,
+        teamIds: attributeTeams.value[key] || [],
+      };
+    })
     .filter(Boolean);
+});
+
+onMounted(() => {
+  store.dispatch('teams/get');
 });
 
 const handleAddAttributesClick = event => {
@@ -83,11 +101,14 @@ const handleAddAttributesClick = event => {
   toggleDropdown();
 };
 
-const saveRequiredAttributes = async keys => {
+const saveRequiredAttributes = async (keys, teams = attributeTeams.value) => {
   try {
     toggleSaving(true);
     await updateAccount(
-      { conversation_required_attributes: keys },
+      {
+        conversation_required_attributes: keys,
+        conversation_required_attribute_teams: teams,
+      },
       { silent: true }
     );
     useAlert(t('CONVERSATION_WORKFLOW.REQUIRED_ATTRIBUTES.SAVE.SUCCESS'));
@@ -104,7 +125,28 @@ const handleAttributeAction = ({ value }) => {
   const updatedKeys = Array.from(
     new Set([...selectedAttributeKeys.value, value])
   );
-  saveRequiredAttributes(updatedKeys);
+  saveRequiredAttributes(updatedKeys, attributeTeams.value);
+};
+
+const handleToggleTeam = (attribute, teamId, checked) => {
+  if (isSaving.value) return;
+  const teamsMap = { ...attributeTeams.value };
+  const current = teamsMap[attribute.value] || [];
+  const next = checked
+    ? [...new Set([...current, teamId])]
+    : current.filter(id => id !== teamId);
+  if (next.length) teamsMap[attribute.value] = next;
+  else delete teamsMap[attribute.value];
+  saveRequiredAttributes(selectedAttributeKeys.value, teamsMap);
+};
+
+const handleToggleAllTeams = (attribute, checked) => {
+  if (isSaving.value) return;
+  const teamsMap = { ...attributeTeams.value };
+  if (checked) delete teamsMap[attribute.value];
+  else
+    teamsMap[attribute.value] = (teamsList.value || []).map(team => team.id);
+  saveRequiredAttributes(selectedAttributeKeys.value, teamsMap);
 };
 
 const closeDropdown = () => {
@@ -116,7 +158,7 @@ const handleDelete = attribute => {
   const updatedKeys = selectedAttributeKeys.value.filter(
     key => key !== attribute.value
   );
-  saveRequiredAttributes(updatedKeys);
+  saveRequiredAttributes(updatedKeys, attributeTeams.value);
 };
 </script>
 
@@ -169,7 +211,10 @@ const handleDelete = attribute => {
         v-for="attribute in conversationRequiredAttributes"
         :key="attribute.value"
         :attribute="attribute"
+        :teams="teamsList"
         @delete="handleDelete"
+        @toggle-team="handleToggleTeam"
+        @toggle-all-teams="handleToggleAllTeams"
       />
     </template>
 

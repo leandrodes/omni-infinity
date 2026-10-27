@@ -9,9 +9,13 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  teams: {
+    type: Array,
+    default: () => [],
+  },
 });
 
-const emit = defineEmits(['delete']);
+const emit = defineEmits(['delete', 'toggleTeam', 'toggleAllTeams']);
 
 const iconByType = {
   [ATTRIBUTE_TYPES.TEXT]: 'i-lucide-align-justify',
@@ -21,6 +25,8 @@ const iconByType = {
   [ATTRIBUTE_TYPES.LINK]: 'i-lucide-link',
   [ATTRIBUTE_TYPES.NUMBER]: 'i-lucide-hash',
 };
+
+const teamIds = computed(() => props.attribute.teamIds || []);
 
 const attributeIcon = computed(() => {
   const typeKey = props.attribute.type?.toLowerCase();
@@ -50,6 +56,30 @@ const handleDelete = () => {
           attribute.value
         }}</span>
       </div>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+      <label class="flex items-center gap-1 text-xs text-n-slate-11">
+        <input
+          type="checkbox"
+          :checked="!teamIds.length"
+          @change="emit('toggleAllTeams', attribute, $event.target.checked)"
+        />
+        {{ $t('CONVERSATION_WORKFLOW.REQUIRED_ATTRIBUTES.TEAMS.ALL') }}
+      </label>
+      <template v-if="teamIds.length">
+        <label
+          v-for="team in teams"
+          :key="team.id"
+          class="flex items-center gap-1 text-xs text-n-slate-11"
+        >
+          <input
+            type="checkbox"
+            :checked="teamIds.includes(team.id)"
+            @change="emit('toggleTeam', attribute, team.id, $event.target.checked)"
+          />
+          {{ team.name }}
+        </label>
+      </template>
     </div>
     <div class="flex gap-2 items-center">
       <Button icon="i-lucide-trash" sm slate ghost @click.stop="handleDelete" />

@@ -33,6 +33,13 @@ export function useConversationRequiredAttributes() {
     );
   });
 
+  const requiredAttributeTeams = computed(() => {
+    if (!isFeatureEnabled.value) return {};
+    return (
+      currentAccount.value?.settings?.conversation_required_attribute_teams || {}
+    );
+  });
+
   const allAttributeOptions = computed(() =>
     (conversationAttributes.value || []).map(attribute => ({
       ...attribute,
@@ -62,14 +69,19 @@ export function useConversationRequiredAttributes() {
    * @param {Object} conversationCustomAttributes - Current conversation's custom attributes
    * @returns {Object} - Analysis result with missing attributes info
    */
-  const checkMissingAttributes = (conversationCustomAttributes = {}) => {
+  const checkMissingAttributes = (conversationCustomAttributes = {}, teamId = null) => {
+    const applicableAttributes = requiredAttributes.value.filter(attribute => {
+      const teamIds = requiredAttributeTeams.value[attribute.value] || [];
+      return !teamIds.length || teamIds.includes(Number(teamId));
+    });
+
     // If no attributes are required, conversation can be resolved
-    if (!requiredAttributes.value.length) {
+    if (!applicableAttributes.length) {
       return { hasMissing: false, missing: [] };
     }
 
     // Find attributes that are missing or empty
-    const missing = requiredAttributes.value.filter(attribute => {
+    const missing = applicableAttributes.filter(attribute => {
       const value = conversationCustomAttributes[attribute.value];
 
       // A checkbox is filled once true or false is picked. An explicit null is

@@ -418,9 +418,11 @@
     "DOCS": "Read docs",
     "SECURITY": "Security",
     "CAPTAIN_AI": "Captain",
-    "CONVERSATION_WORKFLOW": "Conversation Workflow",
+    "CONVERSATION_WORKFLOW": "Auto Resolution",
     "CHATBOT_CONVERSATIONS": "Chatbot",
-    "PENDING_CONVERSATIONS": "Pending"
+    "PENDING_CONVERSATIONS": "Pending",
+    "RESOLUTION_REASONS": "Resolution Reasons",
+    "CHATBOT_AUTO_RESOLUTION": "Chatbot Auto Resolution"
   },
   "DATA_IMPORTS": {
     "HEADER": "Data",
@@ -1171,6 +1173,42 @@
       "FILTER_UNATTENDED": "Unattended",
       "FILTER_CHATBOT": "Chatbot",
       "FILTER_RESOLVED": "Resolved"
+    },
+    "SAVE": {
+      "BUTTON": "Save",
+      "SUCCESS": "Settings updated",
+      "ERROR": "Failed to update settings"
+    }
+  },
+  "RESOLUTION_REASONS": {
+    "INDEX": {
+      "HEADER": {
+        "TITLE": "Resolution Reasons",
+        "DESCRIPTION": "Manage required resolution attributes"
+      }
+    }
+  },
+  "CHATBOT_AUTO_RESOLUTION": {
+    "INDEX": {
+      "HEADER": {
+        "TITLE": "Chatbot Auto Resolution",
+        "DESCRIPTION": "Configure automatic resolution for chatbot conversations"
+      }
+    },
+    "TITLE": "Chatbot Auto Resolution",
+    "NOTE": "Automatically resolve inactive chatbot conversations",
+    "DURATION": {
+      "LABEL": "Inactivity duration",
+      "ERROR": "Duration must be at least 1 minute"
+    },
+    "MESSAGE": {
+      "LABEL": "Custom message"
+    },
+    "KEYWORDS": {
+      "LABEL": "Keywords"
+    },
+    "KEYWORD_MESSAGE": {
+      "LABEL": "Keyword resolution message"
     },
     "SAVE": {
       "BUTTON": "Save",

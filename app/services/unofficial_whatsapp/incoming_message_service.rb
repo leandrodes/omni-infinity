@@ -52,6 +52,10 @@ class UnofficialWhatsapp::IncomingMessageService
       @conversation.update!(status: :open)
     end
 
+    if chatbot_keyword?(content) && (inbox.account.settings || {})['chatbot_auto_resolve_keywords'].present?
+      @conversation.update!(status: :resolved) unless @conversation.resolved?
+    end
+
     return handle_oversized_media(content) if media.present? && media_exceeds_limit?
 
     @message = @conversation.messages.build(
@@ -66,6 +70,18 @@ class UnofficialWhatsapp::IncomingMessageService
 
     attach_media
     @message.save!
+
+    if chatbot_keyword?(content) && (inbox.account.settings || {})['chatbot_auto_resolve_keywords'].present?
+      keyword_message = (inbox.account.settings || {})['chatbot_auto_resolve_keyword_message']
+      if keyword_message.present? && @conversation.can_reply?
+        @conversation.messages.create!(
+          account_id: @inbox.account_id,
+          inbox_id: @inbox.id,
+          message_type: :outgoing,
+          content: keyword_message
+        )
+      end
+    end
   end
 
   # whatsmeow delivers delivery/read acknowledgements as a `Receipt` event whose
@@ -503,6 +519,13 @@ class UnofficialWhatsapp::IncomingMessageService
   # "5491155553935.0:12@s.whatsapp.net" -> "5491155553935"
   def phone_number
     @phone_number ||= sender_jid.split('@').first.split(/[.:]/).first
+  end
+
+  def chatbot_keyword?(text)
+    keywords = (inbox.account.settings || {})['chatbot_auto_resolve_keywords'] || []
+    return false if keywords.blank?
+
+    keywords.any? { |keyword| text.to_s.downcase.include?(keyword.to_s.downcase.strip) }
   end
 
   def truthy?(value)

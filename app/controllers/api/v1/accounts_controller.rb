@@ -116,7 +116,7 @@ class Api::V1::AccountsController < Api::BaseController
   end
 
   def settings_params
-    params.permit(*permitted_settings_attributes, chatbot_conversations_filter_roles: [], conversation_required_attributes: [])
+    params.permit(*permitted_settings_attributes, chatbot_conversations_filter_roles: [], conversation_required_attributes: [], conversation_required_attribute_teams: {}, chatbot_auto_resolve_keywords: [])
   end
 
   def permitted_settings_attributes

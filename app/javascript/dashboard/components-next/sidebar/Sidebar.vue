@@ -937,6 +937,18 @@ const menuItems = computed(() => {
           to: accountScopedRoute('conversation_workflow_index'),
         },
         {
+          name: 'Chatbot Auto Resolution',
+          label: t('SIDEBAR.CHATBOT_AUTO_RESOLUTION'),
+          icon: 'i-lucide-bot',
+          to: accountScopedRoute('chatbot_auto_resolution_index'),
+        },
+        {
+          name: 'Resolution Reasons',
+          label: t('SIDEBAR.RESOLUTION_REASONS'),
+          icon: 'i-lucide-list-checks',
+          to: accountScopedRoute('resolution_reasons_index'),
+        },
+        {
           name: 'Settings Security',
           label: t('SIDEBAR.SECURITY'),
           icon: 'i-lucide-shield',
