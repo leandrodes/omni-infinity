@@ -1098,7 +1098,8 @@
       "SHOW_CONVERSATION_ID_IN_CONVERSATION_LIST": "Habilitar ID da conversa na lista de conversas",
       "SHOW_CONVERSATION_TEAM_IN_CONVERSATION_LIST": "Habilitar time da conversa na lista de conversas",
       "ROLE_ADMINISTRATOR": "Administrador",
-      "ROLE_AGENT": "Agente"
+      "ROLE_AGENT": "Agente",
+      "ENABLE_PENDING_CONVERSATIONS_FILTER": "Habilitar filtro conversas pendentes"
     },
     "VISIBILITY": {
       "TITLE": "Visualização",

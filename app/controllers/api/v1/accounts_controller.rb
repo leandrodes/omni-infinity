@@ -116,13 +116,13 @@ class Api::V1::AccountsController < Api::BaseController
   end
 
   def settings_params
-    params.permit(*permitted_settings_attributes)
+    params.permit(*permitted_settings_attributes, chatbot_conversations_filter_roles: [])
   end
 
   def permitted_settings_attributes
     [:auto_resolve_after, :auto_resolve_message, :auto_resolve_ignore_waiting, :audio_transcriptions, :auto_resolve_label,
      :signature_enabled, :signature_agents_can_disable,
-     :enable_chatbot_conversations_filter, :chatbot_conversations_filter_roles, :enable_resolved_conversations_filter, :enable_pending_conversations_filter,
+     :enable_chatbot_conversations_filter, :enable_resolved_conversations_filter, :enable_pending_conversations_filter,
      :show_inbox_name_in_conversation_list, :show_conversation_id_in_conversation_list,
      :show_conversation_team_in_conversation_list, :show_conversation_status_in_conversation_list,
      :hide_conversations_assigned_to_others, :hide_resolved_conversations_assigned_to_others,
