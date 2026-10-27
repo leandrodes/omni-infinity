@@ -1,4 +1,3 @@
-# rubocop:disable Metrics/ClassLength
 class ConversationFinder
   attr_reader :current_user, :current_account, :params
 
@@ -75,7 +74,7 @@ class ConversationFinder
     @inbox_ids = if params[:inbox_id]
                    @current_user.assigned_inboxes.where(id: params[:inbox_id])
                  else
-                   @current_user.assigned_inboxes.pluck(:id)
+                   @current_user.assigned_inboxes.map(&:id)
                  end
   end
 
@@ -193,18 +192,6 @@ class ConversationFinder
     params[:page] || 1
   end
 
-  def apply_last_resolved_per_contact_filter(scope)
-    return scope unless params[:status].to_s == 'resolved'
-    return scope unless (current_user.account.settings || {})['list_only_last_resolved_conversation_per_contact']
-
-    distinct_ids = scope
-      .select('DISTINCT ON (conversations.contact_id) conversations.id')
-      .order('conversations.contact_id, conversations.last_activity_at DESC')
-      .pluck(:id)
-    filtered_scope = conversations_base_query.where(id: distinct_ids)
-    Conversations::SortService.apply(filtered_scope, params[:sort_by])
-  end
-
   def conversation_per_page
     per_page = params[:per_page].presence || ENV.fetch('CONVERSATION_RESULTS_PER_PAGE', '25')
     per_page = [per_page.to_i, 50].min
@@ -220,7 +207,6 @@ class ConversationFinder
   def conversations
     @conversations = conversations_base_query
     @conversations = Conversations::SortService.apply(@conversations, params[:sort_by])
-    @conversations = apply_last_resolved_per_contact_filter(@conversations)
 
     if params[:updated_within].present?
       @conversations.where('conversations.updated_at > ?', Time.zone.now - params[:updated_within].to_i.seconds)
@@ -230,5 +216,3 @@ class ConversationFinder
   end
 end
 ConversationFinder.prepend_mod_with('ConversationFinder')
-
-# rubocop:enable Metrics/ClassLength
