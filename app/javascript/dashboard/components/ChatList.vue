@@ -79,8 +79,10 @@ watch(
   value => {
     if (value === 'resolved') {
       activeStatus.value = wootConstants.STATUS_TYPE.RESOLVED;
+      activeAssigneeTab.value = wootConstants.ASSIGNEE_TYPE.ALL;
     } else if (value === 'chatbot') {
       activeStatus.value = wootConstants.STATUS_TYPE.PENDING;
+      activeAssigneeTab.value = wootConstants.ASSIGNEE_TYPE.ALL;
     } else if (
       activeStatus.value === wootConstants.STATUS_TYPE.RESOLVED ||
       activeStatus.value === wootConstants.STATUS_TYPE.PENDING
@@ -263,7 +265,8 @@ const conversationListPagination = computed(() => {
 });
 
 const filterLimit = computed(() => {
-  const limits = currentAccount.value?.settings?.conversation_filter_limits || {};
+  const limits =
+    currentAccount.value?.settings?.conversation_filter_limits || {};
   const key = props.conversationType || 'all';
   const value = limits[key] ?? limits.all;
   return value ? Number(value) : undefined;
@@ -965,7 +968,10 @@ watch(appliedFilters, () => resetBulkActions());
     />
 
     <ChatTypeTabs
-      v-if="!hasAppliedFiltersOrActiveFolders"
+      v-if="
+        !hasAppliedFiltersOrActiveFolders &&
+        props.conversationType !== 'chatbot'
+      "
       :items="assigneeTabItems"
       :active-tab="activeAssigneeTab"
       is-compact

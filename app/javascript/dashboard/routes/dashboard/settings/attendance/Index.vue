@@ -15,6 +15,7 @@ const defaultSettings = {
   enable_resolved_conversations_filter: false,
   show_inbox_name_in_conversation_list: false,
   show_conversation_id_in_conversation_list: false,
+  show_conversation_team_in_conversation_list: false,
   show_conversation_status_in_conversation_list: false,
   list_only_last_resolved_conversation_per_contact: false,
   hide_conversations_assigned_to_others: false,
@@ -87,6 +88,7 @@ const saveSettings = async () => {
               'enable_resolved_conversations_filter',
               'show_inbox_name_in_conversation_list',
               'show_conversation_id_in_conversation_list',
+              'show_conversation_team_in_conversation_list',
               'show_conversation_status_in_conversation_list',
               'list_only_last_resolved_conversation_per_contact',
             ]"

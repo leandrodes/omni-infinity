@@ -21,6 +21,7 @@ module AccountSettingsSchema
         'enable_resolved_conversations_filter': { 'type': %w[boolean null] },
         'show_inbox_name_in_conversation_list': { 'type': %w[boolean null] },
         'show_conversation_id_in_conversation_list': { 'type': %w[boolean null] },
+        'show_conversation_team_in_conversation_list': { 'type': %w[boolean null] },
         'show_conversation_status_in_conversation_list': { 'type': %w[boolean null] },
         'list_only_last_resolved_conversation_per_contact': { 'type': %w[boolean null] },
         'hide_conversations_assigned_to_others': { 'type': %w[boolean null] },

@@ -1,3 +1,4 @@
+# rubocop:disable Metrics/ClassLength
 class ConversationFinder
   attr_reader :current_user, :current_account, :params
 
@@ -196,7 +197,10 @@ class ConversationFinder
     return scope unless params[:status].to_s == 'resolved'
     return scope unless (current_user.account.settings || {})['list_only_last_resolved_conversation_per_contact']
 
-    distinct_ids = scope.select('DISTINCT ON (contact_id) conversations.id').order('contact_id, last_activity_at DESC').pluck(:id)
+    distinct_ids = scope
+      .select('DISTINCT ON (conversations.contact_id) conversations.id')
+      .order('conversations.contact_id, conversations.last_activity_at DESC')
+      .pluck(:id)
     filtered_scope = conversations_base_query.where(id: distinct_ids)
     Conversations::SortService.apply(filtered_scope, params[:sort_by])
   end
@@ -226,3 +230,5 @@ class ConversationFinder
   end
 end
 ConversationFinder.prepend_mod_with('ConversationFinder')
+
+# rubocop:enable Metrics/ClassLength

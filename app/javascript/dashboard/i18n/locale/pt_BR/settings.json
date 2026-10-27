@@ -1094,7 +1094,8 @@
       "SHOW_INBOX_NAME_IN_CONVERSATION_LIST": "Habilitar nome da caixa de entrada na lista de conversas",
       "LIST_ONLY_LAST_RESOLVED_CONVERSATION_PER_CONTACT": "Listar somente última conversa resolvida do contato",
       "SHOW_CONVERSATION_STATUS_IN_CONVERSATION_LIST": "Habilitar status da conversa na lista de conversas",
-      "SHOW_CONVERSATION_ID_IN_CONVERSATION_LIST": "Habilitar ID da conversa na lista de conversas"
+      "SHOW_CONVERSATION_ID_IN_CONVERSATION_LIST": "Habilitar ID da conversa na lista de conversas",
+      "SHOW_CONVERSATION_TEAM_IN_CONVERSATION_LIST": "Habilitar time da conversa na lista de conversas"
     },
     "VISIBILITY": {
       "TITLE": "Visualização",

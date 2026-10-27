@@ -98,6 +98,14 @@ const showConversationId = computed(
       ?.show_conversation_id_in_conversation_list === true
 );
 
+const showConversationTeam = computed(
+  () =>
+    currentAccount.value?.settings
+      ?.show_conversation_team_in_conversation_list === true
+);
+
+const teamName = computed(() => chatMetadata.value?.team?.name || '');
+
 const statusLabel = computed(() => {
   switch (props.source.status) {
     case 'open':
@@ -252,16 +260,16 @@ const onDeleteConversation = () => {
     />
 
     <div
-      v-if="showConversationStatus"
-      class="px-3 pb-2 text-xs font-medium text-n-slate-11"
+      v-if="
+        showConversationId || showConversationTeam || showConversationStatus
+      "
+      class="flex items-center justify-between gap-2 px-3 pb-2 text-xs font-medium text-n-slate-11"
     >
-      {{ statusLabel }}
-    </div>
-    <div
-      v-if="showConversationId"
-      class="px-3 pb-2 text-xs font-medium text-n-slate-11"
-    >
-      {{ '#' + props.source.id }}
+      <span v-if="showConversationId">{{ '#' + props.source.id }}</span>
+      <span v-if="showConversationTeam" class="flex-1 text-center truncate">{{
+        teamName
+      }}</span>
+      <span v-if="showConversationStatus">{{ statusLabel }}</span>
     </div>
   </div>
 
