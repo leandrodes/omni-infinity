@@ -12,6 +12,7 @@ const { currentAccount, updateAccount } = useAccount();
 
 const defaultSettings = {
   enable_chatbot_conversations_filter: false,
+  chatbot_conversations_filter_roles: ['administrator'],
   enable_resolved_conversations_filter: false,
   enable_pending_conversations_filter: false,
   show_inbox_name_in_conversation_list: false,
@@ -40,6 +41,8 @@ const syncSettings = () => {
   Object.keys(defaultSettings).forEach(key => {
     if (key === 'conversation_filter_limits') {
       settings.value[key] = accountSettings[key] || {};
+    } else if (key === 'chatbot_conversations_filter_roles') {
+      settings.value[key] = accountSettings[key] || ['administrator'];
     } else {
       settings.value[key] = accountSettings[key] === true;
     }
