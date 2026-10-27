@@ -130,6 +130,8 @@ class ConversationFinder
       @conversations = @conversations.unattended
     when 'chatbot'
       @conversations = @conversations.where(status: :pending).where.not(assignee_agent_bot_id: nil)
+    when 'pending'
+      @conversations = @conversations.where(status: :pending).where('assignee_id IS NOT NULL OR assignee_agent_bot_id IS NULL')
     end
     @conversations
   end
