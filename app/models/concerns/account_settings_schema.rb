@@ -18,7 +18,9 @@ module AccountSettingsSchema
         'keep_pending_on_bot_failure': { 'type': %w[boolean null] },
 
         'enable_chatbot_conversations_filter': { 'type': %w[boolean null] },
+        'chatbot_conversations_filter_roles': { 'type': %w[array null], 'items': { 'type': 'string' } },
         'enable_resolved_conversations_filter': { 'type': %w[boolean null] },
+        'enable_pending_conversations_filter': { 'type': %w[boolean null] },
         'show_inbox_name_in_conversation_list': { 'type': %w[boolean null] },
         'show_conversation_id_in_conversation_list': { 'type': %w[boolean null] },
         'show_conversation_team_in_conversation_list': { 'type': %w[boolean null] },

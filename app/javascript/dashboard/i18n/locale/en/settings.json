@@ -316,7 +316,7 @@
     "CONVERSATIONS": "Conversations",
     "INBOX": "My Inbox",
     "INBOX_NOTIFICATIONS": "Notifications",
-    "ALL_CONVERSATIONS": "All Conversations",
+    "ALL_CONVERSATIONS": "Open",
     "MENTIONED_CONVERSATIONS": "Mentions",
     "PARTICIPATING_CONVERSATIONS": "Participating",
     "UNATTENDED_CONVERSATIONS": "Unattended",
@@ -419,7 +419,8 @@
     "SECURITY": "Security",
     "CAPTAIN_AI": "Captain",
     "CONVERSATION_WORKFLOW": "Conversation Workflow",
-    "CHATBOT_CONVERSATIONS": "Chatbot"
+    "CHATBOT_CONVERSATIONS": "Chatbot",
+    "PENDING_CONVERSATIONS": "Pending"
   },
   "DATA_IMPORTS": {
     "HEADER": "Data",
@@ -1129,7 +1130,9 @@
       "LIST_ONLY_LAST_RESOLVED_CONVERSATION_PER_CONTACT": "List only last resolved conversation per contact",
       "SHOW_CONVERSATION_STATUS_IN_CONVERSATION_LIST": "Show conversation status in conversation list",
       "SHOW_CONVERSATION_ID_IN_CONVERSATION_LIST": "Enable conversation ID in conversation list",
-      "SHOW_CONVERSATION_TEAM_IN_CONVERSATION_LIST": "Enable conversation team in conversation list"
+      "SHOW_CONVERSATION_TEAM_IN_CONVERSATION_LIST": "Enable conversation team in conversation list",
+      "ROLE_ADMINISTRATOR": "Administrator",
+      "ROLE_AGENT": "Agent"
     },
     "VISIBILITY": {
       "TITLE": "Visibility",

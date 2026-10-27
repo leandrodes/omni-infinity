@@ -167,7 +167,7 @@ const setSavedFilter = () => {
 
 const openConversation = notificationItem => {
   const {
-    primaryActor: { inboxId, id: conversationId },
+    primaryActor: { id: conversationId },
     notificationType,
   } = notificationItem;
 
@@ -178,8 +178,8 @@ const openConversation = notificationItem => {
   });
 
   router.push({
-    name: 'inbox_view_conversation',
-    params: { inboxId, type: 'conversation', id: conversationId },
+    name: 'inbox_conversation',
+    params: { accountId: route.params.accountId, conversation_id: conversationId },
   });
 };
 

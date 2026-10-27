@@ -243,11 +243,25 @@ const showResolvedFilter = computed(
     true
 );
 
-const showChatbotFilter = computed(
+const showPendingFilter = computed(
   () =>
-    isAdmin.value &&
-    currentAccount.value?.settings?.enable_chatbot_conversations_filter === true
+    currentAccount.value?.settings?.enable_pending_conversations_filter === true
 );
+
+const currentUserRole = useMapGetter('getCurrentRole');
+
+const showChatbotFilter = computed(() => {
+  if (currentAccount.value?.settings?.enable_chatbot_conversations_filter !== true) {
+    return false;
+  }
+
+  const roles =
+    currentAccount.value?.settings?.chatbot_conversations_filter_roles || [
+      'administrator',
+    ];
+
+  return roles.includes(currentUserRole.value);
+});
 const getFolderUnreadCount = useMapGetter(
   'conversationUnreadCounts/getFolderUnreadCount'
 );
@@ -437,6 +451,17 @@ const menuItems = computed(() => {
                 icon: 'i-lucide-bot',
                 activeOn: ['conversation_through_chatbot'],
                 to: accountScopedRoute('conversation_chatbot'),
+              },
+            ]
+          : []),
+        ...(showPendingFilter.value
+          ? [
+              {
+                name: 'Pending',
+                label: t('SIDEBAR.PENDING_CONVERSATIONS'),
+                icon: 'i-lucide-clock',
+                activeOn: ['conversation_through_pending'],
+                to: accountScopedRoute('conversation_pending'),
               },
             ]
           : []),

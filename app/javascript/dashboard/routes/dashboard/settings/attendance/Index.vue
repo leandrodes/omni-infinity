@@ -13,6 +13,7 @@ const { currentAccount, updateAccount } = useAccount();
 const defaultSettings = {
   enable_chatbot_conversations_filter: false,
   enable_resolved_conversations_filter: false,
+  enable_pending_conversations_filter: false,
   show_inbox_name_in_conversation_list: false,
   show_conversation_id_in_conversation_list: false,
   show_conversation_team_in_conversation_list: false,
@@ -47,20 +48,14 @@ const syncSettings = () => {
 
 watch(() => currentAccount.value?.id, syncSettings, { immediate: true });
 
-const filterLimitRows = [
-  { key: 'all', label: t('ATTENDANCE_SETTINGS.OTHERS.FILTER_ALL') },
-  { key: 'mentions', label: t('ATTENDANCE_SETTINGS.OTHERS.FILTER_MENTIONS') },
-  {
-    key: 'participating',
-    label: t('ATTENDANCE_SETTINGS.OTHERS.FILTER_PARTICIPATING'),
-  },
-  {
-    key: 'unattended',
-    label: t('ATTENDANCE_SETTINGS.OTHERS.FILTER_UNATTENDED'),
-  },
-  { key: 'chatbot', label: t('ATTENDANCE_SETTINGS.OTHERS.FILTER_CHATBOT') },
-  { key: 'resolved', label: t('ATTENDANCE_SETTINGS.OTHERS.FILTER_RESOLVED') },
-];
+const toggleChatbotRole = (role, checked) => {
+  const roles = new Set(
+    settings.value.chatbot_conversations_filter_roles || []
+  );
+  if (checked) roles.add(role);
+  else roles.delete(role);
+  settings.value.chatbot_conversations_filter_roles = [...roles];
+};
 
 const saveSettings = async () => {
   try {
@@ -81,10 +76,48 @@ const saveSettings = async () => {
         with-border
       >
         <div class="flex flex-col gap-4">
+          <div class="flex items-center justify-between gap-4">
+            <span class="text-sm">{{
+              t(
+                'ATTENDANCE_SETTINGS.DISPLAY.ENABLE_CHATBOT_CONVERSATIONS_FILTER'
+              )
+            }}</span>
+            <Switch v-model="settings.enable_chatbot_conversations_filter" />
+          </div>
+          <div
+            v-if="settings.enable_chatbot_conversations_filter"
+            class="flex flex-col gap-2 pl-4"
+          >
+            <label class="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                :checked="
+                  settings.chatbot_conversations_filter_roles.includes(
+                    'administrator'
+                  )
+                "
+                @change="
+                  toggleChatbotRole('administrator', $event.target.checked)
+                "
+              />
+              {{ t('ATTENDANCE_SETTINGS.DISPLAY.ROLE_ADMINISTRATOR') }}
+            </label>
+            <label class="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                :checked="
+                  settings.chatbot_conversations_filter_roles.includes('agent')
+                "
+                @change="toggleChatbotRole('agent', $event.target.checked)"
+              />
+              {{ t('ATTENDANCE_SETTINGS.DISPLAY.ROLE_AGENT') }}
+            </label>
+          </div>
+
           <div
             v-for="key in [
-              'enable_chatbot_conversations_filter',
               'enable_resolved_conversations_filter',
+              'enable_pending_conversations_filter',
               'show_inbox_name_in_conversation_list',
               'show_conversation_id_in_conversation_list',
               'show_conversation_team_in_conversation_list',
@@ -184,40 +217,6 @@ const saveSettings = async () => {
             }}</span>
             <Switch v-model="settings.reactions_appear_as_response" />
           </div>
-        </div>
-
-        <div class="mt-4">
-          <h4 class="text-sm font-medium mb-2">
-            {{ t('ATTENDANCE_SETTINGS.OTHERS.FILTER_LIMITS_TITLE') }}
-          </h4>
-          <table class="w-full text-sm">
-            <thead>
-              <tr>
-                <th class="text-left py-1">
-                  {{ t('ATTENDANCE_SETTINGS.OTHERS.FILTER_NAME') }}
-                </th>
-                <th class="text-right py-1">
-                  {{ t('ATTENDANCE_SETTINGS.OTHERS.FILTER_LIMIT') }}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="filter in filterLimitRows" :key="filter.key">
-                <td class="py-1">{{ filter.label }}</td>
-                <td class="py-1 text-right">
-                  <input
-                    v-model.number="
-                      settings.conversation_filter_limits[filter.key]
-                    "
-                    type="number"
-                    min="1"
-                    max="50"
-                    class="w-20 text-right border rounded px-2 py-1"
-                  />
-                </td>
-              </tr>
-            </tbody>
-          </table>
         </div>
       </SectionLayout>
 

@@ -234,6 +234,29 @@ export default {
       }),
     },
     {
+      path: frontendURL('accounts/:accountId/pending/conversations'),
+      name: 'conversation_pending',
+      meta: {
+        permissions: CONVERSATION_PERMISSIONS,
+      },
+      component: ConversationView,
+      props: () => ({ conversationType: 'pending' }),
+    },
+    {
+      path: frontendURL(
+        'accounts/:accountId/pending/conversations/:conversationId'
+      ),
+      name: 'conversation_through_pending',
+      meta: {
+        permissions: CONVERSATION_PERMISSIONS,
+      },
+      component: ConversationView,
+      props: route => ({
+        conversationId: route.params.conversationId,
+        conversationType: 'pending',
+      }),
+    },
+    {
       path: frontendURL('accounts/:accountId/unattended/conversations'),
       name: 'conversation_unattended',
       meta: {

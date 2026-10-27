@@ -54,6 +54,14 @@ export const isOnResolvedView = ({ route: { name: routeName } }) => {
   return RESOLVED_ROUTES.includes(routeName);
 };
 
+export const isOnPendingView = ({ route: { name: routeName } }) => {
+  const PENDING_ROUTES = [
+    'conversation_pending',
+    'conversation_through_pending',
+  ];
+  return PENDING_ROUTES.includes(routeName);
+};
+
 export const isOnFoldersView = ({ route: { name: routeName } }) => {
   const FOLDER_ROUTES = [
     'folder_conversations',

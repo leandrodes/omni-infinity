@@ -83,6 +83,8 @@ watch(
     } else if (value === 'chatbot') {
       activeStatus.value = wootConstants.STATUS_TYPE.PENDING;
       activeAssigneeTab.value = wootConstants.ASSIGNEE_TYPE.ALL;
+    } else if (value === 'pending') {
+      activeStatus.value = wootConstants.STATUS_TYPE.PENDING;
     } else if (
       activeStatus.value === wootConstants.STATUS_TYPE.RESOLVED ||
       activeStatus.value === wootConstants.STATUS_TYPE.PENDING
@@ -778,6 +780,10 @@ function toggleConversationStatus(
     .dispatch('toggleStatus', payload)
     .then(() => {
       useAlert(t('CONVERSATION.CHANGE_STATUS'));
+      if (status === wootConstants.STATUS_TYPE.RESOLVED) {
+        store.dispatch('clearSelectedState');
+        router.replace(buildConversationListPath());
+      }
     })
     .catch(error => {
       if (error?.response?.status === 403) {
