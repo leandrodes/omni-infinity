@@ -771,6 +771,9 @@
         "AVAILABLE_ON": "O recurso de atributos obrigatórios de conversa está disponível nos planos pagos.",
         "UPGRADE_PROMPT": "Atualize para um plano pago para exigir atributos obrigatórios antes da resolução da conversa.",
         "ASK_ADMIN": "Entre em contato com seu administrador para fazer a atualização."
+      },
+      "TEAMS": {
+        "ALL": "Todos os times/filas"
       }
     }
   },
@@ -1158,28 +1161,29 @@
     "INDEX": {
       "HEADER": {
         "TITLE": "Resolução Automática no Chatbot",
-        "DESCRIPTION": "Configure automatic resolution for chatbot conversations"
+        "DESCRIPTION": "Configure a resolução automática para conversas do chatbot"
       }
     },
     "TITLE": "Resolução Automática no Chatbot",
-    "NOTE": "Automatically resolve inactive chatbot conversations",
+    "NOTE": "Resolve automaticamente conversas inativas do chatbot",
     "DURATION": {
-      "LABEL": "Inactivity duration",
-      "ERROR": "Duration must be at least 1 minute"
+      "LABEL": "Duração de inatividade",
+      "ERROR": "A duração deve ser de pelo menos 1 minuto",
+      "HELP": "Tempo sem resposta do cliente para resolver a conversa"
     },
     "MESSAGE": {
-      "LABEL": "Custom message"
+      "LABEL": "Mensagem personalizada"
     },
     "KEYWORDS": {
-      "LABEL": "Keywords"
+      "LABEL": "Palavra-chave"
     },
     "KEYWORD_MESSAGE": {
-      "LABEL": "Keyword resolution message"
+      "LABEL": "Mensagem personalizada para resolução por palavra-chave"
     },
     "SAVE": {
-      "BUTTON": "Save",
-      "SUCCESS": "Settings updated",
-      "ERROR": "Failed to update settings"
+      "BUTTON": "Salvar",
+      "SUCCESS": "Configurações atualizadas",
+      "ERROR": "Falha ao atualizar configurações"
     }
   }
 }
