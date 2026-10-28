@@ -54,7 +54,6 @@ class Account < ApplicationRecord
   validate :validate_support_email_format, if: :will_save_change_to_support_email?
 
   store_accessor :settings, :auto_resolve_after, :auto_resolve_message, :auto_resolve_ignore_waiting
-store_accessor :settings, :chatbot_auto_resolve_after, :chatbot_auto_resolve_message, :chatbot_auto_resolve_keywords, :chatbot_auto_resolve_keyword_message, :chatbot_auto_resolve_label, :chatbot_auto_resolve_keyword_label
   store_accessor :settings, :hide_conversations_assigned_to_others
   store_accessor :settings, :hide_resolved_conversations_assigned_to_others
   store_accessor :settings, :show_conversations_only_from_user_teams

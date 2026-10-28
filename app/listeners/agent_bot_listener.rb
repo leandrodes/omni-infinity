@@ -31,9 +31,24 @@ class AgentBotListener < BaseListener
     return unless message.webhook_sendable?
     return if message.conversation.resolved?
     return if chatbot_keyword_message?(message)
+    return if skip_typebot_for_matching_automation?(message)
 
     method_name = __method__.to_s
     agent_bots_for(inbox, message.conversation).each { |agent_bot| process_message_event(method_name, agent_bot, message, event) }
+  end
+
+  def skip_typebot_for_matching_automation?(message)
+    return false unless message.incoming?
+
+    account = message.account
+    return false if account.blank?
+
+    AutomationRule.where(account_id: account.id, event_name: 'message_created', active: true, execution_delay: nil).any? do |rule|
+      ::AutomationRules::ConditionsFilterService.new(rule, message.conversation, { message: message }).perform
+    end
+  rescue StandardError => e
+    Rails.logger.error "Error checking automation rules before Typebot: #{e.message}"
+    false
   end
 
   def conversation_status_changed(event)

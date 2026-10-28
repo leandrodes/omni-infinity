@@ -96,10 +96,6 @@ class UnofficialWhatsapp::EvolutionIncomingMessageService
 
     return handle_oversized_media(media, text) if media.present? && media_exceeds_limit?(media)
 
-    if chatbot_keyword?(text) && (inbox.account.settings || {})['chatbot_auto_resolve_keywords'].present?
-      @conversation.update!(status: :resolved) unless @conversation.resolved?
-    end
-
     content = if media.present? && media[:base64].blank?
                 media[:caption].presence || text.presence || '[mídia recebida]'
               else
@@ -118,18 +114,6 @@ class UnofficialWhatsapp::EvolutionIncomingMessageService
 
     attach_media(media) if media.present?
     @message.save!
-
-    if chatbot_keyword?(text) && (inbox.account.settings || {})['chatbot_auto_resolve_keywords'].present?
-      keyword_message = (inbox.account.settings || {})['chatbot_auto_resolve_keyword_message']
-      if keyword_message.present? && @conversation.can_reply?
-        @conversation.messages.create!(
-          account_id: inbox.account_id,
-          inbox_id: inbox.id,
-          message_type: :outgoing,
-          content: keyword_message
-        )
-      end
-    end
   end
 
   def handle_status_update
@@ -187,13 +171,6 @@ class UnofficialWhatsapp::EvolutionIncomingMessageService
       node = nested if nested.is_a?(Hash)
     end
     node
-  end
-
-  def chatbot_keyword?(text)
-    keywords = (inbox.account.settings || {})['chatbot_auto_resolve_keywords'] || []
-    return false if keywords.blank?
-
-    keywords.any? { |keyword| text.to_s.downcase.include?(keyword.to_s.downcase.strip) }
   end
 
   def extract_text(node)

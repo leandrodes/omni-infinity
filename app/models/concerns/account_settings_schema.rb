@@ -16,12 +16,6 @@ module AccountSettingsSchema
         'signature_agents_can_disable': { 'type': %w[boolean null] },
         'auto_resolve_label': { 'type': %w[string null] },
         'keep_pending_on_bot_failure': { 'type': %w[boolean null] },
-        'chatbot_auto_resolve_after': { 'type': %w[integer null], 'minimum': 5, 'maximum': 1_439_856 },
-        'chatbot_auto_resolve_message': { 'type': %w[string null] },
-        'chatbot_auto_resolve_keywords': { 'type': %w[array null], 'items': { 'type': 'string' } },
-        'chatbot_auto_resolve_keyword_message': { 'type': %w[string null] },
-        'chatbot_auto_resolve_label': { 'type': %w[string null] },
-        'chatbot_auto_resolve_keyword_label': { 'type': %w[string null] },
 
         'enable_chatbot_conversations_filter': { 'type': %w[boolean null] },
         'chatbot_conversations_filter_roles': { 'type': %w[array null], 'items': { 'type': 'string' } },
