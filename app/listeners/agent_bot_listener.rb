@@ -1,6 +1,9 @@
 class AgentBotListener < BaseListener
   def conversation_resolved(event)
     conversation = extract_conversation_and_account(event)[0]
+    # Automation rules may resolve the conversation before the bot should react.
+    return if conversation.resolved?
+
     inbox = conversation.inbox
     event_name = __method__.to_s
     payload = conversation.webhook_data.merge(event: event_name)

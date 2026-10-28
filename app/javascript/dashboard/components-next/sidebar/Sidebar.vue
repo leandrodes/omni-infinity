@@ -931,12 +931,6 @@ const menuItems = computed(() => {
             ]
           : []),
         {
-          name: 'Conversation Workflow',
-          label: t('SIDEBAR.CONVERSATION_WORKFLOW'),
-          icon: 'i-lucide-workflow',
-          to: accountScopedRoute('conversation_workflow_index'),
-        },
-        {
           name: 'Resolution Reasons',
           label: t('SIDEBAR.RESOLUTION_REASONS'),
           icon: 'i-lucide-list-checks',
