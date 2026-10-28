@@ -6,6 +6,7 @@ import { FEATURE_FLAGS } from '../../../../featureFlags';
 import BaseSettingsHeader from '../components/BaseSettingsHeader.vue';
 import SettingsLayout from '../SettingsLayout.vue';
 import AutoResolve from 'dashboard/routes/dashboard/settings/account/components/AutoResolve.vue';
+import ChatbotAutoResolve from 'dashboard/routes/dashboard/settings/account/components/ChatbotAutoResolve.vue';
 
 const { accountId } = useAccount();
 const isFeatureEnabledonAccount = useMapGetter(
@@ -19,12 +20,6 @@ const showAutoResolutionConfig = computed(() => {
   );
 });
 
-const showRequiredAttributes = computed(() => {
-  return isFeatureEnabledonAccount.value(
-    accountId.value,
-    FEATURE_FLAGS.CONVERSATION_REQUIRED_ATTRIBUTES
-  );
-});
 </script>
 
 <template>
@@ -40,6 +35,7 @@ const showRequiredAttributes = computed(() => {
     <template #body>
       <div class="flex flex-col gap-6 mt-4">
         <AutoResolve v-if="showAutoResolutionConfig" />
+        <ChatbotAutoResolve />
       </div>
     </template>
   </SettingsLayout>

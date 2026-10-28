@@ -27,7 +27,6 @@ import customRoles from './customRoles/customRole.routes';
 import profile from './profile/profile.routes';
 import security from './security/security.routes';
 import conversationWorkflow from './conversationWorkflow/conversationWorkflow.routes';
-import chatbotAutoResolution from './chatbotAutoResolution/chatbotAutoResolution.routes';
 import resolutionReasons from './resolutionReasons/resolutionReasons.routes';
 import captain from './captain/captain.routes';
 import data from './data/data.routes';
@@ -74,7 +73,6 @@ export default {
     ...profile.routes,
     ...security.routes,
     ...conversationWorkflow.routes,
-    ...chatbotAutoResolution.routes,
     ...resolutionReasons.routes,
     ...captain.routes,
   ],
