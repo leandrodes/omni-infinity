@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import { useAlert } from 'dashboard/composables';
 import { useToggle } from '@vueuse/core';
 import { useI18n } from 'vue-i18n';
+import { useAccount } from 'dashboard/composables/useAccount';
 import { useStore, useStoreGetters } from 'dashboard/composables/store';
 import { useEmitter } from 'dashboard/composables/emitter';
 import { useKeyboardEvents } from 'dashboard/composables/useKeyboardEvents';
@@ -23,6 +24,7 @@ import ConversationResolveAttributesModal from 'dashboard/components-next/Conver
 const store = useStore();
 const getters = useStoreGetters();
 const { t } = useI18n();
+const { currentAccount } = useAccount();
 const { checkMissingAttributes } = useConversationRequiredAttributes();
 
 const arrowDownButtonRef = ref(null);
@@ -127,9 +129,17 @@ const onCmdOpenConversation = () => {
 
 const onCmdResolveConversation = () => {
   const currentCustomAttributes = currentChat.value.custom_attributes || {};
+  const teamId = currentChat.value?.meta?.team?.id;
+  // eslint-disable-next-line no-console
+  console.log('ResolveAction required debug', {
+    teamId,
+    currentChatTeam: currentChat.value?.meta?.team,
+    requiredKeys: currentAccount?.value?.settings?.conversation_required_attributes,
+    requiredTeams: currentAccount?.value?.settings?.conversation_required_attribute_teams,
+  });
   const { hasMissing, missing } = checkMissingAttributes(
     currentCustomAttributes,
-    currentChat.value?.meta?.team?.id
+    teamId
   );
 
   if (hasMissing) {
