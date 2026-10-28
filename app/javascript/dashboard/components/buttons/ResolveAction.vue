@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useAlert } from 'dashboard/composables';
 import { useToggle } from '@vueuse/core';
 import { useI18n } from 'vue-i18n';
@@ -180,6 +180,10 @@ const keyboardEvents = {
     },
   },
 };
+
+onMounted(() => {
+  store.dispatch('attributes/get');
+});
 
 useKeyboardEvents(keyboardEvents);
 

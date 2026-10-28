@@ -1,25 +1,48 @@
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, computed, h } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useAccount } from 'dashboard/composables/useAccount';
+import { useMapGetter } from 'dashboard/composables/store';
 import { useAlert } from 'dashboard/composables';
 import WithLabel from 'v3/components/Form/WithLabel.vue';
 import Editor from 'next/Editor/Editor.vue';
 import Switch from 'next/switch/Switch.vue';
 import NextButton from 'dashboard/components-next/button/Button.vue';
 import DurationInput from 'next/input/DurationInput.vue';
+import SingleSelect from 'dashboard/components-next/filter/inputs/SingleSelect.vue';
 import { DURATION_UNITS } from 'dashboard/components-next/input/constants';
 
 const { t } = useI18n();
+const { currentAccount, updateAccount } = useAccount();
+const labels = useMapGetter('labels/getLabels');
 const duration = ref(0);
 const unit = ref(DURATION_UNITS.MINUTES);
 const message = ref('');
 const keywordMessage = ref('');
+const labelToApply = ref({});
+const keywordLabelToApply = ref({});
 const keywords = ref('');
 const isEnabled = ref(false);
 const isSubmitting = ref(false);
 
-const { currentAccount, updateAccount } = useAccount();
+const labelOptions = computed(() =>
+  labels.value?.length
+    ? labels.value.map(label => ({
+        id: label.title,
+        name: label.title,
+        icon: h('span', {
+          class: `size-[12px] ring-1 ring-n-alpha-1 dark:ring-white/20 ring-inset rounded-sm`,
+          style: { backgroundColor: label.color },
+        }),
+      }))
+    : []
+);
+
+const selectedLabelName = computed(() => labelToApply.value?.name ?? null);
+const selectedKeywordLabelName = computed(
+  () => keywordLabelToApply.value?.name ?? null
+);
+
 
 watch(
   () => currentAccount.value,
@@ -30,6 +53,12 @@ watch(
     keywordMessage.value =
       settings.chatbot_auto_resolve_keyword_message || '';
     keywords.value = (settings.chatbot_auto_resolve_keywords || []).join(', ');
+    labelToApply.value = labelOptions.value.find(
+      option => option.name === settings.chatbot_auto_resolve_label
+    );
+    keywordLabelToApply.value = labelOptions.value.find(
+      option => option.name === settings.chatbot_auto_resolve_keyword_label
+    );
     if (duration.value) isEnabled.value = true;
   },
   { deep: true, immediate: true }
@@ -48,7 +77,7 @@ const updateAccountSettings = async settings => {
 };
 
 const handleSubmit = async () => {
-  if (duration.value && duration.value < 1) {
+  if (duration.value && duration.value < 5) {
     useAlert(t('CHATBOT_AUTO_RESOLUTION.DURATION.ERROR'));
     return Promise.resolve();
   }
@@ -61,6 +90,8 @@ const handleSubmit = async () => {
       .map(item => item.trim())
       .filter(Boolean),
     chatbot_auto_resolve_keyword_message: keywordMessage.value,
+    chatbot_auto_resolve_label: selectedLabelName.value,
+    chatbot_auto_resolve_keyword_label: selectedKeywordLabelName.value,
   });
 };
 
@@ -75,6 +106,8 @@ const handleDisable = async () => {
     chatbot_auto_resolve_message: '',
     chatbot_auto_resolve_keywords: [],
     chatbot_auto_resolve_keyword_message: '',
+    chatbot_auto_resolve_label: null,
+    chatbot_auto_resolve_keyword_label: null,
   });
 };
 
@@ -136,6 +169,26 @@ const toggleEnabled = async () => {
             v-model="keywordMessage"
             class="w-full"
             channel-type="Context::NoToolbar"
+          />
+        </WithLabel>
+        <WithLabel :label="t('CHATBOT_AUTO_RESOLUTION.LABEL.LABEL')">
+          <SingleSelect
+            v-model="labelToApply"
+            :options="labelOptions"
+            :placeholder="t('CHATBOT_AUTO_RESOLUTION.LABEL.PLACEHOLDER')"
+            placeholder-icon="i-lucide-chevron-down"
+            placeholder-trailing-icon
+            variant="faded"
+          />
+        </WithLabel>
+        <WithLabel :label="t('CHATBOT_AUTO_RESOLUTION.KEYWORD_LABEL.LABEL')">
+          <SingleSelect
+            v-model="keywordLabelToApply"
+            :options="labelOptions"
+            :placeholder="t('CHATBOT_AUTO_RESOLUTION.KEYWORD_LABEL.PLACEHOLDER')"
+            placeholder-icon="i-lucide-chevron-down"
+            placeholder-trailing-icon
+            variant="faded"
           />
         </WithLabel>
         <div class="flex gap-2">

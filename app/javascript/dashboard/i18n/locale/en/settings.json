@@ -1217,6 +1217,14 @@
       "BUTTON": "Save",
       "SUCCESS": "Settings updated",
       "ERROR": "Failed to update settings"
+    },
+    "LABEL": {
+      "LABEL": "Label after inactivity resolution",
+      "PLACEHOLDER": "Select label"
+    },
+    "KEYWORD_LABEL": {
+      "LABEL": "Label after keyword resolution",
+      "PLACEHOLDER": "Select label"
     }
   }
 }

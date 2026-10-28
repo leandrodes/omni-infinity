@@ -8,7 +8,7 @@ module AccountSettingsSchema
     'type': 'object',
     'properties':
       {
-        'auto_resolve_after': { 'type': %w[integer null], 'minimum': 10, 'maximum': 1_439_856 },
+        'auto_resolve_after': { 'type': %w[integer null], 'minimum': 5, 'maximum': 1_439_856 },
         'auto_resolve_message': { 'type': %w[string null] },
         'auto_resolve_ignore_waiting': { 'type': %w[boolean null] },
         'audio_transcriptions': { 'type': %w[boolean null] },
@@ -16,10 +16,12 @@ module AccountSettingsSchema
         'signature_agents_can_disable': { 'type': %w[boolean null] },
         'auto_resolve_label': { 'type': %w[string null] },
         'keep_pending_on_bot_failure': { 'type': %w[boolean null] },
-        'chatbot_auto_resolve_after': { 'type': %w[integer null], 'minimum': 1, 'maximum': 1_439_856 },
+        'chatbot_auto_resolve_after': { 'type': %w[integer null], 'minimum': 5, 'maximum': 1_439_856 },
         'chatbot_auto_resolve_message': { 'type': %w[string null] },
         'chatbot_auto_resolve_keywords': { 'type': %w[array null], 'items': { 'type': 'string' } },
         'chatbot_auto_resolve_keyword_message': { 'type': %w[string null] },
+        'chatbot_auto_resolve_label': { 'type': %w[string null] },
+        'chatbot_auto_resolve_keyword_label': { 'type': %w[string null] },
 
         'enable_chatbot_conversations_filter': { 'type': %w[boolean null] },
         'chatbot_conversations_filter_roles': { 'type': %w[array null], 'items': { 'type': 'string' } },

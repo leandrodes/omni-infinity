@@ -15,14 +15,6 @@ class AgentBotListener < BaseListener
     agent_bots_for(inbox, conversation).each { |agent_bot| process_webhook_bot_event(agent_bot, payload) }
   end
 
-  def conversation_status_changed(event)
-    conversation = extract_conversation_and_account(event)[0]
-    changed_attributes = extract_changed_attributes(event)
-    inbox = conversation.inbox
-    event_name = __method__.to_s
-    payload = conversation.webhook_data.merge(event: event_name, changed_attributes: changed_attributes)
-    agent_bots_for(inbox, conversation).each { |agent_bot| process_webhook_bot_event(agent_bot, payload) }
-  end
 
   def conversation_updated(event)
     conversation = extract_conversation_and_account(event)[0]
@@ -37,9 +29,22 @@ class AgentBotListener < BaseListener
     message = extract_message_and_account(event)[0]
     inbox = message.inbox
     return unless message.webhook_sendable?
+    return if message.conversation.resolved?
+    return if chatbot_keyword_message?(message)
 
     method_name = __method__.to_s
     agent_bots_for(inbox, message.conversation).each { |agent_bot| process_message_event(method_name, agent_bot, message, event) }
+  end
+
+  def conversation_status_changed(event)
+    conversation = extract_conversation_and_account(event)[0]
+    return if conversation.resolved?
+
+    changed_attributes = extract_changed_attributes(event)
+    inbox = conversation.inbox
+    event_name = __method__.to_s
+    payload = conversation.webhook_data.merge(event: event_name, changed_attributes: changed_attributes)
+    agent_bots_for(inbox, conversation).each { |agent_bot| process_webhook_bot_event(agent_bot, payload) }
   end
 
   def message_updated(event)
@@ -58,6 +63,14 @@ class AgentBotListener < BaseListener
     payload = contact_inbox.webhook_data.merge(event: event_name)
     payload[:event_info] = event.data[:event_info]
     agent_bots_for(inbox).each { |agent_bot| process_webhook_bot_event(agent_bot, payload) }
+  end
+
+  def chatbot_keyword_message?(message)
+    conversation = message.conversation
+    keywords = (conversation.account.settings || {})['chatbot_auto_resolve_keywords'] || []
+    return false if keywords.blank?
+
+    keywords.any? { |keyword| message.content.to_s.downcase.include?(keyword.to_s.downcase.strip) }
   end
 
   private

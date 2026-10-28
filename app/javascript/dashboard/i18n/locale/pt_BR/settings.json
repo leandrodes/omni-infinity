@@ -1184,6 +1184,14 @@
       "BUTTON": "Salvar",
       "SUCCESS": "Configurações atualizadas",
       "ERROR": "Falha ao atualizar configurações"
+    },
+    "LABEL": {
+      "LABEL": "Etiqueta após resolução por inatividade",
+      "PLACEHOLDER": "Selecionar etiqueta"
+    },
+    "KEYWORD_LABEL": {
+      "LABEL": "Etiqueta após resolução por palavra-chave",
+      "PLACEHOLDER": "Selecionar etiqueta"
     }
   }
 }
