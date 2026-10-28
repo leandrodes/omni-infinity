@@ -93,6 +93,7 @@ const conversationRequiredAttributes = computed(() => {
 });
 
 onMounted(() => {
+  store.dispatch('attributes/get');
   store.dispatch('teams/get');
 });
 

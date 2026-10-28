@@ -121,6 +121,7 @@ class Api::V1::AccountsController < Api::BaseController
 
   def permitted_settings_attributes
     [:auto_resolve_after, :auto_resolve_message, :auto_resolve_ignore_waiting, :audio_transcriptions, :auto_resolve_label,
+     :chatbot_auto_resolve_after, :chatbot_auto_resolve_message, :chatbot_auto_resolve_keyword_message,
      :signature_enabled, :signature_agents_can_disable,
      :enable_chatbot_conversations_filter, :enable_resolved_conversations_filter, :enable_pending_conversations_filter,
      :show_inbox_name_in_conversation_list, :show_conversation_id_in_conversation_list,
