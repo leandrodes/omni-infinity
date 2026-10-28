@@ -130,13 +130,6 @@ const onCmdOpenConversation = () => {
 const onCmdResolveConversation = () => {
   const currentCustomAttributes = currentChat.value.custom_attributes || {};
   const teamId = currentChat.value?.meta?.team?.id;
-  // eslint-disable-next-line no-console
-  console.log('ResolveAction required debug', {
-    teamId,
-    currentChatTeam: currentChat.value?.meta?.team,
-    requiredKeys: currentAccount?.value?.settings?.conversation_required_attributes,
-    requiredTeams: currentAccount?.value?.settings?.conversation_required_attribute_teams,
-  });
   const { hasMissing, missing } = checkMissingAttributes(
     currentCustomAttributes,
     teamId
