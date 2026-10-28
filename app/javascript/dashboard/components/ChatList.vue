@@ -803,7 +803,7 @@ function handleResolveConversation(conversationId, status, snoozedUntil) {
   const currentCustomAttributes = conversation?.custom_attributes || {};
   const { hasMissing, missing } = checkMissingAttributes(
     currentCustomAttributes,
-    conversation?.team_id || conversation?.team?.id
+    conversation?.meta?.team?.id
   );
 
   if (hasMissing) {

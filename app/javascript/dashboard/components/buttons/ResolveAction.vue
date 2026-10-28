@@ -128,7 +128,8 @@ const onCmdOpenConversation = () => {
 const onCmdResolveConversation = () => {
   const currentCustomAttributes = currentChat.value.custom_attributes || {};
   const { hasMissing, missing } = checkMissingAttributes(
-    currentCustomAttributes
+    currentCustomAttributes,
+    currentChat.value?.meta?.team?.id
   );
 
   if (hasMissing) {
