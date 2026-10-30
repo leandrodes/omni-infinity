@@ -17,6 +17,8 @@ import DeleteCustomViews from 'dashboard/routes/dashboard/customviews/DeleteCust
 import ConversationBulkActions from './widgets/conversation/conversationBulkActions/Index.vue';
 import TeleportWithDirection from 'dashboard/components-next/TeleportWithDirection.vue';
 import ConversationResolveAttributesModal from 'dashboard/components-next/ConversationWorkflow/ConversationResolveAttributesModal.vue';
+import AssignmentTeamConflictModal from 'dashboard/components-next/ConversationWorkflow/AssignmentTeamConflictModal.vue';
+import { assignmentTeamConflict } from 'dashboard/helper/assignmentTeamHelper';
 
 import { useUISettings } from 'dashboard/composables/useUISettings';
 import { useAccount } from 'dashboard/composables/useAccount';
@@ -33,6 +35,7 @@ import { useEmitter } from 'dashboard/composables/emitter';
 import { useConversationRequiredAttributes } from 'dashboard/composables/useConversationRequiredAttributes';
 
 import { emitter } from 'shared/helpers/mitt';
+import { BUS_EVENTS } from 'shared/constants/busEvents';
 
 import wootConstants from 'dashboard/constants/globals';
 import advancedFilterOptions from './widgets/conversation/advancedFilterItems';
@@ -69,6 +72,8 @@ const store = useStore();
 const { buildConversationListPath } = useConversationRoutePath();
 
 const resolveAttributesModalRef = ref(null);
+const assignmentConflictModalRef = ref(null);
+const pendingAssignment = ref(null);
 
 const activeAssigneeTab = ref(wootConstants.ASSIGNEE_TYPE.ME);
 const activeStatus = ref(wootConstants.STATUS_TYPE.OPEN);
@@ -85,11 +90,17 @@ watch(
       activeAssigneeTab.value = wootConstants.ASSIGNEE_TYPE.ALL;
     } else if (value === 'pending') {
       activeStatus.value = wootConstants.STATUS_TYPE.PENDING;
+      activeAssigneeTab.value = wootConstants.ASSIGNEE_TYPE.ME;
     } else if (
-      activeStatus.value === wootConstants.STATUS_TYPE.RESOLVED ||
-      activeStatus.value === wootConstants.STATUS_TYPE.PENDING
+      value === 'open_team' ||
+      value === 'unassigned' ||
+      value === 'participating'
     ) {
       activeStatus.value = wootConstants.STATUS_TYPE.OPEN;
+      activeAssigneeTab.value = wootConstants.ASSIGNEE_TYPE.ALL;
+    } else {
+      activeStatus.value = wootConstants.STATUS_TYPE.OPEN;
+      activeAssigneeTab.value = wootConstants.ASSIGNEE_TYPE.ME;
     }
   },
   { immediate: true }
@@ -114,10 +125,25 @@ const chatLists = useMapGetter('getFilteredConversations');
 const mineChatsList = useMapGetter('getMineChats');
 const allChatList = useMapGetter('getAllStatusChats');
 const unAssignedChatsList = useMapGetter('getUnAssignedChats');
-const participatingChatsList = useMapGetter('getParticipatingChats');
 const chatListLoading = useMapGetter('getChatListLoadingStatus');
 const activeInbox = useMapGetter('getSelectedInbox');
 const conversationStats = useMapGetter('conversationStats/getStats');
+const unattendedBadgeCount = useMapGetter(
+  'conversationBadges/getUnattendedCount'
+);
+const unattendedMineBadgeCount = useMapGetter(
+  'conversationBadges/getUnattendedMineCount'
+);
+const unattendedParticipatingBadgeCount = useMapGetter(
+  'conversationBadges/getUnattendedParticipatingCount'
+);
+const pendingBadgeCount = useMapGetter('conversationBadges/getPendingCount');
+const pendingMineBadgeCount = useMapGetter(
+  'conversationBadges/getPendingMineCount'
+);
+const pendingParticipatingBadgeCount = useMapGetter(
+  'conversationBadges/getPendingParticipatingCount'
+);
 const appliedFilters = useMapGetter('getAppliedConversationFiltersV2');
 const appliedContactFilter = useMapGetter('getAppliedContactFilter');
 const folders = useMapGetter('customViews/getConversationCustomViews');
@@ -195,16 +221,82 @@ const userPermissions = computed(() => {
   return getUserPermissions(currentUser.value, currentAccountId.value);
 });
 
+const hideAssignedToOthers = computed(
+  () =>
+    currentAccount.value?.settings?.hide_conversations_assigned_to_others ===
+    true
+);
+
+const isFixedView = computed(() =>
+  ['open_mine', 'open_team', 'chatbot', 'unassigned', 'participating'].includes(
+    props.conversationType
+  )
+);
+
+const showAssigneeTabs = computed(
+  () => !isFixedView.value && !hasAppliedFiltersOrActiveFolders.value
+);
+
 const assigneeTabItems = computed(() => {
+  const isUnattendedView = props.conversationType === 'unattended';
+  const isPendingView = props.conversationType === 'pending';
+
+  if (isUnattendedView || isPendingView) {
+    const isUnattended = isUnattendedView;
+    const meCount = isUnattended
+      ? unattendedMineBadgeCount.value
+      : pendingMineBadgeCount.value;
+    const participatingCount = isUnattended
+      ? unattendedParticipatingBadgeCount.value
+      : pendingParticipatingBadgeCount.value;
+    const allCount = isUnattended
+      ? unattendedBadgeCount.value
+      : pendingBadgeCount.value;
+
+    const items = [
+      {
+        key: 'me',
+        name: t('CHAT_LIST.ASSIGNEE_TYPE_TABS.me'),
+        count: meCount,
+        badgeCount: meCount,
+      },
+    ];
+
+    if (!isPendingView || !hideAssignedToOthers.value) {
+      items.push({
+        key: 'participating',
+        name: t('CHAT_LIST.ASSIGNEE_TYPE_TABS.participating'),
+        count: participatingCount,
+        badgeCount: participatingCount,
+      });
+    }
+
+    if (!hideAssignedToOthers.value) {
+      items.push({
+        key: 'all',
+        name: t('CHAT_LIST.ASSIGNEE_TYPE_TABS.all'),
+        count: allCount,
+        badgeCount: allCount,
+      });
+    }
+
+    return items;
+  }
+
   return filterItemsByPermission(
     ASSIGNEE_TYPE_TAB_PERMISSIONS,
     userPermissions.value,
     item => item.permissions
-  ).map(({ key, count: countKey }) => ({
-    key,
-    name: t(`CHAT_LIST.ASSIGNEE_TYPE_TABS.${key}`),
-    count: conversationStats.value[countKey] || 0,
-  }));
+  ).map(({ key, count: countKey }) => {
+    const count = conversationStats.value[countKey] || 0;
+
+    return {
+      key,
+      name: t(`CHAT_LIST.ASSIGNEE_TYPE_TABS.${key}`),
+      count,
+      badgeCount: props.conversationType === 'resolved' ? undefined : count,
+    };
+  });
 });
 
 const showAssigneeInConversationCard = computed(() => {
@@ -240,10 +332,10 @@ const conversationCustomAttributes = useFunctionGetter(
 );
 
 const activeAssigneeTabCount = computed(() => {
-  const count = assigneeTabItems.value.find(
+  const activeItem = assigneeTabItems.value.find(
     item => item.key === activeAssigneeTab.value
-  ).count;
-  return count;
+  );
+  return activeItem?.count || 0;
 });
 
 const conversationListPagination = computed(() => {
@@ -329,23 +421,20 @@ const pageTitle = computed(() => {
   if (props.conversationType === wootConstants.CONVERSATION_TYPE.UNATTENDED) {
     return t('CHAT_LIST.UNATTENDED_HEADING');
   }
+  if (props.conversationType === wootConstants.CONVERSATION_TYPE.OPEN_MINE) {
+    return t('SIDEBAR.OPEN_MINE_CONVERSATIONS');
+  }
+  if (props.conversationType === wootConstants.CONVERSATION_TYPE.OPEN_TEAM) {
+    return t('SIDEBAR.OPEN_TEAM_CONVERSATIONS');
+  }
+  if (props.conversationType === wootConstants.CONVERSATION_TYPE.UNASSIGNED) {
+    return t('SIDEBAR.UNASSIGNED_CONVERSATIONS');
+  }
   if (hasActiveFolders.value) {
     return activeFolder.value.name;
   }
   return t('CHAT_LIST.TAB_HEADING');
 });
-
-function filterByAssigneeTab(conversations) {
-  if (activeAssigneeTab.value === wootConstants.ASSIGNEE_TYPE.ME) {
-    return conversations.filter(
-      c => c.meta?.assignee?.id === currentUser.value?.id
-    );
-  }
-  if (activeAssigneeTab.value === wootConstants.ASSIGNEE_TYPE.UNASSIGNED) {
-    return conversations.filter(c => !c.meta?.assignee);
-  }
-  return [...conversations];
-}
 
 function sortByUnreadStatus(conversations) {
   return [...conversations].sort((a, b) =>
@@ -358,12 +447,8 @@ const conversationList = computed(() => {
 
   if (!hasAppliedFiltersOrActiveFolders.value) {
     const filters = conversationFilters.value;
-    if (
-      props.conversationType === wootConstants.CONVERSATION_TYPE.PARTICIPATING
-    ) {
-      localConversationList = filterByAssigneeTab(
-        participatingChatsList.value(filters)
-      );
+    if (activeAssigneeTab.value === 'participating') {
+      localConversationList = [...allChatList.value(filters)];
     } else if (activeAssigneeTab.value === 'me') {
       localConversationList = [...mineChatsList.value(filters)];
     } else if (activeAssigneeTab.value === 'unassigned') {
@@ -417,7 +502,19 @@ const uniqueInboxes = computed(() => {
 function setFiltersFromUISettings() {
   const { conversations_filter_by: filterBy = {} } = uiSettings.value;
   const { status, order_by: orderBy } = filterBy;
-  activeStatus.value = status || wootConstants.STATUS_TYPE.OPEN;
+  const fixedOpenView =
+    !props.conversationType ||
+    [
+      'open',
+      'open_mine',
+      'open_team',
+      'unassigned',
+      'participating',
+      'unattended',
+    ].includes(props.conversationType);
+  activeStatus.value = fixedOpenView
+    ? wootConstants.STATUS_TYPE.OPEN
+    : status || wootConstants.STATUS_TYPE.OPEN;
   activeSortBy.value = Object.values(wootConstants.SORT_BY_TYPE).includes(
     orderBy
   )
@@ -631,7 +728,11 @@ function resetAndFetchData() {
 }
 
 function loadMoreConversations() {
-  if (hasCurrentPageEndReached.value || chatListLoading.value) {
+  if (
+    !conversationList.value.length ||
+    hasCurrentPageEndReached.value ||
+    chatListLoading.value
+  ) {
     return;
   }
 
@@ -745,10 +846,19 @@ async function markAsRead(conversationId) {
 
 async function onAssignTeam(team, conversationId = null) {
   try {
+    const selectedChat = store.getters.getSelectedChat;
+    const shouldLeaveConversation =
+      conversationId &&
+      Number(selectedChat?.id) === Number(conversationId) &&
+      Number(team.id) !== Number(selectedChat?.meta?.team?.id || 0);
+
     await store.dispatch('assignTeam', {
       conversationId,
       teamId: team.id,
     });
+    if (shouldLeaveConversation) {
+      emitter.emit(BUS_EVENTS.CONVERSATION_ACCESS_REVOKED, conversationId);
+    }
     useAlert(
       t('CONVERSATION.CARD_CONTEXT_MENU.API.TEAM_ASSIGNMENT.SUCCESFUL', {
         team: team.name,
@@ -849,6 +959,16 @@ function toggleSelectAll(check) {
   selectAllConversations(check, conversationList);
 }
 
+useEmitter(BUS_EVENTS.CONVERSATION_ACCESS_REVOKED, conversationId => {
+  const selectedChat = store.getters.getSelectedChat;
+  if (!conversationId || Number(selectedChat?.id) !== Number(conversationId)) {
+    return;
+  }
+
+  store.dispatch('clearSelectedState');
+  router.replace(buildConversationListPath());
+});
+
 useEmitter('fetch_conversation_stats', () => {
   if (hasAppliedFiltersOrActiveFolders.value) return;
   store.dispatch('conversationStats/get', conversationFilters.value);
@@ -880,6 +1000,38 @@ async function deleteConversation() {
   }
 }
 
+const handleAssignAgent = (agent, conversationId = null) => {
+  const conversations = conversationId
+    ? [getConversationById.value(conversationId)]
+    : selectedConversations.value.map(id => getConversationById.value(id));
+
+  const hasConflict = assignmentTeamConflict({
+    agent,
+    conversations,
+    settings: currentAccount.value?.settings || {},
+  });
+
+  if (!hasConflict) {
+    onAssignAgent(agent, conversationId);
+    return;
+  }
+
+  pendingAssignment.value = { agent, conversationId };
+  assignmentConflictModalRef.value?.open();
+};
+
+const onConfirmAssignmentTeam = ({ team, note }) => {
+  const pending = pendingAssignment.value;
+  if (!pending) return;
+
+  onAssignAgent(pending.agent, pending.conversationId, team.id, note);
+  pendingAssignment.value = null;
+};
+
+const onCloseAssignmentConflict = () => {
+  pendingAssignment.value = null;
+};
+
 const handleDelete = conversationId => {
   selectedConversationId.value = conversationId;
   deleteConversationDialogRef.value.open();
@@ -887,7 +1039,7 @@ const handleDelete = conversationId => {
 
 provide('selectConversation', selectConversation);
 provide('deSelectConversation', deSelectConversation);
-provide('assignAgent', onAssignAgent);
+provide('assignAgent', handleAssignAgent);
 provide('assignTeam', onAssignTeam);
 provide('assignLabels', onAssignLabels);
 provide('removeLabels', onRemoveLabels);
@@ -975,10 +1127,7 @@ watch(appliedFilters, () => resetBulkActions());
     />
 
     <ChatTypeTabs
-      v-if="
-        !hasAppliedFiltersOrActiveFolders &&
-        props.conversationType !== 'chatbot'
-      "
+      v-if="showAssigneeTabs"
       :items="assigneeTabItems"
       :active-tab="activeAssigneeTab"
       is-compact
@@ -1039,6 +1188,16 @@ watch(appliedFilters, () => resetBulkActions());
         @close="closeAdvanceFiltersModal"
       />
     </TeleportWithDirection>
+    <AssignmentTeamConflictModal
+      ref="assignmentConflictModalRef"
+      :agent="pendingAssignment?.agent"
+      :teams="teamsList"
+      :conversation-count="
+        pendingAssignment?.conversationId ? 1 : selectedConversations.length
+      "
+      @confirm="onConfirmAssignmentTeam"
+      @close="onCloseAssignmentConflict"
+    />
     <ConversationResolveAttributesModal
       ref="resolveAttributesModalRef"
       @submit="handleResolveWithAttributes"

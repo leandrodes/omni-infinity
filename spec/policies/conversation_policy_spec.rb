@@ -69,5 +69,53 @@ RSpec.describe ConversationPolicy, type: :policy do
         expect(subject).not_to permit(agent_context, conversation)
       end
     end
+
+    context 'when agent is a participant' do
+      let(:other_agent) { create(:user, account: account) }
+      let(:other_team) { create(:team, account: account) }
+      let(:conversation) do
+        create(:conversation, account: account, assignee: other_agent, team: other_team)
+      end
+
+      before do
+        account.update!(
+          settings: {
+            hide_conversations_assigned_to_others: true,
+            show_conversations_only_from_user_teams: true
+          }
+        )
+        create(:inbox_member, inbox: conversation.inbox, user: agent)
+        create(:conversation_participant, conversation: conversation, user: agent)
+      end
+
+      it 'allows access despite being assigned to another user and outside the user team' do
+        expect(subject).to permit(agent_context, conversation)
+      end
+    end
+
+    context 'when conversation is private' do
+      let(:owner) { create(:user, account: account, role: :agent) }
+      let(:owner_context) { { user: owner, account: account, account_user: owner.account_users.find_by(account: account) } }
+      let(:conversation) do
+        create(
+          :conversation,
+          account: account,
+          visibility: :restricted,
+          private_owner: owner
+        )
+      end
+
+      it 'allows the private owner' do
+        expect(subject).to permit(owner_context, conversation)
+      end
+
+      it 'denies other agents' do
+        expect(subject).not_to permit(agent_context, conversation)
+      end
+
+      it 'allows administrators' do
+        expect(subject).to permit(administrator_context, conversation)
+      end
+    end
   end
 end

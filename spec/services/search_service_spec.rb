@@ -443,9 +443,9 @@ describe SearchService do
         it 'skips inbox filtering as optimization' do
           base_query = search.send(:message_base_query)
 
-          # Should only have the time filter, not inbox filter
+          # Should only have the time filter, not the direct messages inbox filter
           expect(base_query.to_sql).to include('created_at >= ')
-          expect(base_query.to_sql).not_to include('inbox_id')
+          expect(base_query.to_sql).not_to include('messages.inbox_id')
         end
       end
     end

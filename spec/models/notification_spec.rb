@@ -59,6 +59,18 @@ has been assigned to you"
       expect(notification.push_message_title).to eq "A new message is created in conversation (##{notification.primary_actor.display_id})"
     end
 
+    it 'returns appropriate title suited for the notification type conversation_participant_added' do
+      notification = create(:notification, notification_type: 'conversation_participant_added')
+      expect(notification.push_message_title).to eq "You have been added as a participant in conversation (##{notification.primary_actor.display_id})"
+    end
+
+    it 'returns appropriate title suited for the notification type conversation_participant_removed' do
+      notification = create(:notification, notification_type: 'conversation_participant_removed')
+      expect(notification.push_message_title).to eq(
+        "You have been removed as a participant from conversation (##{notification.primary_actor.display_id})"
+      )
+    end
+
     it 'returns appropriate title suited for the notification type conversation_mention' do
       message = create(:message, sender: create(:user), content: 'Hey [@John](mention://user/1/john), can you check this ticket?')
       notification = create(:notification, notification_type: 'conversation_mention', primary_actor: message.conversation,
@@ -108,6 +120,13 @@ has been assigned to you"
       notification = create(:notification, notification_type: 'assigned_conversation_new_message', primary_actor: conversation,
                                            secondary_actor: message)
       expect(notification.push_message_body).to eq "#{message.sender.name}: Attachment"
+    end
+
+    it 'returns appropriate body suited for the notification type conversation_participant_added' do
+      conversation = create(:conversation)
+      message = create(:message, sender: create(:user), content: 'Please check this', conversation: conversation)
+      notification = create(:notification, notification_type: 'conversation_participant_added', primary_actor: conversation)
+      expect(notification.push_message_body).to eq "#{message.sender.name}: Please check this"
     end
 
     it 'returns appropriate body suited for the notification type participating_conversation_new_message having multple mention' do

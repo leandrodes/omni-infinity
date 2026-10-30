@@ -44,6 +44,20 @@ class SuperAdmin::AccountsController < SuperAdmin::ApplicationController
     permitted_params
   end
 
+  def create
+    resource = new_resource(resource_params)
+    resource.settings = Account.default_attendance_settings.merge(resource.settings || {})
+    authorize_resource(resource)
+
+    if resource.save
+      redirect_to(after_resource_created_path(resource), notice: translate_with_resource('create.success'))
+    else
+      render :new, locals: {
+        page: Administrate::Page::Form.new(dashboard, resource)
+      }, status: :unprocessable_entity
+    end
+  end
+
   def update
     apply_suspension_metadata
     super

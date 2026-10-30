@@ -99,7 +99,7 @@ const MINUTES_PER_UNIT = {
 };
 
 // The input only shows whole units, so the wait has to be at least one of them: without this,
-// switching 4 hours to days shows 0 days while the rule keeps the 10 minute minimum.
+// switching 4 hours to days shows 0 days while the rule keeps the 5 minute minimum.
 const minDelay = computed(() =>
   Math.max(MIN_DELAY_MINUTES, MINUTES_PER_UNIT[unit.value])
 );

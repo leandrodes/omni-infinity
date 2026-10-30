@@ -952,6 +952,19 @@ RSpec.describe 'Conversations API', type: :request do
         expect(notification.reload.read_at).to be_nil
       end
 
+      it 'marks participant notifications as read when the participant opens the conversation' do
+        conversation.update!(status: :open, assignee: nil)
+        create(:conversation_participant, conversation: conversation, user: agent)
+        notification = create(:notification, account: account, user: agent, primary_actor: conversation, read_at: nil)
+
+        post "/api/v1/accounts/#{account.id}/conversations/#{conversation.display_id}/update_last_seen",
+             headers: agent.create_new_auth_token,
+             as: :json
+
+        expect(response).to have_http_status(:success)
+        expect(notification.reload.read_at).to be_present
+      end
+
       it 'keeps unread notifications while an open conversation is unassigned' do
         conversation.update!(status: :open, assignee: nil)
         notification = create(:notification, account: account, user: agent, primary_actor: conversation, read_at: nil)

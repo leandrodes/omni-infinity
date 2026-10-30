@@ -58,6 +58,7 @@ useKeyboardEvents(keyboardEvents);
       :index="index"
       :name="item.name"
       :count="item.count"
+      :badge-count="item.badgeCount"
       is-compact
     />
   </woot-tabs>

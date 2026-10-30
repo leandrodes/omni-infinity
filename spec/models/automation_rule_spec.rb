@@ -146,13 +146,13 @@ RSpec.describe AutomationRule do
       expect(rule).to be_valid
     end
 
-    it 'allows delays between 10 minutes and 30 days' do
+    it 'allows delays between 5 minutes and 30 days' do
       rule.execution_delay = 240
       expect(rule).to be_valid
     end
 
-    it 'rejects delays below 10 minutes' do
-      rule.execution_delay = 5
+    it 'rejects delays below 5 minutes' do
+      rule.execution_delay = 4
       expect(rule).not_to be_valid
       expect(rule.errors[:execution_delay]).to be_present
     end
@@ -163,7 +163,7 @@ RSpec.describe AutomationRule do
     end
 
     it 'rejects non-integer delays' do
-      rule.execution_delay = 10.5
+      rule.execution_delay = 5.5
       expect(rule).not_to be_valid
     end
 
@@ -211,7 +211,7 @@ RSpec.describe AutomationRule do
 
     it 'allows a delayed conversation_created rule (arms on creation)' do
       rule.event_name = 'conversation_created'
-      rule.execution_delay = 10
+      rule.execution_delay = 5
       rule.conditions = [{ 'attribute_key' => 'status', 'filter_operator' => 'equal_to', 'values' => ['open'], 'query_operator' => nil }]
       expect(rule).to be_valid
     end

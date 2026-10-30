@@ -1,5 +1,10 @@
 import { MESSAGE_TYPE } from 'shared/constants/messages';
-import { applyPageFilters, applyRoleFilter, sortComparator } from './helpers';
+import {
+  applyAccountVisibilityFilter,
+  applyPageFilters,
+  applyRoleFilter,
+  sortComparator,
+} from './helpers';
 import filterQueryGenerator from 'dashboard/helper/filterQueryGenerator';
 import { matchesFilters } from './helpers/filterHelpers';
 import {
@@ -30,6 +35,10 @@ const getters = {
 
     const permissions = getUserPermissions(currentUser, currentAccountId);
     const userRole = getUserRole(currentUser, currentAccountId);
+    const account = rootGetters['accounts/getAccount']?.(currentAccountId);
+    const teamIds = (rootGetters['teams/getMyTeams'] || []).map(
+      team => team.id
+    );
 
     return allConversations
       .filter(conversation => {
@@ -43,13 +52,24 @@ const getters = {
           permissions,
           currentUserId
         );
+        const allowedForAccount = applyAccountVisibilityFilter(conversation, {
+          role: userRole,
+          settings: account?.settings || {},
+          teamIds,
+          currentUserId,
+        });
 
-        return matchesFilterResult && allowedForRole;
+        return matchesFilterResult && allowedForRole && allowedForAccount;
       })
       .sort((a, b) =>
         sortComparator(a, b, appliedFiltersSortBy || chatSortFilter)
       );
   },
+  getPinnedMessages:
+    ({ pinnedMessages }) =>
+    conversationId => {
+      return pinnedMessages[conversationId] || [];
+    },
   getSelectedChat: ({ selectedChatId, allConversations }) => {
     const selectedChat = allConversations.find(
       conversation => conversation.id === selectedChatId
@@ -114,15 +134,21 @@ const getters = {
   },
   getParticipatingChats: (_state, _, __, rootGetters) => activeFilters => {
     const currentUserId = rootGetters.getCurrentUser?.id;
-    const getWatchers = rootGetters['conversationWatchers/getByConversationId'];
+    const participantIds = conversation =>
+      (conversation.participant_ids || []).map(Number);
+
     return _state.allConversations.filter(conversation => {
-      const watchers = getWatchers(conversation.id);
-      // Watchers are only loaded for the conversation open in the detail
-      // panel. If loaded and current user is not in them, filter it out.
-      if (watchers && !watchers.some(w => w.id === currentUserId)) {
-        return false;
-      }
-      return applyPageFilters(conversation, activeFilters);
+      const isParticipant = participantIds(conversation).includes(
+        Number(currentUserId)
+      );
+      const isAssignedToMe =
+        Number(conversation.meta?.assignee?.id) === Number(currentUserId);
+
+      return (
+        isParticipant &&
+        !isAssignedToMe &&
+        applyPageFilters(conversation, activeFilters)
+      );
     });
   },
   getAllStatusChats: (_state, _, __, rootGetters) => activeFilters => {
@@ -132,6 +158,10 @@ const getters = {
 
     const permissions = getUserPermissions(currentUser, currentAccountId);
     const userRole = getUserRole(currentUser, currentAccountId);
+    const account = rootGetters['accounts/getAccount']?.(currentAccountId);
+    const teamIds = (rootGetters['teams/getMyTeams'] || []).map(
+      team => team.id
+    );
 
     return _state.allConversations.filter(conversation => {
       const shouldFilter = applyPageFilters(conversation, activeFilters);
@@ -141,8 +171,14 @@ const getters = {
         permissions,
         currentUserId
       );
+      const allowedForAccount = applyAccountVisibilityFilter(conversation, {
+        role: userRole,
+        settings: account?.settings || {},
+        teamIds,
+        currentUserId,
+      });
 
-      return shouldFilter && allowedForRole;
+      return shouldFilter && allowedForRole && allowedForAccount;
     });
   },
   getChatListLoadingStatus: ({ listLoadingStatus }) => listLoadingStatus,

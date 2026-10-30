@@ -115,10 +115,37 @@ class UnofficialWhatsapp::Providers::EvolutionService < UnofficialWhatsapp::Prov
     end
   end
 
+  def delete_message(message)
+    return if message.source_id.blank?
+
+    payload = {
+      id: message.source_id,
+      remoteJid: whatsapp_jid(message.conversation.contact_inbox.source_id),
+      fromMe: true
+    }
+    response = instance_delete("/chat/deleteMessageForEveryone/#{instance_name}", payload)
+    return if response.success?
+
+    parsed = response.parsed_response.is_a?(Hash) ? response.parsed_response : {}
+    raise EvolutionError, (parsed['message'] || parsed['error'] || response.body.to_s.first(255)).to_s
+  end
+
+  def mark_messages_as_read(phone_number, message_ids)
+    remote_jid = whatsapp_jid(phone_number)
+    read_messages = Array(message_ids).compact_blank.map do |id|
+      { remoteJid: remote_jid, fromMe: false, id: id }
+    end
+    return if read_messages.empty?
+
+    instance_post("/chat/markMessageAsRead/#{instance_name}", { readMessages: read_messages })
+  end
+
   def send_text_message(number, message, text = nil)
     id = outbound_message_id(message)
     body = (text || message.outgoing_content).to_s
-    response = instance_post("/message/sendText/#{instance_name}", { number: number, text: body })
+    payload = { number: number, text: body }
+    payload[:quoted] = quoted_payload if quoted_payload.present?
+    response = instance_post("/message/sendText/#{instance_name}", payload)
     process_response(response, message, id)
   end
 
@@ -242,6 +269,7 @@ class UnofficialWhatsapp::Providers::EvolutionService < UnofficialWhatsapp::Prov
                    fileName: filename.presence || 'attachment'
                  }
                  payload[:caption] = message.outgoing_content if message.outgoing_content.present? && media_type != 'audio'
+                 payload[:quoted] = quoted_payload if quoted_payload.present?
                  instance_post("/message/sendMedia/#{instance_name}", payload)
                end
 
@@ -249,13 +277,40 @@ class UnofficialWhatsapp::Providers::EvolutionService < UnofficialWhatsapp::Prov
   end
 
   def send_audio(number, base64, mimetype)
-    response = instance_post("/message/sendWhatsAppAudio/#{instance_name}", { number: number, audio: base64 })
+    payload = { number: number, audio: base64 }
+    payload[:quoted] = quoted_payload if quoted_payload.present?
+    response = instance_post("/message/sendWhatsAppAudio/#{instance_name}", payload)
     return response if response.success?
 
-    instance_post(
-      "/message/sendMedia/#{instance_name}",
-      { number: number, mediatype: 'audio', mimetype: mimetype.presence || 'audio/ogg', media: base64, fileName: 'audio.ogg' }
-    )
+    payload = {
+      number: number,
+      mediatype: 'audio',
+      mimetype: mimetype.presence || 'audio/ogg',
+      media: base64,
+      fileName: 'audio.ogg'
+    }
+    payload[:quoted] = quoted_payload if quoted_payload.present?
+    instance_post("/message/sendMedia/#{instance_name}", payload)
+  end
+
+  def quoted_payload
+    quoted_id = @message&.content_attributes&.dig('in_reply_to_external_id')
+    return if quoted_id.blank?
+
+    {
+      key: {
+        id: quoted_id,
+        remoteJid: whatsapp_jid(@message.conversation.contact_inbox.source_id),
+        fromMe: quoted_message&.outgoing? || false
+      }
+    }
+  end
+
+  def quoted_message
+    return @quoted_message if defined?(@quoted_message)
+
+    quoted_message_id = @message&.content_attributes&.dig('in_reply_to')
+    @quoted_message = quoted_message_id.present? && @message.conversation.messages.find_by(id: quoted_message_id)
   end
 
   def interactive_payload(message)
@@ -389,8 +444,10 @@ class UnofficialWhatsapp::Providers::EvolutionService < UnofficialWhatsapp::Prov
     HTTParty.post("#{endpoint}#{path}", headers: headers, body: body.to_json, timeout: 30)
   end
 
-  def instance_delete(path)
-    HTTParty.delete("#{endpoint}#{path}", headers: headers, timeout: 30)
+  def instance_delete(path, body = nil)
+    options = { headers: headers, timeout: 30 }
+    options[:body] = body.to_json if body.present?
+    HTTParty.delete("#{endpoint}#{path}", options)
   end
 
   alias admin_post instance_post

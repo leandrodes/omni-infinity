@@ -61,6 +61,9 @@ json.labels conversation.cached_label_list_array
 json.muted conversation.muted?
 json.snoozed_until conversation.snoozed_until
 json.status conversation.status
+json.visibility conversation.visibility
+json.private_owner_id conversation.private_owner_id
+json.participant_ids conversation.conversation_participants.pluck(:user_id)
 json.created_at conversation.created_at.to_i
 json.updated_at conversation.updated_at.to_f
 json.timestamp conversation.last_activity_at.to_i

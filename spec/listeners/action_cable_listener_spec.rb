@@ -256,6 +256,28 @@ describe ActionCableListener do
     end
   end
 
+  describe '#conversation_participant_removed' do
+    let!(:removed_agent) { create(:user, account: account, role: :agent) }
+    let!(:event) do
+      Events::Base.new(
+        Events::Types::CONVERSATION_PARTICIPANT_REMOVED,
+        Time.zone.now,
+        conversation: conversation,
+        user_ids: [removed_agent.id]
+      )
+    end
+
+    it 'sends the revocation event only to the removed participant' do
+      expect(ActionCableBroadcastJob).to receive(:perform_later).with(
+        [removed_agent.pubsub_token],
+        'conversation.participant_removed',
+        conversation.push_event_data.merge(account_id: account.id)
+      )
+
+      listener.conversation_participant_removed(event)
+    end
+  end
+
   describe '#conversation_unread_count_changed' do
     let(:event_name) { :'conversation.unread_count_changed' }
     let!(:agent_without_inbox_access) { create(:user, account: account, role: :agent) }

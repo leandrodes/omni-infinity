@@ -480,6 +480,29 @@ RSpec.describe 'Contacts API', type: :request do
     end
   end
 
+  describe 'GET /api/v1/accounts/{account.id}/contacts/companies' do
+    let(:admin) { create(:user, account: account, role: :administrator) }
+
+    before do
+      create(:contact, :with_email, account: account, additional_attributes: { company_name: 'Acme' })
+      create(:contact, :with_email, account: account, additional_attributes: { company_name: 'acme' })
+      create(:contact, :with_email, account: account, additional_attributes: { company_name: 'Globex' })
+      create(:contact, :with_email, account: account, additional_attributes: { company_name: '' })
+    end
+
+    it 'returns companies grouped by the legacy company name' do
+      get "/api/v1/accounts/#{account.id}/contacts/companies",
+          headers: admin.create_new_auth_token,
+          as: :json
+
+      expect(response).to have_http_status(:success)
+      payload = response.parsed_body['payload'].map do |company|
+        [company['name'].downcase, company['contacts_count']]
+      end
+      expect(payload).to contain_exactly(['acme', 2], ['globex', 1])
+    end
+  end
+
   describe 'GET /api/v1/accounts/{account.id}/contacts/:id' do
     let!(:contact) { create(:contact, account: account) }
 

@@ -157,7 +157,8 @@
         "PARTICIPATING_CONVERSATION_NEW_MESSAGE": "Send email notifications when a new message is created in a participating conversation",
         "SLA_MISSED_FIRST_RESPONSE": "Send email notifications when a conversation misses first response SLA",
         "SLA_MISSED_NEXT_RESPONSE": "Send email notifications when a conversation misses next response SLA",
-        "SLA_MISSED_RESOLUTION": "Send email notifications when a conversation misses resolution SLA"
+        "SLA_MISSED_RESOLUTION": "Send email notifications when a conversation misses resolution SLA",
+        "CONVERSATION_PARTICIPANT_ADDED": "Send email notifications when you are added as a conversation participant"
       },
       "NOTIFICATIONS": {
         "TITLE": "Notification preferences",
@@ -172,7 +173,8 @@
           "PARTICIPATING_CONVERSATION_NEW_MESSAGE": "A new message is created in a participating conversation",
           "SLA_MISSED_FIRST_RESPONSE": "A conversation misses first response SLA",
           "SLA_MISSED_NEXT_RESPONSE": "A conversation misses next response SLA",
-          "SLA_MISSED_RESOLUTION": "A conversation misses resolution SLA"
+          "SLA_MISSED_RESOLUTION": "A conversation misses resolution SLA",
+          "CONVERSATION_PARTICIPANT_ADDED": "You were added as a participant in a conversation"
         },
         "BROWSER_PERMISSION": "Enable push notifications for your browser so you’re able to receive them"
       },
@@ -192,7 +194,8 @@
         "REQUEST_PUSH": "Enable push notifications",
         "SLA_MISSED_FIRST_RESPONSE": "Send push notifications when a conversation misses first response SLA",
         "SLA_MISSED_NEXT_RESPONSE": "Send push notifications when a conversation misses next response SLA",
-        "SLA_MISSED_RESOLUTION": "Send push notifications when a conversation misses resolution SLA"
+        "SLA_MISSED_RESOLUTION": "Send push notifications when a conversation misses resolution SLA",
+        "CONVERSATION_PARTICIPANT_ADDED": "Send push notifications when you are added as a conversation participant"
       },
       "PROFILE_IMAGE": {
         "LABEL": "Profile Image"
@@ -422,7 +425,10 @@
     "CHATBOT_CONVERSATIONS": "Chatbot",
     "PENDING_CONVERSATIONS": "Pending",
     "RESOLUTION_REASONS": "Resolution Reasons",
-    "CHATBOT_AUTO_RESOLUTION": "Chatbot Auto Resolution"
+    "CHATBOT_AUTO_RESOLUTION": "Chatbot Auto Resolution",
+    "OPEN_MINE_CONVERSATIONS": "Open Mine",
+    "OPEN_TEAM_CONVERSATIONS": "Open Team",
+    "UNASSIGNED_CONVERSATIONS": "Unassigned"
   },
   "DATA_IMPORTS": {
     "HEADER": "Data",
@@ -1138,14 +1144,16 @@
       "SHOW_CONVERSATION_TEAM_IN_CONVERSATION_LIST": "Enable conversation team in conversation list",
       "ROLE_ADMINISTRATOR": "Administrator",
       "ROLE_AGENT": "Agent",
-      "ENABLE_PENDING_CONVERSATIONS_FILTER": "Enable pending conversations filter"
+      "ENABLE_PENDING_CONVERSATIONS_FILTER": "Enable pending conversations filter",
+      "ENABLE_UNASSIGNED_CONVERSATIONS_FILTER": "Enable unassigned conversations filter"
     },
     "VISIBILITY": {
       "TITLE": "Visibility",
       "NOTE": "Visibility options",
       "HIDE_CONVERSATIONS_ASSIGNED_TO_OTHERS": "Hide conversations assigned to other users",
       "HIDE_RESOLVED_CONVERSATIONS_ASSIGNED_TO_OTHERS": "Hide resolved conversations assigned to other users",
-      "SHOW_CONVERSATIONS_ONLY_FROM_USER_TEAMS": "Show conversations only from user teams"
+      "SHOW_CONVERSATIONS_ONLY_FROM_USER_TEAMS": "Show conversations only from user teams",
+      "ENABLE_CONTACT_COMPANY_FILTER": "Enable contact company filter"
     },
     "PERMISSIONS": {
       "TITLE": "Permissions",

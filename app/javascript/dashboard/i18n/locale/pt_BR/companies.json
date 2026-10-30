@@ -143,7 +143,8 @@
     },
     "EMPTY_STATE": {
       "TITLE": "Nenhuma empresa encontrada"
-    }
+    },
+    "EMPTY": "Nenhuma empresa encontrada com contatos."
   },
   "COMPANIES_LAYOUT": {
     "PAGINATION_FOOTER": {

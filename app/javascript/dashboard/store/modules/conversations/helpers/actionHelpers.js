@@ -62,6 +62,22 @@ export const isOnPendingView = ({ route: { name: routeName } }) => {
   return PENDING_ROUTES.includes(routeName);
 };
 
+export const isOnOpenTeamView = ({ route: { name: routeName } }) => {
+  const OPEN_TEAM_ROUTES = [
+    'conversation_open_team',
+    'conversation_through_open_team',
+  ];
+  return OPEN_TEAM_ROUTES.includes(routeName);
+};
+
+export const isOnUnassignedView = ({ route: { name: routeName } }) => {
+  const UNASSIGNED_ROUTES = [
+    'conversation_unassigned',
+    'conversation_through_unassigned',
+  ];
+  return UNASSIGNED_ROUTES.includes(routeName);
+};
+
 export const isOnFoldersView = ({ route: { name: routeName } }) => {
   const FOLDER_ROUTES = [
     'folder_conversations',

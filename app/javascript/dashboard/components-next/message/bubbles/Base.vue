@@ -20,6 +20,7 @@ const {
   variant,
   orientation,
   inReplyTo,
+  contentAttributes,
   shouldGroupWithNext,
   id,
   sender,
@@ -31,6 +32,8 @@ const isCaptainMessage = computed(
   () =>
     (sender.value?.type ?? senderType.value) === SENDER_TYPES.CAPTAIN_ASSISTANT
 );
+
+const isDeleted = computed(() => !!contentAttributes.value?.deleted);
 
 const metaColorClass = computed(() =>
   variant.value === MESSAGE_VARIANTS.PRIVATE
@@ -126,6 +129,12 @@ const replyToPreview = computed(() => {
       },
     ]"
   >
+    <div
+      v-if="isDeleted"
+      class="mb-1 text-xs font-semibold uppercase tracking-wide text-n-slate-11"
+    >
+      {{ t('CONVERSATION.MESSAGE_DELETED') }}
+    </div>
     <div
       v-if="inReplyTo"
       class="p-2 -mx-1 mb-2 rounded-lg cursor-pointer bg-n-alpha-black1"

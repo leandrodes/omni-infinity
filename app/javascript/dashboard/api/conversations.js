@@ -17,6 +17,10 @@ class ConversationApi extends ApiClient {
   getUnreadCounts() {
     return axios.get(`${this.url}/unread_counts`);
   }
+
+  getUnreadBadges() {
+    return axios.get(`${this.url}/unread_badges`);
+  }
 }
 
 export default new ConversationApi();

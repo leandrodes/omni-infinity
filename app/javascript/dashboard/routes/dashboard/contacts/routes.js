@@ -1,6 +1,7 @@
 import { frontendURL } from '../../../helper/URLHelper';
 import ContactsIndex from './pages/ContactsIndex.vue';
 import ContactManageView from './pages/ContactManageView.vue';
+import ContactsCompaniesIndex from './pages/ContactsCompaniesIndex.vue';
 import { FEATURE_FLAGS } from '../../../featureFlags';
 
 const commonMeta = {
@@ -39,6 +40,12 @@ export const routes = [
         meta: commonMeta,
       },
     ],
+  },
+  {
+    path: frontendURL('accounts/:accountId/contacts/companies'),
+    name: 'contacts_companies_index',
+    component: ContactsCompaniesIndex,
+    meta: commonMeta,
   },
   {
     path: frontendURL('accounts/:accountId/contacts/:contactId'),

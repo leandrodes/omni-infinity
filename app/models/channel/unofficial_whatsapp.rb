@@ -26,7 +26,10 @@ class Channel::UnofficialWhatsapp < ApplicationRecord
   include Channelable
 
   self.table_name = 'channel_unofficial_whatsapp'
-  EDITABLE_ATTRS = [:phone_number, :provider, { provider_config: {} }, :ignore_groups, :block_calls, :call_block_message, :proxy_enabled, :proxy_url].freeze
+  EDITABLE_ATTRS = [
+    :phone_number, :provider, { provider_config: {} }, :ignore_groups,
+    :block_calls, :call_block_message, :proxy_enabled, :proxy_url
+  ].freeze
 
   has_secure_token :identifier
 
@@ -59,7 +62,8 @@ class Channel::UnofficialWhatsapp < ApplicationRecord
     end
   end
 
-  delegate :send_message, to: :provider_service
+  delegate :send_message, :mark_messages_as_read, :delete_message,
+           to: :provider_service
 
   def provider_enabled_for_account
     return unless provider.in?(PROVIDERS)
@@ -84,7 +88,7 @@ class Channel::UnofficialWhatsapp < ApplicationRecord
   end
 
   def sync_proxy_to_provider
-    return unless instance_token.present?
+    return if instance_token.blank?
 
     provider_service.apply_proxy(proxy_enabled, proxy_url)
   rescue StandardError => e

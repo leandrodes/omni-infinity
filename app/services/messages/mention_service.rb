@@ -7,9 +7,7 @@ class Messages::MentionService
     validated_mentioned_ids = filter_mentioned_ids_by_inbox
     return if validated_mentioned_ids.blank?
 
-    Conversations::UserMentionJob.perform_later(validated_mentioned_ids, message.conversation.id, message.account.id)
     add_mentioned_users_as_participants(validated_mentioned_ids)
-    generate_notifications_for_mentions(validated_mentioned_ids)
   end
 
   private
@@ -19,22 +17,7 @@ class Messages::MentionService
   end
 
   def mentioned_ids
-    user_mentions = message.content.scan(%r{\(mention://user/(\d+)/(.+?)\)}).map(&:first)
-    team_mentions = message.content.scan(%r{\(mention://team/(\d+)/(.+?)\)}).map(&:first)
-
-    expanded_user_ids = expand_team_mentions_to_users(team_mentions)
-
-    (user_mentions + expanded_user_ids).uniq
-  end
-
-  def expand_team_mentions_to_users(team_ids)
-    return [] if team_ids.blank?
-
-    message.inbox.account.teams
-           .joins(:team_members)
-           .where(id: team_ids)
-           .pluck('team_members.user_id')
-           .map(&:to_s)
+    message.content.scan(%r{\(mention://user/(\d+)/(.+?)\)}).map(&:first).uniq
   end
 
   def valid_mentionable_user_ids
@@ -48,27 +31,24 @@ class Messages::MentionService
     mentioned_ids & valid_mentionable_user_ids.map(&:to_s)
   end
 
-  def generate_notifications_for_mentions(validated_mentioned_ids)
-    validated_mentioned_ids.each do |user_id|
-      next if self_mention?(user_id)
-
-      NotificationBuilder.new(
-        notification_type: 'conversation_mention',
-        user: User.find(user_id),
-        account: message.account,
-        primary_actor: message.conversation,
-        secondary_actor: message
-      ).perform
-    end
-  end
-
-  def self_mention?(user_id)
-    message.sender_type == 'User' && user_id.to_i == message.sender_id
-  end
-
   def add_mentioned_users_as_participants(validated_mentioned_ids)
     validated_mentioned_ids.each do |user_id|
-      message.conversation.conversation_participants.find_or_create_by(user_id: user_id)
+      participant = message.conversation.conversation_participants.find_or_create_by(user_id: user_id)
+      notify_participant_added(user_id) if participant.previously_new_record?
     end
+  end
+
+  def notify_participant_added(user_id)
+    return if user_id.to_i == message.sender_id
+
+    user = message.account.users.find_by(id: user_id)
+    return if user.blank?
+
+    NotificationBuilder.new(
+      notification_type: 'conversation_participant_added',
+      user: user,
+      account: message.account,
+      primary_actor: message.conversation
+    ).perform
   end
 end

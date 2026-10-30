@@ -5,6 +5,7 @@ json.payload do
   json.array! owners do |owner|
     if owner[:type] == 'User'
       json.partial! 'api/v1/models/agent', formats: [:json], resource: owner[:resource]
+      json.team_ids owner[:resource].teams.where(account_id: Current.account.id).pluck(:id)
       json.assignee_type 'User' if @include_ai_assignees
     else
       json.partial! 'api/v1/models/agent_bot_slim', formats: [:json], resource: owner[:resource]

@@ -25,7 +25,9 @@
       "PARTICIPATING_CONVERSATION_NEW_MESSAGE": "New message in a conversation you are participating in",
       "SLA_MISSED_FIRST_RESPONSE": "SLA target first response missed for conversation",
       "SLA_MISSED_NEXT_RESPONSE": "SLA target next response missed for conversation",
-      "SLA_MISSED_RESOLUTION": "SLA target resolution missed for conversation"
+      "SLA_MISSED_RESOLUTION": "SLA target resolution missed for conversation",
+      "CONVERSATION_PARTICIPANT_ADDED": "Added as a participant",
+      "CONVERSATION_PARTICIPANT_REMOVED": "Removed as a participant"
     },
     "TYPES_NEXT": {
       "CONVERSATION_MENTION": "Mentioned",
@@ -37,7 +39,9 @@
       "PARTICIPATING_CONVERSATION_NEW_MESSAGE": "New message",
       "ASSIGNED_CONVERSATION_NEW_MESSAGE": "New message",
       "SNOOZED_UNTIL": "Snoozed for {time}",
-      "SNOOZED_ENDS": "Snooze ended"
+      "SNOOZED_ENDS": "Snooze ended",
+      "CONVERSATION_PARTICIPANT_ADDED": "Participant",
+      "CONVERSATION_PARTICIPANT_REMOVED": "Participant removed"
     },
     "NO_CONTENT": "No content available",
     "MENU_ITEM": {

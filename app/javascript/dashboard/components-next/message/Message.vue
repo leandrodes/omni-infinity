@@ -133,6 +133,7 @@ const props = defineProps({
   inReplyTo: { type: Object, default: null }, // eslint-disable-line vue/no-unused-properties
   isEmailInbox: { type: Boolean, default: false },
   private: { type: Boolean, default: false },
+  pinnedAt: { type: String, default: null },
   additionalAttributes: { type: Object, default: () => ({}) }, // eslint-disable-line vue/no-unused-properties
   sender: { type: Object, default: null },
   senderId: { type: Number, default: null },
@@ -151,6 +152,10 @@ const inboxGetter = useMapGetter('inboxes/getInbox');
 const inbox = computed(() => inboxGetter.value(props.inboxId) || {});
 const isOnChatwootCloud = useMapGetter('globalConfig/isOnChatwootCloud');
 const { replaceInstallationName } = useBranding();
+
+const isUnofficialWhatsapp = computed(
+  () => inbox.value.channel_type === 'Channel::UnofficialWhatsapp'
+);
 
 const isCaptainMessage = computed(() => {
   const senderType = props.sender?.type ?? props.senderType;
@@ -382,7 +387,11 @@ const payloadForContextMenu = computed(() => {
     id: props.id,
     content_attributes: props.contentAttributes,
     content: props.content,
+    content_type: props.contentType,
     conversation_id: props.conversationId,
+    pinned_at: props.pinnedAt,
+    private: props.private,
+    sender_id: props.senderId,
   };
 });
 
@@ -407,7 +416,21 @@ const contextMenuEnabledOptions = computed(() => {
     replyTo:
       !props.private &&
       props.inboxSupportsReplyTo.outgoing &&
+      (!isUnofficialWhatsapp.value ||
+        props.messageType === MESSAGE_TYPES.INCOMING) &&
       !isFailedOrProcessing,
+    pin: !isFailedOrProcessing && !isMessageDeleted.value && !props.pinnedAt,
+    unpin: !isFailedOrProcessing && !isMessageDeleted.value && !!props.pinnedAt,
+    edit:
+      isUnofficialWhatsapp.value &&
+      isOutgoing &&
+      props.contentType === 'text' &&
+      !props.private &&
+      !hasAttachments &&
+      Number(props.senderId ?? props.sender?.id) ===
+        Number(props.currentUserId) &&
+      !isFailedOrProcessing &&
+      !isMessageDeleted.value,
     report:
       isOnChatwootCloud.value &&
       isCaptainMessage.value &&
@@ -556,6 +579,7 @@ provideMessageContext({
       {
         'group-with-next': shouldGroupWithNext,
         'bg-n-alpha-1': showBackgroundHighlight,
+        'opacity-60': isMessageDeleted,
       },
     ]"
   >

@@ -284,9 +284,12 @@ pt_BR:
       conversation_assignment: 'Uma conversa (#%{display_id}) foi atribuída a você'
       assigned_conversation_new_message: 'Uma nova mensagem foi criada na conversa (#%{display_id})'
       conversation_mention: 'Você foi mencionado em uma conversa (#%{display_id})'
+      conversation_participant_removed: 'Você foi removido como participante da conversa (#%{display_id})'
+      conversation_participant_added: 'Você foi adicionado como participante na conversa (#%{display_id})'
       sla_missed_first_response: 'Meta de SLA de Primeira Resposta não alcançada para a conversa (#%{display_id})'
       sla_missed_next_response: 'Meta de SLA de Próxima Resposta não alcançada para a conversa (#%{display_id})'
       sla_missed_resolution: 'Meta de SLA de Resolução não alcançada para a conversa (#%{display_id})'
+    participant_removed_body: 'Você não é mais participante desta conversa.'
     attachment: 'Anexo'
     no_content: 'Sem conteúdo'
   conversations:

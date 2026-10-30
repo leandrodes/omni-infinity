@@ -18,6 +18,7 @@ import { FEATURE_FLAGS } from 'dashboard/featureFlags';
 
 const { isImpersonating } = useImpersonation();
 const UNREAD_COUNTS_REFETCH_THROTTLE_MS = 5000;
+const BADGES_REFETCH_THROTTLE_MS = 2000;
 const FILTERED_UNREAD_COUNTS_REFRESH_RETRY_MS = 30000;
 const FILTERED_UNREAD_COUNTS_REFRESH_RETRY_JITTER_MS = 15000;
 const MENTION_UNREAD_COUNTS_REFETCH_DELAY_MS =
@@ -33,6 +34,8 @@ class ActionCableConnector extends BaseActionCableConnector {
     this.CancelTyping = [];
     this.lastUnreadCountsFetchAt = null;
     this.unreadCountsFetchTimer = null;
+    this.lastBadgesFetchAt = null;
+    this.badgesFetchTimer = null;
     this.mentionUnreadCountsFetchTimer = null;
     this.mentionUnreadCountsRetryTimer = null;
     this.filteredUnreadCountsRetryTimer = null;
@@ -51,11 +54,13 @@ class ActionCableConnector extends BaseActionCableConnector {
       'contact.deleted': this.onContactDelete,
       'contact.updated': this.onContactUpdate,
       'conversation.mentioned': this.onConversationMentioned,
+      'conversation.participant_removed': this.onConversationParticipantRemoved,
       'notification.created': this.onNotificationCreated,
       'notification.deleted': this.onNotificationDeleted,
       'notification.updated': this.onNotificationUpdated,
       'conversation.read': this.onConversationRead,
       'conversation.updated': this.onConversationUpdated,
+      'conversation.visibility_changed': this.onConversationVisibilityChanged,
       'conversation.unread_count_changed':
         this.onConversationUnreadCountChanged,
       'account.cache_invalidated': this.onCacheInvalidate,
@@ -85,6 +90,7 @@ class ActionCableConnector extends BaseActionCableConnector {
 
   onMessageUpdated = data => {
     this.app.$store.dispatch('updateMessage', data);
+    this.app.$store.dispatch('syncPinnedMessageFromUpdate', data);
   };
 
   onPresenceUpdate = data => {
@@ -120,6 +126,7 @@ class ActionCableConnector extends BaseActionCableConnector {
 
   onConversationRead = data => {
     this.app.$store.dispatch('updateConversation', data);
+    this.fetchConversationBadges();
   };
 
   // eslint-disable-next-line class-methods-use-this
@@ -136,6 +143,7 @@ class ActionCableConnector extends BaseActionCableConnector {
       lastActivityAt,
       conversationId,
     });
+    this.fetchConversationBadges();
   };
 
   // eslint-disable-next-line class-methods-use-this
@@ -149,6 +157,11 @@ class ActionCableConnector extends BaseActionCableConnector {
   onConversationUpdated = data => {
     this.app.$store.dispatch('updateConversation', data);
     this.fetchConversationStats();
+  };
+
+  onConversationVisibilityChanged = data => {
+    this.app.$store.dispatch('upsertConversation', data);
+    this.fetchConversationBadges();
   };
 
   onConversationUnreadCountChanged = () => {
@@ -308,6 +321,28 @@ class ActionCableConnector extends BaseActionCableConnector {
   // eslint-disable-next-line class-methods-use-this
   fetchConversationStats = () => {
     emitter.emit('fetch_conversation_stats');
+    this.fetchConversationBadges();
+  };
+
+  fetchConversationBadges = () => {
+    const now = Date.now();
+    const elapsedTime = now - this.lastBadgesFetchAt;
+
+    if (
+      this.lastBadgesFetchAt === null ||
+      elapsedTime >= BADGES_REFETCH_THROTTLE_MS
+    ) {
+      this.lastBadgesFetchAt = now;
+      this.app.$store.dispatch('conversationBadges/get');
+      return;
+    }
+
+    if (this.badgesFetchTimer) return;
+
+    this.badgesFetchTimer = setTimeout(() => {
+      this.badgesFetchTimer = null;
+      this.fetchConversationBadges();
+    }, BADGES_REFETCH_THROTTLE_MS - elapsedTime);
   };
 
   onContactDelete = data => {
@@ -320,6 +355,12 @@ class ActionCableConnector extends BaseActionCableConnector {
 
   onContactUpdate = data => {
     this.app.$store.dispatch('contacts/updateContact', data);
+  };
+
+  onConversationParticipantRemoved = data => {
+    this.app.$store.dispatch('updateConversation', data);
+    emitter.emit(BUS_EVENTS.CONVERSATION_ACCESS_REVOKED, data.id);
+    this.fetchConversationStats();
   };
 
   onNotificationCreated = data => {

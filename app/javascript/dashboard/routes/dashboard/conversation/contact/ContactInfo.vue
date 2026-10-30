@@ -13,7 +13,7 @@ import Avatar from 'next/avatar/Avatar.vue';
 import SocialIcons from './SocialIcons.vue';
 import EditContact from './EditContact.vue';
 import ContactMergeModal from 'dashboard/modules/contact/ContactMergeModal.vue';
-import ContactDeleteModal from 'dashboard/modules/contact/ContactDeleteModal.vue';
+import ConversationDeleteModal from 'dashboard/modules/conversations/components/ConversationDeleteModal.vue';
 import ComposeConversation from 'dashboard/components-next/NewConversation/ComposeConversation.vue';
 import NextButton from 'dashboard/components-next/button/Button.vue';
 import VoiceCallButton from 'dashboard/components-next/Contacts/VoiceCallButton.vue';
@@ -29,7 +29,7 @@ export default {
     ComposeConversation,
     SocialIcons,
     ContactMergeModal,
-    ContactDeleteModal,
+    ConversationDeleteModal,
     VoiceCallButton,
     InlineInput,
   },
@@ -355,14 +355,14 @@ export default {
             />
           </template>
         </ContactMergeModal>
-        <ContactDeleteModal
-          v-if="isAdmin"
-          :contact="contact"
+        <ConversationDeleteModal
+          v-if="isAdmin && currentChat?.id"
+          :conversation="currentChat"
           @deleted="$emit('panelClose')"
         >
           <template #trigger>
             <NextButton
-              v-tooltip.top-end="$t('DELETE_CONTACT.BUTTON_LABEL')"
+              v-tooltip.top-end="$t('CONVERSATION.DELETE_CONVERSATION.BUTTON')"
               icon="i-ph-trash"
               slate
               faded
@@ -371,7 +371,7 @@ export default {
               :disabled="uiFlags.isDeleting"
             />
           </template>
-        </ContactDeleteModal>
+        </ConversationDeleteModal>
       </div>
       <EditContact
         :show="showEditModal"

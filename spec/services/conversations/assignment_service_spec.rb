@@ -56,6 +56,18 @@ describe Conversations::AssignmentService do
         end
       end
 
+      it 'does not add the assignee as a conversation participant' do
+        described_class.new(conversation: conversation, assignee_id: agent.id).perform
+
+        expect(conversation.reload.conversation_participants).to be_empty
+      end
+
+      it 'does not register a participation listener' do
+        listener_names = AsyncDispatcher.new.listeners.map { |listener| listener.class.name }
+
+        expect(listener_names).not_to include('ParticipationListener')
+      end
+
       it 'preserves status for ordinary human assignment changes' do
         conversation.update!(ai_assignee: nil, status: :resolved)
 

@@ -52,8 +52,54 @@ export default {
       },
       component: ConversationView,
       props: () => {
-        return { inboxId: 0 };
+        return { inboxId: 0, conversationType: 'open_mine' };
       },
+    },
+    {
+      path: frontendURL('accounts/:accountId/open/team/conversations'),
+      name: 'conversation_open_team',
+      meta: {
+        permissions: CONVERSATION_PERMISSIONS,
+      },
+      component: ConversationView,
+      props: () => ({ conversationType: 'open_team' }),
+    },
+    {
+      path: frontendURL(
+        'accounts/:accountId/open/team/conversations/:conversationId'
+      ),
+      name: 'conversation_through_open_team',
+      meta: {
+        permissions: CONVERSATION_PERMISSIONS,
+      },
+      component: ConversationView,
+      props: route => ({
+        conversationId: route.params.conversationId,
+        conversationType: 'open_team',
+      }),
+    },
+    {
+      path: frontendURL('accounts/:accountId/unassigned/conversations'),
+      name: 'conversation_unassigned',
+      meta: {
+        permissions: CONVERSATION_PERMISSIONS,
+      },
+      component: ConversationView,
+      props: () => ({ conversationType: 'unassigned' }),
+    },
+    {
+      path: frontendURL(
+        'accounts/:accountId/unassigned/conversations/:conversationId'
+      ),
+      name: 'conversation_through_unassigned',
+      meta: {
+        permissions: CONVERSATION_PERMISSIONS,
+      },
+      component: ConversationView,
+      props: route => ({
+        conversationId: route.params.conversationId,
+        conversationType: 'unassigned',
+      }),
     },
     {
       path: frontendURL('accounts/:accountId/conversations/:conversation_id'),
@@ -63,7 +109,11 @@ export default {
       },
       component: ConversationView,
       props: route => {
-        return { inboxId: 0, conversationId: route.params.conversation_id };
+        return {
+          inboxId: 0,
+          conversationId: route.params.conversation_id,
+          conversationType: 'open_mine',
+        };
       },
     },
     {

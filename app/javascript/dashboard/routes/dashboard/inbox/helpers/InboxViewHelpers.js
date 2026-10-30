@@ -1,5 +1,7 @@
 export const NOTIFICATION_TYPES_MAPPING = {
   CONVERSATION_MENTION: ['i-lucide-at-sign', 'text-n-blue-11'],
+  CONVERSATION_PARTICIPANT_ADDED: ['i-lucide-user-plus', 'text-n-blue-11'],
+  CONVERSATION_PARTICIPANT_REMOVED: ['i-lucide-user-minus', 'text-n-slate-11'],
   CONVERSATION_ASSIGNMENT: ['i-lucide-chevrons-right', 'text-n-blue-11'],
   CONVERSATION_CREATION: ['i-lucide-mail-plus', 'text-n-blue-11'],
   PARTICIPATING_CONVERSATION_NEW_MESSAGE: [

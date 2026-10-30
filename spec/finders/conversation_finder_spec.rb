@@ -299,6 +299,67 @@ describe ConversationFinder do
       end
     end
 
+    context 'with assignee_type participating' do
+      let(:params) { { status: 'open', assignee_type: 'participating' } }
+
+      it 'returns unassigned participant conversations and excludes conversations assigned to the user' do
+        unassigned_participant = create(:conversation, account: account, inbox: inbox, assignee: nil)
+        assigned_participant = create(:conversation, account: account, inbox: inbox, assignee: user_1)
+        create(:conversation_participant, user: user_1, conversation: unassigned_participant, account: account)
+        create(:conversation_participant, user: user_1, conversation: assigned_participant, account: account)
+
+        result = conversation_finder.perform
+
+        expect(result[:conversations].map(&:id)).to contain_exactly(unassigned_participant.id)
+      end
+    end
+
+    context 'with open_team' do
+      let(:params) { { status: 'open', assignee_type: 'all', conversation_type: 'open_team' } }
+
+      it 'returns only conversations assigned to human agents' do
+        agent_bot = create(:agent_bot, account: account)
+        bot_conversation = create(:conversation, account: account, inbox: inbox, status: :pending, ai_assignee: agent_bot)
+        create(:conversation, account: account, inbox: inbox, assignee: nil)
+
+        result = conversation_finder.perform
+
+        expect(result[:conversations].map(&:id)).not_to include(bot_conversation.id)
+        expect(result[:conversations]).to all(satisfy { |conversation| conversation.assignee_id.present? })
+      end
+
+      it 'limits open team conversations to the user teams when enabled' do
+        account.update!(settings: account.settings.merge('show_conversations_only_from_user_teams' => true))
+        team = create(:team, account: account)
+        other_team = create(:team, account: account)
+        create(:team_member, user: user_1, team: team)
+        create(:team_member, user: user_2, team: team)
+        create(:team_member, user: user_2, team: other_team)
+        team_conversation = create(:conversation, account: account, inbox: inbox, assignee: user_2, team: team)
+        other_conversation = create(:conversation, account: account, inbox: inbox, assignee: user_2, team: other_team)
+
+        result = conversation_finder.perform
+
+        expect(result[:conversations].map(&:id)).to include(team_conversation.id)
+        expect(result[:conversations].map(&:id)).not_to include(other_conversation.id)
+      end
+    end
+
+    context 'with unassigned conversation type' do
+      let(:params) { { status: 'open', assignee_type: 'all', conversation_type: 'unassigned' } }
+
+      it 'excludes conversations assigned to bots' do
+        bot_conversation = create(:conversation, account: account, inbox: inbox, status: :open,
+                                                 ai_assignee: create(:agent_bot, account: account))
+        unassigned_conversation = create(:conversation, account: account, inbox: inbox, assignee: nil)
+
+        result = conversation_finder.perform
+
+        expect(result[:conversations].map(&:id)).to include(unassigned_conversation.id)
+        expect(result[:conversations].map(&:id)).not_to include(bot_conversation.id)
+      end
+    end
+
     context 'with participating' do
       let(:params) { { status: 'open', assignee_type: 'all', conversation_type: 'participating' } }
 

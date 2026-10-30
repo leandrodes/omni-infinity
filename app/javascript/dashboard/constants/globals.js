@@ -16,6 +16,9 @@ export default {
     MENTION: 'mention',
     PARTICIPATING: 'participating',
     UNATTENDED: 'unattended',
+    OPEN_MINE: 'open_mine',
+    OPEN_TEAM: 'open_team',
+    UNASSIGNED: 'unassigned',
   },
   SORT_BY_TYPE: {
     LAST_ACTIVITY_AT_ASC: 'last_activity_at_asc',

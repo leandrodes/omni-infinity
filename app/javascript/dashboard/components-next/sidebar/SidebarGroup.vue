@@ -18,6 +18,7 @@ const props = defineProps({
   activeOn: { type: Array, default: () => [] },
   children: { type: Array, default: undefined },
   getterKeys: { type: Object, default: () => ({}) },
+  keepExpanded: { type: Boolean, default: false },
 });
 
 const {
@@ -45,7 +46,6 @@ const navigableChildren = computed(() => {
 
 const route = useRoute();
 const router = useRouter();
-const isExpanded = computed(() => expandedItem.value === props.name);
 const isExpandable = computed(() => props.children);
 const hasChildren = computed(
   () => Array.isArray(props.children) && props.children.length > 0
@@ -200,6 +200,12 @@ const hasActiveChild = computed(() => {
   return activeChild.value !== undefined;
 });
 
+const isExpanded = computed(
+  () =>
+    expandedItem.value === props.name ||
+    (props.keepExpanded && hasActiveChild.value)
+);
+
 // Groups that only hold children link to their first accessible child
 const linkTo = computed(() => props.to ?? accessibleItems.value[0]?.to);
 
@@ -313,6 +319,7 @@ watch(
             :icon="child.icon"
             :children="child.children"
             :collapsible="child.collapsible"
+            :default-collapsed="child.defaultCollapsed"
             :show-tree-line="child.showTreeLine"
             :end-tree-line="child.showTreeLine && isLastVisibleChild(child)"
             :is-expanded="isExpanded"

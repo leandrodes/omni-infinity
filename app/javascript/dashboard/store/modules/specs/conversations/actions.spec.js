@@ -795,7 +795,6 @@ describe('#deleteMessage', () => {
     await actions.deleteMessage({ commit }, { conversationId, messageId });
     expect(commit.mock.calls).toEqual([
       [types.ADD_MESSAGE, { id: 1, content: 'deleted' }],
-      [types.DELETE_CONVERSATION_ATTACHMENTS, { id: 1, content: 'deleted' }],
     ]);
   });
   it('sends no actions if API is error', async () => {

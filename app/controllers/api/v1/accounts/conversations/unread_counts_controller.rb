@@ -1,5 +1,5 @@
 class Api::V1::Accounts::Conversations::UnreadCountsController < Api::V1::Accounts::BaseController
-  before_action :ensure_unread_counts_enabled
+  before_action :ensure_unread_counts_enabled, except: :badges
 
   def index
     counts = if filtered_unread_counts_enabled?
@@ -8,6 +8,10 @@ class Api::V1::Accounts::Conversations::UnreadCountsController < Api::V1::Accoun
                unread_counts
              end
     render json: { payload: counts }
+  end
+
+  def badges
+    render json: { payload: ::Conversations::UnreadBadges.new(account: Current.account, user: Current.user).perform }
   end
 
   private

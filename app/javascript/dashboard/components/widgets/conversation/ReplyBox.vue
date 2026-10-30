@@ -237,7 +237,7 @@ export default {
     canSendPublicReply() {
       return (
         this.isWithinMessagingWindow &&
-        !this.isBotOwnedPendingConversation &&
+        !this.isPendingConversation &&
         !this.isInstagramReplyRestricted
       );
     },
@@ -269,7 +269,9 @@ export default {
       // If the toggle is off, the agent's text might happen to match their
       // saved signature and we'd incorrectly treat it as empty.
       const shouldStripSignature =
-        !this.isPrivate && this.sendWithSignature && !!this.messageSignature;
+        !this.isPrivate &&
+        this.showSignatureInEditor &&
+        !!this.messageSignature;
       if (!shouldStripSignature) return !!body.trim();
       const stripped = removeSignature(
         body,
@@ -278,9 +280,12 @@ export default {
       );
       return !!stripped.trim();
     },
+    isPendingConversation() {
+      return this.currentChat?.status === wootConstants.STATUS_TYPE.PENDING;
+    },
     isBotOwnedPendingConversation() {
       return (
-        this.currentChat?.status === wootConstants.STATUS_TYPE.PENDING &&
+        this.isPendingConversation &&
         this.currentChat?.meta?.assignee_type === 'AgentBot'
       );
     },
@@ -447,6 +452,9 @@ export default {
     sendWithSignature() {
       return this.fetchSignatureFlagFromUISettings(this.channelType);
     },
+    showSignatureInEditor() {
+      return this.agentsCanDisableSignature && this.sendWithSignature;
+    },
     conversationId() {
       return this.currentChat.id;
     },
@@ -531,6 +539,7 @@ export default {
     isEditorDisabled() {
       return (
         this.currentChat?.status === wootConstants.STATUS_TYPE.RESOLVED ||
+        this.isPendingConversation ||
         ((this.isAWhatsAppChannel || this.isAPIInbox) &&
           !this.isOnPrivateNote &&
           !this.currentChat.can_reply)
@@ -766,7 +775,7 @@ export default {
 
       // Even when editor is disabled (e.g. WhatsApp/API can't reply), we must
       // still normalize stale signatures out of drafts when signature is off.
-      if (this.isEditorDisabled && this.sendWithSignature) {
+      if (this.isEditorDisabled && this.showSignatureInEditor) {
         return message;
       }
 
@@ -775,7 +784,7 @@ export default {
         this.inbox?.medium || ''
       );
 
-      return this.sendWithSignature
+      return this.showSignatureInEditor
         ? appendSignature(message, this.messageSignature, effectiveChannelType)
         : removeSignature(message, this.messageSignature, effectiveChannelType);
     },
@@ -921,7 +930,7 @@ export default {
       const normalizeForComparison = message => {
         let normalizedMessage = message || '';
 
-        if (this.sendWithSignature && this.messageSignature && !isPrivate) {
+        if (this.showSignatureInEditor && this.messageSignature && !isPrivate) {
           const effectiveChannelType = getEffectiveChannelType(
             this.channelType,
             this.inbox?.medium || ''
@@ -961,6 +970,8 @@ export default {
           });
     },
     async onSendReply() {
+      if (this.isEditorDisabled) return;
+
       this.ensureMandatorySignature();
 
       const undefinedVariables = getUndefinedVariablesInMessage({
@@ -1068,8 +1079,8 @@ export default {
     clearMessage() {
       this.message = '';
       this.clearCopilotAcceptedMessage();
-      if (this.sendWithSignature && !this.isPrivate) {
-        // if signature is enabled, append it to the message
+      if (this.showSignatureInEditor && !this.isPrivate) {
+        // if signature is enabled in the editor, append it to the message
         const effectiveChannelType = getEffectiveChannelType(
           this.channelType,
           this.inbox?.medium || ''
@@ -1336,7 +1347,7 @@ export default {
       this.fetchAndSetReplyTo();
       if (this.inReplyTo) {
         this.$nextTick(() => {
-          const pos = this.isSignatureEnabledForInbox ? 'start' : 'end';
+          const pos = this.showSignatureInEditor ? 'start' : 'end';
           this.messageEditor?.focusEditorInputField(pos);
         });
       }
@@ -1481,7 +1492,7 @@ export default {
           enable-variables
           :variables="messageVariables"
           :signature="messageSignature"
-          allow-signature
+          :allow-signature="showSignatureInEditor"
           :channel-type="channelType"
           :medium="inbox.medium"
           @typing-off="onTypingOff"

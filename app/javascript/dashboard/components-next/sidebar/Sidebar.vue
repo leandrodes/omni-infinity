@@ -8,7 +8,9 @@ import { useKbd } from 'dashboard/composables/utils/useKbd';
 import { useMapGetter } from 'dashboard/composables/store';
 import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
+import { useRoute } from 'vue-router';
 import { useSidebarKeyboardShortcuts } from './useSidebarKeyboardShortcuts';
+import { isAConversationRoute } from 'dashboard/helper/routeHelpers';
 import { vOnClickOutside } from '@vueuse/components';
 import { FEATURE_FLAGS } from 'dashboard/featureFlags';
 import { useWindowSize, useEventListener } from '@vueuse/core';
@@ -62,6 +64,9 @@ const isACustomBrandedInstance = useMapGetter(
   'globalConfig/isACustomBrandedInstance'
 );
 const isRTL = useMapGetter('accounts/isRTL');
+const showContactCompanies = computed(
+  () => currentAccount.value?.settings?.enable_contact_company_filter === true
+);
 
 const { width: windowWidth } = useWindowSize();
 const isMobile = computed(() => windowWidth.value < 768);
@@ -134,6 +139,21 @@ const expandedItem = ref(null);
 const setExpandedItem = name => {
   expandedItem.value = expandedItem.value === name ? null : name;
 };
+
+const route = useRoute();
+
+watch(
+  () => route.name,
+  name => {
+    if (
+      !isAConversationRoute(name, true) &&
+      expandedItem.value === 'Conversation'
+    ) {
+      expandedItem.value = null;
+    }
+  },
+  { immediate: true }
+);
 
 const {
   sidebarWidth,
@@ -215,9 +235,6 @@ useEventListener(document, 'touchend', onResizeEnd);
 
 const inboxes = useMapGetter('inboxes/getInboxes');
 const labels = useMapGetter('labels/getLabelsOnSidebar');
-const allUnreadCount = useMapGetter(
-  'conversationUnreadCounts/getAllUnreadCount'
-);
 const getInboxUnreadCount = useMapGetter(
   'conversationUnreadCounts/getInboxUnreadCount'
 );
@@ -227,14 +244,35 @@ const getLabelUnreadCount = useMapGetter(
 const getTeamUnreadCount = useMapGetter(
   'conversationUnreadCounts/getTeamUnreadCount'
 );
-const mentionsUnreadCount = useMapGetter(
-  'conversationUnreadCounts/getMentionsUnreadCount'
+const openMineBadgeCount = useMapGetter('conversationBadges/getOpenMineCount');
+const openTeamBadgeCount = useMapGetter('conversationBadges/getOpenTeamCount');
+const participatingBadgeCount = useMapGetter(
+  'conversationBadges/getParticipatingCount'
 );
-const participatingUnreadCount = useMapGetter(
-  'conversationUnreadCounts/getParticipatingUnreadCount'
+const chatbotBadgeCount = useMapGetter('conversationBadges/getChatbotCount');
+const unattendedBadgeCount = useMapGetter(
+  'conversationBadges/getUnattendedCount'
 );
-const unattendedUnreadCount = useMapGetter(
-  'conversationUnreadCounts/getUnattendedUnreadCount'
+const unassignedBadgeCount = useMapGetter(
+  'conversationBadges/getUnassignedCount'
+);
+const pendingBadgeCount = useMapGetter('conversationBadges/getPendingCount');
+
+const hideAssignedToOthers = computed(
+  () =>
+    currentAccount.value?.settings?.hide_conversations_assigned_to_others ===
+    true
+);
+
+const showOpenTeamFilter = computed(
+  () => isAdmin.value || !hideAssignedToOthers.value
+);
+
+const showUnassignedFilter = computed(
+  () =>
+    isAdmin.value ||
+    currentAccount.value?.settings?.enable_unassigned_conversations_filter ===
+      true
 );
 
 const showResolvedFilter = computed(
@@ -251,14 +289,14 @@ const showPendingFilter = computed(
 const currentUserRole = useMapGetter('getCurrentRole');
 
 const showChatbotFilter = computed(() => {
-  if (currentAccount.value?.settings?.enable_chatbot_conversations_filter !== true) {
+  if (
+    currentAccount.value?.settings?.enable_chatbot_conversations_filter !== true
+  ) {
     return false;
   }
 
-  const roles =
-    currentAccount.value?.settings?.chatbot_conversations_filter_roles || [
-      'administrator',
-    ];
+  const roles = currentAccount.value?.settings
+    ?.chatbot_conversations_filter_roles || ['administrator'];
 
   return roles.includes(currentUserRole.value);
 });
@@ -287,6 +325,14 @@ onMounted(() => {
 watch([accountId, hasConversationUnreadCounts], fetchConversationUnreadCounts, {
   immediate: true,
 });
+
+watch(
+  accountId,
+  currentAccountId => {
+    if (currentAccountId) store.dispatch('conversationBadges/get');
+  },
+  { immediate: true }
+);
 
 watch([accountId, currentUserId], fetchSidebarSortPreferences, {
   immediate: true,
@@ -404,62 +450,81 @@ const menuItems = computed(() => {
       name: 'Conversation',
       label: t('SIDEBAR.CONVERSATIONS'),
       icon: 'i-lucide-message-circle',
+      keepExpanded: true,
       children: [
         {
-          name: 'All',
-          label: t('SIDEBAR.ALL_CONVERSATIONS'),
+          name: 'Open Mine',
+          label: t('SIDEBAR.OPEN_MINE_CONVERSATIONS'),
           icon: 'i-lucide-inbox',
-          badgeCount: allUnreadCount.value,
-          activeOn: ['inbox_conversation'],
+          badgeCount: openMineBadgeCount.value,
+          activeOn: ['home', 'inbox_conversation'],
           to: accountScopedRoute('home'),
         },
-        {
-          name: 'Mentions',
-          label: t('SIDEBAR.MENTIONED_CONVERSATIONS'),
-          icon: 'i-lucide-at-sign',
-          badgeCount: hasFilteredUnreadCounts.value
-            ? mentionsUnreadCount.value
-            : 0,
-          activeOn: ['conversation_through_mentions'],
-          to: accountScopedRoute('conversation_mentions'),
-        },
-        {
-          name: 'Participating',
-          label: t('SIDEBAR.PARTICIPATING_CONVERSATIONS'),
-          icon: 'i-lucide-user-round-check',
-          badgeCount: hasFilteredUnreadCounts.value
-            ? participatingUnreadCount.value
-            : 0,
-          activeOn: ['conversation_through_participating'],
-          to: accountScopedRoute('conversation_participating'),
-        },
-        {
-          name: 'Unattended',
-          activeOn: ['conversation_through_unattended'],
-          label: t('SIDEBAR.UNATTENDED_CONVERSATIONS'),
-          icon: 'i-lucide-clock-alert',
-          badgeCount: hasFilteredUnreadCounts.value
-            ? unattendedUnreadCount.value
-            : 0,
-          to: accountScopedRoute('conversation_unattended'),
-        },
+        ...(showOpenTeamFilter.value
+          ? [
+              {
+                name: 'Open Team',
+                label: t('SIDEBAR.OPEN_TEAM_CONVERSATIONS'),
+                icon: 'i-lucide-users',
+                badgeCount: openTeamBadgeCount.value,
+                activeOn: [
+                  'conversation_open_team',
+                  'conversation_through_open_team',
+                ],
+                to: accountScopedRoute('conversation_open_team'),
+              },
+            ]
+          : []),
         ...(showChatbotFilter.value
           ? [
               {
                 name: 'Chatbot',
                 label: t('SIDEBAR.CHATBOT_CONVERSATIONS'),
                 icon: 'i-lucide-bot',
+                badgeCount: chatbotBadgeCount.value,
                 activeOn: ['conversation_through_chatbot'],
                 to: accountScopedRoute('conversation_chatbot'),
               },
             ]
           : []),
+        {
+          name: 'Unattended',
+          activeOn: ['conversation_through_unattended'],
+          label: t('SIDEBAR.UNATTENDED_CONVERSATIONS'),
+          icon: 'i-lucide-clock-alert',
+          badgeCount: unattendedBadgeCount.value,
+          to: accountScopedRoute('conversation_unattended'),
+        },
+        ...(showUnassignedFilter.value
+          ? [
+              {
+                name: 'Unassigned',
+                label: t('SIDEBAR.UNASSIGNED_CONVERSATIONS'),
+                icon: 'i-lucide-inbox',
+                badgeCount: unassignedBadgeCount.value,
+                activeOn: [
+                  'conversation_unassigned',
+                  'conversation_through_unassigned',
+                ],
+                to: accountScopedRoute('conversation_unassigned'),
+              },
+            ]
+          : []),
+        {
+          name: 'Participating',
+          label: t('SIDEBAR.PARTICIPATING_CONVERSATIONS'),
+          icon: 'i-lucide-user-round-check',
+          badgeCount: participatingBadgeCount.value,
+          activeOn: ['conversation_through_participating'],
+          to: accountScopedRoute('conversation_participating'),
+        },
         ...(showPendingFilter.value
           ? [
               {
                 name: 'Pending',
                 label: t('SIDEBAR.PENDING_CONVERSATIONS'),
                 icon: 'i-lucide-clock',
+                badgeCount: pendingBadgeCount.value,
                 activeOn: ['conversation_through_pending'],
                 to: accountScopedRoute('conversation_pending'),
               },
@@ -500,6 +565,7 @@ const menuItems = computed(() => {
           activeOn: ['conversations_through_team'],
           ...buildSortConfig(SIDEBAR_SORT_SECTIONS.TEAMS),
           collapsible: true,
+          defaultCollapsed: true,
           showTreeLine: true,
           children: sortedTeams.value.map(team => ({
             name: `${team.name}-${team.id}`,
@@ -522,6 +588,7 @@ const menuItems = computed(() => {
           activeOn: ['conversation_through_inbox'],
           ...buildSortConfig(SIDEBAR_SORT_SECTIONS.CHANNELS),
           collapsible: true,
+          defaultCollapsed: true,
           showTreeLine: true,
           children: sortedInboxes.value.map(inbox => ({
             name: `${inbox.name}-${inbox.id}`,
@@ -587,12 +654,16 @@ const menuItems = computed(() => {
           ),
           activeOn: ['contacts_dashboard_index', 'contacts_edit'],
         },
-        {
-          name: 'Active',
-          label: t('SIDEBAR.ACTIVE'),
-          to: accountScopedRoute('contacts_dashboard_active'),
-          activeOn: ['contacts_dashboard_active'],
-        },
+        ...(showContactCompanies.value
+          ? [
+              {
+                name: 'Contact Companies',
+                label: t('SIDEBAR.COMPANIES'),
+                to: accountScopedRoute('contacts_companies_index'),
+                activeOn: ['contacts_companies_index'],
+              },
+            ]
+          : []),
         {
           name: 'Segments',
           icon: 'i-lucide-group',
@@ -636,23 +707,6 @@ const menuItems = computed(() => {
               'contacts_edit_label',
             ],
           })),
-        },
-      ],
-    },
-    {
-      name: 'Companies',
-      label: t('SIDEBAR.COMPANIES'),
-      icon: 'i-lucide-building-2',
-      children: [
-        {
-          name: 'All Companies',
-          label: t('SIDEBAR.ALL_COMPANIES'),
-          to: accountScopedRoute(
-            'companies_dashboard_index',
-            {},
-            { page: 1, search: undefined }
-          ),
-          activeOn: ['companies_dashboard_index', 'companies_dashboard_show'],
         },
       ],
     },

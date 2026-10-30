@@ -11,8 +11,16 @@ export const createMessagePayload = (payload, message) => {
 };
 
 export const createConversationPayload = ({ params, contactId, files }) => {
-  const { inboxId, message, sourceId, mailSubject, assigneeId, teamId } =
-    params;
+  const {
+    inboxId,
+    message,
+    sourceId,
+    mailSubject,
+    assigneeId,
+    teamId,
+    status,
+    visibility,
+  } = params;
   const payload = new FormData();
 
   if (message) {
@@ -29,21 +37,34 @@ export const createConversationPayload = ({ params, contactId, files }) => {
   if (mailSubject) {
     payload.append('additional_attributes[mail_subject]', mailSubject);
   }
-  payload.append('assignee_id', assigneeId);
+  if (assigneeId) payload.append('assignee_id', assigneeId);
+  payload.append('status', status || 'open');
+  if (visibility) payload.append('visibility', visibility);
   if (teamId) payload.append('team_id', teamId);
 
   return payload;
 };
 
 export const createWhatsAppConversationPayload = ({ params }) => {
-  const { inboxId, message, contactId, sourceId, assigneeId, teamId } = params;
+  const {
+    inboxId,
+    message,
+    contactId,
+    sourceId,
+    assigneeId,
+    teamId,
+    status,
+    visibility,
+  } = params;
 
   const payload = {
     inbox_id: inboxId,
     contact_id: contactId,
     source_id: sourceId,
     message,
-    assignee_id: assigneeId,
+    ...(assigneeId ? { assignee_id: assigneeId } : {}),
+    status: status || 'open',
+    ...(visibility ? { visibility } : {}),
     ...(teamId ? { team_id: teamId } : {}),
   };
 

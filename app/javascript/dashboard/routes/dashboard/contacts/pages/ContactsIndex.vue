@@ -61,6 +61,8 @@ const sortState = reactive({
 
 const activeLabel = computed(() => route.params.label);
 const activeSegmentId = computed(() => route.params.segmentId);
+const activeCompanyName = computed(() => route.query.company);
+const isCompanyView = computed(() => !!activeCompanyName.value);
 const isFetchingList = computed(
   () => uiFlags.value.isFetching || customViewsUiFlags.value.isFetching
 );
@@ -110,13 +112,15 @@ const showEmptyStateLayout = computed(() => {
     !searchQuery.value &&
     !hasContacts.value &&
     isContactIndexView.value &&
-    !hasAppliedFilters.value
+    !hasAppliedFilters.value &&
+    !isCompanyView.value
   );
 });
 const showEmptyText = computed(() => {
   return (
     (searchQuery.value ||
       hasAppliedFilters.value ||
+      isCompanyView.value ||
       !isContactIndexView.value) &&
     !hasContacts.value
   );
@@ -125,6 +129,7 @@ const showEmptyText = computed(() => {
 const headerTitle = computed(() => {
   if (searchQuery.value) return t('CONTACTS_LAYOUT.HEADER.SEARCH_TITLE');
   if (isActiveView.value) return t('CONTACTS_LAYOUT.HEADER.ACTIVE_TITLE');
+  if (isCompanyView.value) return activeCompanyName.value;
   if (activeSegmentId.value) return activeSegment.value?.name;
   if (activeLabel.value) return `#${activeLabel.value}`;
   return t('CONTACTS_LAYOUT.HEADER.TITLE');
@@ -226,6 +231,29 @@ const fetchSavedOrAppliedFilteredContact = async (
   updatePageParam(page);
 };
 
+const fetchCompanyContacts = async (page = 1, options = {}) => {
+  const { clearSelection: shouldClearSelection = true } = options;
+  if (shouldClearSelection) {
+    clearSelection();
+  }
+
+  await store.dispatch('contacts/clearContactFilters');
+  await store.dispatch('contacts/filter', {
+    ...getCommonFetchParams(page),
+    queryPayload: {
+      payload: [
+        {
+          attribute_key: 'company_name',
+          filter_operator: 'equal_to',
+          values: [activeCompanyName.value],
+          query_operator: undefined,
+        },
+      ],
+    },
+  });
+  updatePageParam(page);
+};
+
 const fetchActiveContacts = async (page = 1, options = {}) => {
   const { clearSelection: shouldClearSelection = true } = options;
   if (shouldClearSelection) {
@@ -294,6 +322,12 @@ const fetchContactsBasedOnContext = async (page, options = {}) => {
   }
   updatePageParam(page, searchValue.value);
   if (isFetchingList.value) return;
+  if (isCompanyView.value) {
+    await fetchCompanyContacts(page, {
+      clearSelection: shouldClearSelection,
+    });
+    return;
+  }
   if (searchQuery.value) {
     await searchContacts(searchQuery.value, page, false, {
       clearSelection: shouldClearSelection,
@@ -448,7 +482,7 @@ watch(
 );
 
 watch(
-  [activeLabel, activeSegment, isActiveView],
+  [activeLabel, activeSegment, isActiveView, isCompanyView, activeCompanyName],
   () => {
     fetchContactsBasedOnContext(pageNumber.value);
   },
@@ -472,6 +506,10 @@ watch(searchQuery, value => {
 });
 
 onMounted(async () => {
+  if (isCompanyView.value) {
+    await fetchCompanyContacts(pageNumber.value);
+    return;
+  }
   if (!activeSegmentId.value) {
     if (searchQuery.value) {
       await searchContacts(searchQuery.value, pageNumber.value, false, {
@@ -498,6 +536,7 @@ onMounted(async () => {
     class="flex flex-col justify-between flex-1 h-full m-0 overflow-auto bg-n-surface-1"
   >
     <ContactsListLayout
+      :hide-search="isCompanyView"
       :search-value="searchValue"
       :header-title="headerTitle"
       :current-page="currentPage"

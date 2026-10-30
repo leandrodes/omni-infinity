@@ -18,6 +18,10 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+  badgeCount: {
+    type: Number,
+    default: null,
+  },
   showBadge: {
     type: Boolean,
     default: true,
@@ -32,7 +36,9 @@ const activeIndex = inject('activeIndex');
 const updateActiveIndex = inject('updateActiveIndex');
 
 const active = computed(() => props.index === activeIndex.value);
-const getItemCount = computed(() => props.count);
+const getItemCount = computed(() =>
+  props.badgeCount === null ? props.count : props.badgeCount
+);
 
 const onTabClick = event => {
   event.preventDefault();

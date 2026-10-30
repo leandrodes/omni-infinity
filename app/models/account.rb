@@ -39,6 +39,30 @@ class Account < ApplicationRecord
     check_for_column: false
   }.freeze
   SUSPENSION_CATEGORIES = %w[spam non_payment other].freeze
+  DEFAULT_ATTENDANCE_SETTINGS = {
+    'enable_chatbot_conversations_filter' => true,
+    'chatbot_conversations_filter_roles' => ['administrator'],
+    'enable_resolved_conversations_filter' => true,
+    'enable_pending_conversations_filter' => true,
+    'enable_unassigned_conversations_filter' => false,
+    'show_inbox_name_in_conversation_list' => true,
+    'show_conversation_id_in_conversation_list' => true,
+    'show_conversation_team_in_conversation_list' => true,
+    'show_conversation_status_in_conversation_list' => true,
+    'show_conversations_only_from_user_teams' => true,
+    'reactions_appear_as_response' => true,
+    'enable_contact_company_filter' => false,
+    'hide_conversations_assigned_to_others' => false,
+    'hide_resolved_conversations_assigned_to_others' => false,
+    'signature_agents_can_disable' => false,
+    'agents_can_reopen_conversations' => false,
+    'agents_can_join_conversations_as_participant' => false,
+    'ignore_whatsapp_groups' => false,
+    'enable_whatsapp_groups_filter' => false,
+    'allow_create_whatsapp_groups' => false,
+    'allow_end_whatsapp_groups' => false,
+    'allow_transfer_whatsapp_groups' => false
+  }.freeze
 
   attr_accessor :suspension_category, :suspension_reason
 
@@ -52,6 +76,10 @@ class Account < ApplicationRecord
                  attribute_resolver: ->(record) { record.settings }
   validate :validate_reporting_timezone
   validate :validate_support_email_format, if: :will_save_change_to_support_email?
+
+  def self.default_attendance_settings
+    DEFAULT_ATTENDANCE_SETTINGS.deep_dup
+  end
 
   store_accessor :settings, :auto_resolve_after, :auto_resolve_message, :auto_resolve_ignore_waiting
   store_accessor :settings, :hide_conversations_assigned_to_others

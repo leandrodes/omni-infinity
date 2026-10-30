@@ -15,6 +15,7 @@ import Banner from 'dashboard/components/ui/Banner.vue';
 import Spinner from 'dashboard/components-next/spinner/Spinner.vue';
 import ResizableEditorWrapper from './ResizableEditorWrapper.vue';
 import ReferralBubble from 'dashboard/components-next/Conversation/ReferralBubble.vue';
+import PinnedMessagesBar from './PinnedMessagesBar.vue';
 
 // stores and apis
 import { mapGetters } from 'vuex';
@@ -52,6 +53,7 @@ export default {
     Spinner,
     ResizableEditorWrapper,
     ReferralBubble,
+    PinnedMessagesBar,
   },
   mixins: [inboxMixin],
   setup() {
@@ -274,6 +276,7 @@ export default {
         return;
       }
       this.fetchAllAttachmentsFromCurrentChat();
+      this.fetchPinnedMessages();
       this.fetchSuggestions();
       this.messageSentSinceOpened = false;
       this.resetReplyEditorHeight();
@@ -292,6 +295,7 @@ export default {
   mounted() {
     this.addScrollListener();
     this.fetchAllAttachmentsFromCurrentChat();
+    this.fetchPinnedMessages();
     this.fetchSuggestions();
   },
 
@@ -344,6 +348,10 @@ export default {
     },
     fetchAllAttachmentsFromCurrentChat() {
       this.$store.dispatch('fetchAllAttachments', this.currentChat.id);
+    },
+    fetchPinnedMessages() {
+      if (!this.currentChat?.id) return;
+      this.$store.dispatch('fetchPinnedMessages', this.currentChat.id);
     },
     removeBusListeners() {
       emitter.off(BUS_EVENTS.SCROLL_TO_MESSAGE, this.onScrollToMessage);
@@ -499,6 +507,7 @@ export default {
         :banner-message="$t('CONVERSATION.OLD_INSTAGRAM_INBOX_REPLY_BANNER')"
       />
     </div>
+    <PinnedMessagesBar :conversation-id="currentChat.id" />
     <MessageList
       ref="conversationPanelRef"
       class="conversation-panel flex-shrink flex-grow basis-px flex flex-col overflow-y-auto relative h-full m-0 pb-4"

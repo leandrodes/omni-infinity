@@ -210,71 +210,68 @@ describe('#getters', () => {
   });
   describe('#getParticipatingChats', () => {
     const conversationList = [
-      { id: 1, inbox_id: 2, status: 1, meta: { assignee: { id: 1 } } },
-      { id: 2, inbox_id: 2, status: 1, meta: {} },
-      { id: 3, inbox_id: 3, status: 1, meta: { assignee: { id: 2 } } },
+      {
+        id: 1,
+        inbox_id: 2,
+        status: 1,
+        participant_ids: [1],
+        meta: { assignee: { id: 2 } },
+      },
+      {
+        id: 2,
+        inbox_id: 2,
+        status: 1,
+        participant_ids: [],
+        meta: {},
+      },
+      {
+        id: 3,
+        inbox_id: 3,
+        status: 1,
+        participant_ids: [1],
+        meta: { assignee: { id: 1 } },
+      },
     ];
 
-    it('returns all conversations when watchers are not loaded', () => {
-      const state = {
-        allConversations: conversationList,
-        participatingConversationIds: {},
-      };
-      const rootGetters = {
-        getCurrentUser: { id: 1 },
-        'conversationWatchers/getByConversationId': () => undefined,
-      };
+    it('returns only conversations where the current user is a participant and not the assignee', () => {
+      const state = { allConversations: conversationList };
+      const rootGetters = { getCurrentUser: { id: 1 } };
       const result = getters.getParticipatingChats(
         state,
         {},
         {},
         rootGetters
       )({ status: 1 });
-      expect(result).toEqual(conversationList);
+      expect(result).toEqual([conversationList[0]]);
     });
 
-    it('filters out conversation when watchers loaded and user not participating', () => {
+    it('ignores conversations without participant_ids', () => {
       const state = {
-        allConversations: conversationList,
-        participatingConversationIds: {},
+        allConversations: [{ id: 1, status: 1, meta: {} }],
       };
-      const rootGetters = {
-        getCurrentUser: { id: 1 },
-        'conversationWatchers/getByConversationId': id => {
-          if (id === 2) return [{ id: 3 }];
-          return undefined;
-        },
-      };
+      const rootGetters = { getCurrentUser: { id: 1 } };
       const result = getters.getParticipatingChats(
         state,
         {},
         {},
         rootGetters
       )({ status: 1 });
-      expect(result).toEqual([conversationList[0], conversationList[2]]);
+      expect(result).toEqual([]);
     });
 
-    it('keeps conversation when watchers loaded and user is participating', () => {
-      const state = {
-        allConversations: conversationList,
-        participatingConversationIds: {},
-      };
-      const rootGetters = {
-        getCurrentUser: { id: 1 },
-        'conversationWatchers/getByConversationId': id => {
-          if (id === 1) return [{ id: 1 }, { id: 2 }];
-          return undefined;
-        },
-      };
+    it('applies the page filters after the participant check', () => {
+      const state = { allConversations: conversationList };
+      const rootGetters = { getCurrentUser: { id: 1 } };
       const result = getters.getParticipatingChats(
         state,
         {},
         {},
         rootGetters
-      )({ status: 1 });
-      expect(result).toEqual(conversationList);
+      )({ status: 0 });
+      expect(result).toEqual([]);
     });
   });
+
   describe('#getConversationById', () => {
     it('get conversations based on id', () => {
       const state = {

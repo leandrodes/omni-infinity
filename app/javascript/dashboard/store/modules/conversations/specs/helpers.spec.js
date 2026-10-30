@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { applyRoleFilter } from '../helpers';
+import { applyAccountVisibilityFilter, applyRoleFilter } from '../helpers';
 
 describe('Conversation Helpers', () => {
   describe('#applyRoleFilter', () => {
@@ -271,6 +271,151 @@ describe('Conversation Helpers', () => {
           )
         ).toBe(true);
       });
+    });
+  });
+  describe('#applyAccountVisibilityFilter', () => {
+    const settings = {
+      hide_conversations_assigned_to_others: true,
+      hide_resolved_conversations_assigned_to_others: false,
+      show_conversations_only_from_user_teams: true,
+    };
+
+    it('hides private conversations from non-owner agents', () => {
+      const conversation = {
+        status: 'open',
+        visibility: 'restricted',
+        private_owner_id: 2,
+        meta: { assignee: { id: 2 }, team: { id: 10 } },
+      };
+
+      expect(
+        applyAccountVisibilityFilter(conversation, {
+          role: 'agent',
+          settings,
+          teamIds: [10],
+          currentUserId: 1,
+        })
+      ).toBe(false);
+    });
+
+    it('keeps private conversations for the owner', () => {
+      const conversation = {
+        status: 'resolved',
+        visibility: 'restricted',
+        private_owner_id: 1,
+        meta: { assignee: { id: 1 }, team: { id: 20 } },
+      };
+
+      expect(
+        applyAccountVisibilityFilter(conversation, {
+          role: 'agent',
+          settings,
+          teamIds: [],
+          currentUserId: 1,
+        })
+      ).toBe(true);
+    });
+
+    it('keeps conversations for participants even outside their teams', () => {
+      const conversation = {
+        status: 'open',
+        visibility: 'shared',
+        participant_ids: [1],
+        meta: { assignee: { id: 2 }, team: { id: 20 } },
+      };
+
+      expect(
+        applyAccountVisibilityFilter(conversation, {
+          role: 'agent',
+          settings,
+          teamIds: [10],
+          currentUserId: 1,
+        })
+      ).toBe(true);
+    });
+
+    it('keeps chatbot conversations assigned to an AgentBot', () => {
+      const conversation = {
+        status: 'pending',
+        meta: {
+          assignee: { id: 99, type: 'agent_bot' },
+          assignee_type: 'AgentBot',
+          team: { id: 10 },
+        },
+      };
+
+      expect(
+        applyAccountVisibilityFilter(conversation, {
+          role: 'agent',
+          settings,
+          teamIds: [10],
+          currentUserId: 1,
+        })
+      ).toBe(true);
+    });
+
+    it('hides conversations assigned to another agent', () => {
+      const conversation = {
+        status: 'open',
+        meta: { assignee: { id: 2 }, team: { id: 10 } },
+      };
+
+      expect(
+        applyAccountVisibilityFilter(conversation, {
+          role: 'agent',
+          settings,
+          teamIds: [10],
+          currentUserId: 1,
+        })
+      ).toBe(false);
+    });
+
+    it('keeps resolved conversations assigned to another agent when allowed', () => {
+      const conversation = {
+        status: 'resolved',
+        meta: { assignee: { id: 2 }, team: { id: 10 } },
+      };
+
+      expect(
+        applyAccountVisibilityFilter(conversation, {
+          role: 'agent',
+          settings,
+          teamIds: [10],
+          currentUserId: 1,
+        })
+      ).toBe(true);
+    });
+
+    it('hides conversations from teams the agent does not belong to', () => {
+      const conversation = {
+        status: 'open',
+        meta: { assignee: null, team: { id: 20 } },
+      };
+
+      expect(
+        applyAccountVisibilityFilter(conversation, {
+          role: 'agent',
+          settings,
+          teamIds: [10],
+          currentUserId: 1,
+        })
+      ).toBe(false);
+    });
+
+    it('does not filter conversations for administrators', () => {
+      const conversation = {
+        status: 'open',
+        meta: { assignee: { id: 2 }, team: { id: 20 } },
+      };
+
+      expect(
+        applyAccountVisibilityFilter(conversation, {
+          role: 'administrator',
+          settings,
+          teamIds: [10],
+          currentUserId: 1,
+        })
+      ).toBe(true);
     });
   });
 });

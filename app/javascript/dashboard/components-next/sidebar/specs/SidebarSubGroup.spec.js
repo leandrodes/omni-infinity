@@ -96,6 +96,25 @@ describe('SidebarSubGroup', () => {
     expect(wrapper.find('.sidebar-leaf').isVisible()).toBe(true);
   });
 
+  it('keeps default-collapsed sections minimized until the user opens them', async () => {
+    const wrapper = mountSubGroup({ defaultCollapsed: true });
+
+    expect(wrapper.find('button').attributes('aria-expanded')).toBe('false');
+    expect(wrapper.find('.sidebar-leaf').isVisible()).toBe(false);
+
+    await wrapper.find('button').trigger('click');
+    await wrapper.vm.$nextTick();
+
+    const storedSections = JSON.parse(
+      window.localStorage.getItem(LOCAL_STORAGE_KEYS.SIDEBAR_MINIMIZED_SECTIONS)
+    );
+    expect(wrapper.find('button').attributes('aria-expanded')).toBe('true');
+    expect(wrapper.find('.sidebar-leaf').attributes('style')).not.toContain(
+      'display: none'
+    );
+    expect(storedSections).toEqual({ '1:Conversation:Teams': false });
+  });
+
   it('renders the tree line on the separator, positioned relative to it', () => {
     const wrapper = mountSubGroup({ showTreeLine: true });
     const button = wrapper.find('button');

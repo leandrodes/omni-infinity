@@ -18,8 +18,8 @@ export const NOTIFICATION_TYPES = [
   },
   {
     label:
-      'PROFILE_SETTINGS.FORM.NOTIFICATIONS.TYPES.PARTICIPATING_CONVERSATION_NEW_MESSAGE',
-    value: 'participating_conversation_new_message',
+      'PROFILE_SETTINGS.FORM.NOTIFICATIONS.TYPES.CONVERSATION_PARTICIPANT_ADDED',
+    value: 'conversation_participant_added',
   },
   {
     label:

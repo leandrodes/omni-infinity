@@ -44,6 +44,66 @@ RSpec.describe Conversations::PermissionFilterService do
       end
     end
 
+    context 'when conversation is private' do
+      let(:owner) { create(:user, account: account, role: :agent) }
+      let(:other_agent) { create(:user, account: account, role: :agent) }
+      let!(:private_conversation) do
+        create(
+          :conversation,
+          account: account,
+          inbox: inbox,
+          visibility: :restricted,
+          private_owner: owner
+        )
+      end
+
+      before do
+        create(:inbox_member, user: owner, inbox: inbox)
+        create(:inbox_member, user: other_agent, inbox: inbox)
+      end
+
+      it 'returns the private conversation to its owner' do
+        result = described_class.new(account.conversations, owner, account).perform
+
+        expect(result).to include(private_conversation)
+      end
+
+      it 'hides the private conversation from other agents' do
+        result = described_class.new(account.conversations, other_agent, account).perform
+
+        expect(result).not_to include(private_conversation)
+      end
+
+      it 'returns the private conversation to administrators' do
+        result = described_class.new(account.conversations, admin, account).perform
+
+        expect(result).to include(private_conversation)
+      end
+    end
+
+    context 'when user is a participant' do
+      let(:other_agent) { create(:user, account: account, role: :agent) }
+      let(:other_team) { create(:team, account: account) }
+
+      before do
+        account.update!(
+          settings: {
+            hide_conversations_assigned_to_others: true,
+            show_conversations_only_from_user_teams: true
+          }
+        )
+        create(:inbox_member, user: other_agent, inbox: inbox)
+        conversation.update!(assignee: other_agent, team: other_team)
+        create(:conversation_participant, conversation: conversation, user: agent)
+      end
+
+      it 'returns participant conversations even outside the user team or assigned to others' do
+        result = described_class.new(account.conversations, agent, account).perform
+
+        expect(result).to include(conversation)
+      end
+    end
+
     context 'when plan_hint_selective_filter is enabled' do
       let!(:other_inbox) { create(:inbox, account: account) }
       let!(:inaccessible_conversation) { create(:conversation, account: account, inbox: other_inbox) }

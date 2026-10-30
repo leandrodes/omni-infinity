@@ -136,6 +136,50 @@ RSpec.describe 'Conversation Assignment API', type: :request do
       end
     end
 
+    context 'when team visibility settings are enabled' do
+      let(:agent) { create(:user, account: account, role: :agent) }
+      let(:outside_agent) { create(:user, account: account, role: :agent) }
+      let(:team) { create(:team, account: account) }
+
+      before do
+        account.update!(
+          settings: {
+            hide_conversations_assigned_to_others: true,
+            show_conversations_only_from_user_teams: true
+          }
+        )
+        create(:inbox_member, inbox: conversation.inbox, user: agent)
+        create(:inbox_member, inbox: conversation.inbox, user: outside_agent)
+        create(:team_member, team: team, user: agent)
+        conversation.update!(team: team)
+      end
+
+      it 'rejects assigning an agent outside the conversation team' do
+        post api_v1_account_conversation_assignments_url(account_id: account.id, conversation_id: conversation.display_id),
+             params: { assignee_id: outside_agent.id },
+             headers: agent.create_new_auth_token,
+             as: :json
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response.parsed_body['error']).to eq('agent_not_in_team')
+        expect(conversation.reload.assignee).to be_nil
+      end
+
+      it 'assigns the agent when the team is changed at the same time' do
+        new_team = create(:team, account: account)
+        create(:team_member, team: new_team, user: outside_agent)
+
+        post api_v1_account_conversation_assignments_url(account_id: account.id, conversation_id: conversation.display_id),
+             params: { assignee_id: outside_agent.id, team_id: new_team.id },
+             headers: agent.create_new_auth_token,
+             as: :json
+
+        expect(response).to have_http_status(:success)
+        expect(conversation.reload.team).to eq(new_team)
+        expect(conversation.reload.assignee).to eq(outside_agent)
+      end
+    end
+
     context 'when conversation already has an assignee' do
       let(:agent) { create(:user, account: account, role: :agent) }
 

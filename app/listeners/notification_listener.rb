@@ -38,7 +38,6 @@ class NotificationListener < BaseListener
     # We need to debug this properly, but for now no need to pollute the jobs
     return if assignee.blank?
     return if event.data[:notifiable_assignee_change].blank?
-    return if conversation.pending?
 
     NotificationBuilder.new(
       notification_type: 'conversation_assignment',

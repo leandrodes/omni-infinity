@@ -23,12 +23,59 @@ class BulkActionsJob < ApplicationJob
   end
 
   def bulk_conversation_update
-    params = available_params(@params)
+    params = available_params(@params)&.to_h&.with_indifferent_access
     records.each do |conversation|
       bulk_add_labels(conversation)
       bulk_snoozed_until(conversation)
-      conversation.update(params) if params
+      update_params = assignment_safe_params(conversation, params)
+      update_params = transfer_private_owner(conversation, update_params)
+      conversation.update(update_params) if update_params.present?
+      create_assignment_note(conversation) if update_params.present? && @params[:note].present?
     end
+  end
+
+  def assignment_safe_params(conversation, params)
+    return params if params.blank? || params[:assignee_id].blank?
+
+    team = assignment_team(conversation, params)
+    agent = @account.users.find_by(id: params[:assignee_id])
+    guard = Conversations::AssignmentTeamGuard.new(conversation, agent: agent, team: team)
+
+    if guard.invalid?
+      Rails.logger.warn(
+        "[BulkActions] skipped assignment for conversation #{conversation.id}: #{guard.error_payload}"
+      )
+      return nil
+    end
+
+    params
+  end
+
+  def create_assignment_note(conversation)
+    note = @params[:note].to_s.strip
+    return if note.blank?
+
+    conversation.messages.create!(
+      account_id: conversation.account_id,
+      inbox_id: conversation.inbox_id,
+      message_type: :outgoing,
+      private: true,
+      sender: @user,
+      content: note
+    )
+  end
+
+  def transfer_private_owner(conversation, params)
+    return params unless conversation&.restricted? && params.present? && params[:assignee_id].present?
+
+    params.merge(private_owner_id: params[:assignee_id])
+  end
+
+  def assignment_team(conversation, params)
+    return conversation.team unless params.key?(:team_id)
+
+    team_id = params[:team_id].to_i
+    team_id.positive? ? @account.teams.find_by(id: team_id) : nil
   end
 
   def bulk_remove_labels

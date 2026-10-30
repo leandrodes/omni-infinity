@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, onUnmounted, useAttrs } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useMapGetter } from 'dashboard/composables/store.js';
+import { useAccount } from 'dashboard/composables/useAccount';
 import { getUnixTime } from 'date-fns';
 import { findSnoozeTime } from 'dashboard/helper/snoozeHelpers';
 import { emitter } from 'shared/helpers/mitt';
@@ -20,6 +21,8 @@ import BulkUpdateActions from './BulkUpdateActions.vue';
 import BulkLabelActions from './BulkLabelActions.vue';
 import BulkTeamActions from './BulkTeamActions.vue';
 import CustomSnoozeModal from 'dashboard/components/CustomSnoozeModal.vue';
+import AssignmentTeamConflictModal from 'dashboard/components-next/ConversationWorkflow/AssignmentTeamConflictModal.vue';
+import { assignmentTeamConflict } from 'dashboard/helper/assignmentTeamHelper';
 
 const props = defineProps({
   conversations: {
@@ -67,6 +70,43 @@ const {
 } = useBulkActions();
 
 const getConversationById = useMapGetter('getConversationById');
+const teams = useMapGetter('teams/getTeams');
+const { currentAccount } = useAccount();
+const assignmentConflictModalRef = ref(null);
+const pendingAssignment = ref(null);
+
+const assignmentConversations = computed(() =>
+  selectedConversations.value
+    .map(id => getConversationById.value(id))
+    .filter(Boolean)
+);
+
+const handleAssignAgent = agent => {
+  const hasConflict = assignmentTeamConflict({
+    agent,
+    conversations: assignmentConversations.value,
+    settings: currentAccount.value?.settings || {},
+  });
+
+  if (!hasConflict) {
+    onAssignAgent(agent);
+    return;
+  }
+
+  pendingAssignment.value = agent;
+  assignmentConflictModalRef.value?.open();
+};
+
+const onConfirmAssignmentTeam = ({ team, note }) => {
+  if (!pendingAssignment.value) return;
+
+  onAssignAgent(pendingAssignment.value, null, team.id, note);
+  pendingAssignment.value = null;
+};
+
+const onCloseAssignmentConflict = () => {
+  pendingAssignment.value = null;
+};
 
 const appliedLabelsForSelection = computed(() => {
   const applied = new Set();
@@ -194,7 +234,7 @@ onUnmounted(() => {
           <BulkAgentActions
             :selected-inboxes="selectedInboxes"
             :conversation-count="conversations.length"
-            @select="onAssignAgent"
+            @select="handleAssignAgent"
           />
           <BulkTeamActions
             :conversation-count="conversations.length"
@@ -204,6 +244,14 @@ onUnmounted(() => {
       </div>
     </div>
   </Transition>
+  <AssignmentTeamConflictModal
+    ref="assignmentConflictModalRef"
+    :agent="pendingAssignment"
+    :teams="teams"
+    :conversation-count="assignmentConversations.length"
+    @confirm="onConfirmAssignmentTeam"
+    @close="onCloseAssignmentConflict"
+  />
   <woot-modal
     v-model:show="showCustomTimeSnoozeModal"
     :on-close="hideCustomSnoozeModal"

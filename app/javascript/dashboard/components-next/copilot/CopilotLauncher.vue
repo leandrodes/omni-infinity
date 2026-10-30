@@ -20,6 +20,8 @@ const isConversationRoute = computed(() => {
     'conversation_through_mentions',
     'conversation_through_unattended',
     'conversation_through_participating',
+    'conversation_through_open_team',
+    'conversation_through_unassigned',
     'inbox_view_conversation',
   ];
   return CONVERSATION_ROUTES.includes(route.name);

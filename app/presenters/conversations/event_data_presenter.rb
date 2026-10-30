@@ -10,10 +10,10 @@ class Conversations::EventDataPresenter < SimpleDelegator
       messages: push_messages,
       labels: label_list,
       meta: push_meta,
-      status: status,
+      status: status, visibility: visibility, private_owner_id: private_owner_id,
+      participant_ids: conversation_participant_user_ids,
       custom_attributes: custom_attributes,
-      snoozed_until: snoozed_until,
-      unread_count: unread_incoming_messages.count,
+      snoozed_until: snoozed_until, unread_count: unread_incoming_messages.count,
       first_reply_created_at: first_reply_created_at,
       priority: priority,
       waiting_since: waiting_since.to_i,
@@ -37,6 +37,10 @@ class Conversations::EventDataPresenter < SimpleDelegator
 
   def webhook_push_messages
     [messages.where(account_id: account_id).chat.last&.webhook_push_event_data].compact
+  end
+
+  def conversation_participant_user_ids
+    conversation_participants.pluck(:user_id)
   end
 
   def push_meta

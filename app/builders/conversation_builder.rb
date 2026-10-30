@@ -34,7 +34,17 @@ class ConversationBuilder
       custom_attributes: custom_attributes,
       snoozed_until: params[:snoozed_until],
       assignee_id: params[:assignee_id],
-      team_id: params[:team_id]
+      team_id: params[:team_id],
+      visibility: visibility,
+      private_owner_id: private_owner_id
     }.merge(status)
+  end
+
+  def visibility
+    params[:visibility].presence || 'shared'
+  end
+
+  def private_owner_id
+    visibility == 'restricted' ? params[:private_owner_id] : nil
   end
 end

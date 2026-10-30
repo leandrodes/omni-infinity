@@ -169,17 +169,25 @@ Rails.application.routes.draw do
               get :meta
               get :search
               get :unread_counts, to: 'conversations/unread_counts#index'
+              get :unread_badges, to: 'conversations/unread_counts#badges'
               post :filter
             end
             scope module: :conversations do
               resources :messages, only: [:index, :create, :destroy, :update] do
+                collection do
+                  get :pinned
+                end
                 member do
                   post :translate
                   post :retry
+                  post :pin
+                  delete :unpin
+                  post :edit
                 end
               end
               resource :contact_info_request, only: [:create]
               resources :assignments, only: [:create]
+              resource :visibility, only: [:update]
               resources :labels, only: [:create, :index]
               resource :participants, only: [:show, :create, :update, :destroy]
               resource :direct_uploads, only: [:create]
@@ -232,6 +240,7 @@ Rails.application.routes.draw do
           resources :contacts, only: [:index, :show, :update, :create, :destroy] do
             collection do
               get :active
+              get :companies, to: 'contact_companies#index'
               get :search
               post :filter
               post :import

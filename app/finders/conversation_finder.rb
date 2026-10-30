@@ -1,3 +1,4 @@
+# rubocop:disable Metrics/ClassLength
 class ConversationFinder
   attr_reader :current_user, :current_account, :params
 
@@ -114,10 +115,16 @@ class ConversationFinder
       @conversations = @conversations.unassigned
     when 'assigned'
       @conversations = @conversations.assigned
+    when 'participating'
+      participant_conversation_ids = ConversationParticipant.where(account_id: current_account.id,
+                                                                   user_id: current_user.id).select(:conversation_id)
+      @conversations = @conversations.where(id: participant_conversation_ids)
+                                     .where(participant_not_assignee_condition, user_id: current_user.id)
     end
     @conversations
   end
 
+  # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength
   def filter_by_conversation_type
     case @params[:conversation_type]
     when 'mention'
@@ -126,6 +133,11 @@ class ConversationFinder
     when 'participating'
       participant_conversation_ids = ConversationParticipant.where(account_id: current_account.id, user_id: current_user.id).select(:conversation_id)
       @conversations = @conversations.where(id: participant_conversation_ids)
+                                     .where(participant_not_assignee_condition, user_id: current_user.id)
+    when 'open_team'
+      @conversations = @conversations.where.not(assignee_id: nil)
+    when 'unassigned'
+      @conversations = @conversations.unassigned
     when 'unattended'
       @conversations = @conversations.unattended
     when 'chatbot'
@@ -134,6 +146,11 @@ class ConversationFinder
       @conversations = @conversations.where(status: :pending).where('assignee_id IS NOT NULL OR assignee_agent_bot_id IS NULL')
     end
     @conversations
+  end
+  # rubocop:enable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength
+
+  def participant_not_assignee_condition
+    'conversations.assignee_id IS NULL OR conversations.assignee_id != :user_id'
   end
 
   def filter_by_query
@@ -218,3 +235,4 @@ class ConversationFinder
   end
 end
 ConversationFinder.prepend_mod_with('ConversationFinder')
+# rubocop:enable Metrics/ClassLength

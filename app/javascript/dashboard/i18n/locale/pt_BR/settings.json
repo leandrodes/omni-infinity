@@ -157,7 +157,8 @@
         "PARTICIPATING_CONVERSATION_NEW_MESSAGE": "Enviar notificações por email quando uma nova mensagem é criada em uma conversa que você participa",
         "SLA_MISSED_FIRST_RESPONSE": "Enviar notificações por e-mail quando uma conversa perder a primeira resposta SLA",
         "SLA_MISSED_NEXT_RESPONSE": "Enviar notificações por e-mail quando uma conversa perder o próximo SLA de resposta",
-        "SLA_MISSED_RESOLUTION": "Enviar notificações por e-mail quando uma conversa perder o SLA de resolução"
+        "SLA_MISSED_RESOLUTION": "Enviar notificações por e-mail quando uma conversa perder o SLA de resolução",
+        "CONVERSATION_PARTICIPANT_ADDED": "Enviar notificações por email quando você for adicionado como participante de uma conversa"
       },
       "NOTIFICATIONS": {
         "TITLE": "Preferências de notificação",
@@ -172,7 +173,8 @@
           "PARTICIPATING_CONVERSATION_NEW_MESSAGE": "Uma nova mensagem foi criada em uma conversa que você participa",
           "SLA_MISSED_FIRST_RESPONSE": "Uma conversa perde o SLA de primeira resposta",
           "SLA_MISSED_NEXT_RESPONSE": "Uma conversa perde o SLA da próxima resposta",
-          "SLA_MISSED_RESOLUTION": "Uma conversa perde o SLA de resolução"
+          "SLA_MISSED_RESOLUTION": "Uma conversa perde o SLA de resolução",
+          "CONVERSATION_PARTICIPANT_ADDED": "Você foi adicionado como participante de uma conversa"
         },
         "BROWSER_PERMISSION": "Ative notificações push em seu navegador para poder recebê-las"
       },
@@ -192,7 +194,8 @@
         "REQUEST_PUSH": "Habilitar notificações push",
         "SLA_MISSED_FIRST_RESPONSE": "Enviar notificações quando uma conversa perder a primeira resposta SLA",
         "SLA_MISSED_NEXT_RESPONSE": "Enviar notificações quando uma conversa perder a próxima resposta SLA",
-        "SLA_MISSED_RESOLUTION": "Enviar notificações quando uma conversa perder resolução de resolução SLA"
+        "SLA_MISSED_RESOLUTION": "Enviar notificações quando uma conversa perder resolução de resolução SLA",
+        "CONVERSATION_PARTICIPANT_ADDED": "Enviar notificações push quando você for adicionado como participante de uma conversa"
       },
       "PROFILE_IMAGE": {
         "LABEL": "Imagem do Perfil"
@@ -421,7 +424,10 @@
     "CHATBOT_CONVERSATIONS": "Chatbot",
     "PENDING_CONVERSATIONS": "Pendentes",
     "RESOLUTION_REASONS": "Motivos de Resolução",
-    "CHATBOT_AUTO_RESOLUTION": "Resolução Automática no Chatbot"
+    "CHATBOT_AUTO_RESOLUTION": "Resolução Automática no Chatbot",
+    "OPEN_MINE_CONVERSATIONS": "Abertas Minhas",
+    "OPEN_TEAM_CONVERSATIONS": "Abertas Equipe",
+    "UNASSIGNED_CONVERSATIONS": "Não Atribuídas"
   },
   "DATA_IMPORTS": {
     "HEADER": "Dados",
@@ -1104,14 +1110,16 @@
       "SHOW_CONVERSATION_TEAM_IN_CONVERSATION_LIST": "Habilitar time da conversa na lista de conversas",
       "ROLE_ADMINISTRATOR": "Administrador",
       "ROLE_AGENT": "Agente",
-      "ENABLE_PENDING_CONVERSATIONS_FILTER": "Habilitar filtro conversas pendentes"
+      "ENABLE_PENDING_CONVERSATIONS_FILTER": "Habilitar filtro conversas pendentes",
+      "ENABLE_UNASSIGNED_CONVERSATIONS_FILTER": "Habilitar filtro conversas Não Atribuídas"
     },
     "VISIBILITY": {
       "TITLE": "Visualização",
       "NOTE": "Opções de visualização",
       "HIDE_CONVERSATIONS_ASSIGNED_TO_OTHERS": "Não visualizar conversas atribuídas a outros usuários",
       "HIDE_RESOLVED_CONVERSATIONS_ASSIGNED_TO_OTHERS": "Ocultar conversas resolvidas atribuídas a outros usuários",
-      "SHOW_CONVERSATIONS_ONLY_FROM_USER_TEAMS": "Visualizar conversas apenas das filas que o usuário pertence"
+      "SHOW_CONVERSATIONS_ONLY_FROM_USER_TEAMS": "Visualizar conversas apenas das filas que o usuário pertence",
+      "ENABLE_CONTACT_COMPANY_FILTER": "Habilitar filtro de contatos por Empresas"
     },
     "PERMISSIONS": {
       "TITLE": "Permissão",

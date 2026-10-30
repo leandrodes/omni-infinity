@@ -1,13 +1,14 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useAlert } from 'dashboard/composables';
 import { useToggle } from '@vueuse/core';
 import { useI18n } from 'vue-i18n';
-import { useAccount } from 'dashboard/composables/useAccount';
 import { useStore, useStoreGetters } from 'dashboard/composables/store';
 import { useEmitter } from 'dashboard/composables/emitter';
 import { useKeyboardEvents } from 'dashboard/composables/useKeyboardEvents';
 import { useConversationRequiredAttributes } from 'dashboard/composables/useConversationRequiredAttributes';
+import { useConversationRoutePath } from 'dashboard/composables/useConversationRoutePath';
 
 import WootDropdownItem from 'shared/components/ui/dropdown/DropdownItem.vue';
 import WootDropdownMenu from 'shared/components/ui/dropdown/DropdownMenu.vue';
@@ -23,9 +24,12 @@ import ConversationResolveAttributesModal from 'dashboard/components-next/Conver
 
 const store = useStore();
 const getters = useStoreGetters();
+const route = useRoute();
+const router = useRouter();
 const { t } = useI18n();
-const { currentAccount } = useAccount();
 const { checkMissingAttributes } = useConversationRequiredAttributes();
+const { buildConversationListPath, buildConversationPath } =
+  useConversationRoutePath();
 
 const arrowDownButtonRef = ref(null);
 const isLoading = ref(false);
@@ -36,6 +40,9 @@ const closeDropdown = () => toggleDropdown(false);
 const openDropdown = () => toggleDropdown(true);
 
 const currentChat = computed(() => getters.getSelectedChat.value);
+const isOnInboxView = computed(() =>
+  String(route.name || '').startsWith('inbox_view')
+);
 
 const isOpen = computed(
   () => currentChat.value.status === wootConstants.STATUS_TYPE.OPEN
@@ -102,6 +109,16 @@ const toggleStatus = (status, snoozedUntil, customAttributes = null) => {
     .then(() => {
       useAlert(t('CONVERSATION.CHANGE_STATUS'));
       isLoading.value = false;
+
+      if (status === wootConstants.STATUS_TYPE.RESOLVED) {
+        store.dispatch('clearSelectedState');
+        router.replace(buildConversationListPath());
+      } else if (
+        status === wootConstants.STATUS_TYPE.OPEN &&
+        isOnInboxView.value
+      ) {
+        router.push(buildConversationPath(currentChat.value.id));
+      }
     })
     .catch(error => {
       if (error?.response?.status === 403) {

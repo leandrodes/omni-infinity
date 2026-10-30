@@ -2,6 +2,7 @@
 import { reactive, ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useStore, useMapGetter } from 'dashboard/composables/store';
+import { useAdmin } from 'dashboard/composables/useAdmin';
 import { useI18n } from 'vue-i18n';
 import { useUISettings } from 'dashboard/composables/useUISettings';
 import { useAlert } from 'dashboard/composables';
@@ -39,7 +40,9 @@ const store = useStore();
 const router = useRouter();
 const { t } = useI18n();
 
-const { fetchSignatureFlagFromUISettings } = useUISettings();
+const { fetchSignatureFlagFromUISettings, agentsCanDisableSignature } =
+  useUISettings();
+const { isAdmin } = useAdmin();
 
 const popoverRef = ref(null);
 const contacts = ref([]);
@@ -56,6 +59,7 @@ const formState = reactive({
   ccEmails: '',
   bccEmails: '',
   attachedFiles: [],
+  visibility: 'shared',
 });
 
 const clearFormState = () => {
@@ -64,6 +68,7 @@ const clearFormState = () => {
     ccEmails: '',
     bccEmails: '',
     attachedFiles: [],
+    visibility: 'shared',
   });
 };
 
@@ -74,10 +79,17 @@ const globalConfig = useMapGetter('globalConfig/get');
 const uiFlags = useMapGetter('contactConversations/getUIFlags');
 const messageSignature = useMapGetter('getMessageSignature');
 const inboxesList = useMapGetter('inboxes/getInboxes');
-const teamsList = useMapGetter('teams/getTeams');
+const allTeams = useMapGetter('teams/getTeams');
+const myTeams = useMapGetter('teams/getMyTeams');
 
-const sendWithSignature = computed(() =>
-  fetchSignatureFlagFromUISettings(targetInbox.value?.channelType)
+const teamsList = computed(() =>
+  isAdmin.value ? allTeams.value : myTeams.value
+);
+
+const sendWithSignature = computed(
+  () =>
+    agentsCanDisableSignature.value &&
+    fetchSignatureFlagFromUISettings(targetInbox.value?.channelType)
 );
 
 const directUploadsEnabled = computed(

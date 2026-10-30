@@ -106,12 +106,35 @@ class MessageApi extends ApiClient {
     return axios.get(`${this.url}/${conversationId}/messages`, { params });
   }
 
+  getPinnedMessages(conversationId) {
+    return axios.get(`${this.url}/${conversationId}/messages/pinned`);
+  }
+
+  pinMessage(conversationId, messageId) {
+    return axios.post(
+      `${this.url}/${conversationId}/messages/${messageId}/pin`
+    );
+  }
+
+  unpinMessage(conversationId, messageId) {
+    return axios.delete(
+      `${this.url}/${conversationId}/messages/${messageId}/unpin`
+    );
+  }
+
   translateMessage(conversationId, messageId, targetLanguage) {
     return axios.post(
       `${this.url}/${conversationId}/messages/${messageId}/translate`,
       {
         target_language: targetLanguage,
       }
+    );
+  }
+
+  editMessage(conversationId, messageId, content) {
+    return axios.post(
+      `${this.url}/${conversationId}/messages/${messageId}/edit`,
+      { content }
     );
   }
 }

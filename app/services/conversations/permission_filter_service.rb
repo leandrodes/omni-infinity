@@ -20,7 +20,18 @@ class Conversations::PermissionFilterService
     return hinted_accessible_conversations if @plan_hint_selective_filter
 
     scope = conversations.where(inbox: user.inboxes.where(account_id: account.id))
-    apply_visibility_filters(scope)
+                         .or(conversations.where(visibility: Conversation.visibilities[:restricted],
+                                                 private_owner_id: user.id))
+                         .or(participant_conversations)
+    apply_visibility_filters(apply_private_visibility(scope))
+  end
+
+  def apply_private_visibility(scope)
+    scope.where(
+      'conversations.visibility != :restricted OR conversations.private_owner_id = :user_id',
+      restricted: Conversation.visibilities[:restricted],
+      user_id: user.id
+    )
   end
 
   def apply_visibility_filters(scope)
@@ -32,20 +43,48 @@ class Conversations::PermissionFilterService
     return scope unless (account.settings || {})['hide_conversations_assigned_to_others']
 
     user_id = user.id
-    conditions = ['conversations.assignee_id IS NULL', 'conversations.assignee_id = :user_id']
+    conditions = ['conversations.assignee_id IS NULL', 'conversations.assignee_id = :user_id',
+                  'conversations.visibility = :restricted',
+                  'conversations.id IN (:participant_conversation_ids)']
 
     conditions << 'conversations.status = :resolved_status' unless (account.settings || {})['hide_resolved_conversations_assigned_to_others']
 
-    scope.where("(#{conditions.join(' OR ')})", user_id: user_id, resolved_status: Conversation.statuses[:resolved])
+    scope.where(
+      "(#{conditions.join(' OR ')})",
+      user_id: user_id,
+      resolved_status: Conversation.statuses[:resolved],
+      restricted: Conversation.visibilities[:restricted],
+      participant_conversation_ids: participant_conversation_ids
+    )
   end
 
   def apply_team_visibility(scope)
     return scope unless (account.settings || {})['show_conversations_only_from_user_teams']
 
     team_ids = user.teams.where(account_id: account.id).pluck(:id)
-    return scope.none if team_ids.blank?
+    if team_ids.blank?
+      return scope.where(
+        'conversations.visibility = :restricted OR conversations.id IN (:participant_conversation_ids)',
+        restricted: Conversation.visibilities[:restricted],
+        participant_conversation_ids: participant_conversation_ids
+      )
+    end
 
-    scope.where(team_id: team_ids)
+    scope.where(
+      'conversations.visibility = :restricted OR conversations.team_id IN (:team_ids) OR conversations.id IN (:participant_conversation_ids)',
+      restricted: Conversation.visibilities[:restricted],
+      team_ids: team_ids,
+      participant_conversation_ids: participant_conversation_ids
+    )
+  end
+
+  def participant_conversations
+    conversations.where(id: ConversationParticipant.where(user_id: user.id).select(:conversation_id))
+                 .where(inbox_id: user.inboxes.where(account_id: account.id).select(:id))
+  end
+
+  def participant_conversation_ids
+    @participant_conversation_ids ||= ConversationParticipant.where(user_id: user.id).select(:conversation_id)
   end
 
   # Same rows as accessible_conversations. `inbox_id + 0` keeps the planner from
@@ -59,8 +98,10 @@ class Conversations::PermissionFilterService
         WHERE inbox_members.user_id = :user_id AND inboxes.account_id = :account_id
       )',
       user_id: user.id, account_id: account.id
-    )
-    apply_visibility_filters(scope)
+    ).or(conversations.where(visibility: Conversation.visibilities[:restricted],
+                             private_owner_id: user.id))
+                         .or(participant_conversations)
+    apply_visibility_filters(apply_private_visibility(scope))
   end
 
   def account_user

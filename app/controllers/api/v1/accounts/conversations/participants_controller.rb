@@ -15,6 +15,7 @@ class Api::V1::Accounts::Conversations::ParticipantsController < Api::V1::Accoun
       @participants = participant_ids_to_add.map { |user_id| @conversation.conversation_participants.find_or_create_by!(user_id: user_id) }
     end
     notify_unread_count_change if participant_ids_to_add.any?
+    notify_participants_added(participant_ids_to_add)
   end
 
   def update
@@ -27,6 +28,8 @@ class Api::V1::Accounts::Conversations::ParticipantsController < Api::V1::Accoun
       participant_ids_to_remove.each { |user_id| @conversation.conversation_participants.find_by(user_id: user_id)&.destroy }
     end
     notify_unread_count_change if changed_participant_ids.any?
+    notify_participants_added(participant_ids_to_add)
+    handle_participants_removed(participant_ids_to_remove)
     @participants = @conversation.conversation_participants.reload
     render action: 'show'
   end
@@ -38,6 +41,7 @@ class Api::V1::Accounts::Conversations::ParticipantsController < Api::V1::Accoun
       params[:user_ids].map { |user_id| @conversation.conversation_participants.find_by(user_id: user_id)&.destroy }
     end
     notify_unread_count_change if participant_ids_to_remove.any?
+    handle_participants_removed(participant_ids_to_remove)
     head :ok
   end
 
@@ -77,6 +81,47 @@ class Api::V1::Accounts::Conversations::ParticipantsController < Api::V1::Accoun
     return if invalid_ids.empty?
 
     render json: { error: 'Invalid participant IDs' }, status: :unprocessable_entity
+  end
+
+  def notify_participants_added(user_ids)
+    user_ids.each do |user_id|
+      next if user_id == Current.user&.id
+
+      user = Current.account.users.find_by(id: user_id)
+      next if user.blank?
+
+      NotificationBuilder.new(
+        notification_type: 'conversation_participant_added',
+        user: user,
+        account: Current.account,
+        primary_actor: @conversation
+      ).perform
+    end
+  end
+
+  def handle_participants_removed(user_ids)
+    return if user_ids.blank?
+
+    clear_participant_notifications(user_ids)
+    Rails.configuration.dispatcher.dispatch(
+      Events::Types::CONVERSATION_PARTICIPANT_REMOVED,
+      Time.zone.now,
+      conversation: @conversation,
+      user_ids: user_ids
+    )
+  end
+
+  def clear_participant_notifications(user_ids)
+    Notification.where(
+      account_id: Current.account.id,
+      primary_actor: @conversation,
+      user_id: user_ids,
+      notification_type: %w[
+        participating_conversation_new_message
+        conversation_participant_added
+        conversation_participant_removed
+      ]
+    ).find_each(&:destroy!)
   end
 
   def notify_unread_count_change

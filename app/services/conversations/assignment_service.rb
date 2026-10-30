@@ -21,6 +21,7 @@ class Conversations::AssignmentService
       end
       conversation.assignee = assignee
       conversation.ai_assignee = nil
+      transfer_private_owner
       conversation.save!
     end
     assignee
@@ -28,6 +29,10 @@ class Conversations::AssignmentService
 
   def assign_agent_bot
     assign_ai_assignee(agent_bot)
+  end
+
+  def transfer_private_owner
+    conversation.private_owner_id = assignee.id if conversation.restricted? && assignee.present?
   end
 
   def open_on_assignment?

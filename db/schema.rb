@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_10_23_000001) do
+ActiveRecord::Schema[7.2].define(version: 2026_10_29_000001) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -910,10 +910,13 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_23_000001) do
     t.bigint "assignee_agent_bot_id"
     t.string "ai_assignee_type"
     t.datetime "status_changed_at"
+    t.integer "visibility", default: 0, null: false
+    t.bigint "private_owner_id"
     t.index ["account_id", "display_id"], name: "index_conversations_on_account_id_and_display_id", unique: true
     t.index ["account_id", "id"], name: "index_conversations_on_id_and_account_id"
     t.index ["account_id", "inbox_id", "status", "assignee_id"], name: "conv_acid_inbid_stat_asgnid_idx"
     t.index ["account_id", "status", "created_at"], name: "index_conversations_on_account_id_status_created_at"
+    t.index ["account_id", "visibility"], name: "index_conversations_on_account_id_and_visibility"
     t.index ["account_id"], name: "index_conversations_on_account_id"
     t.index ["assignee_id", "account_id"], name: "index_conversations_on_assignee_id_and_account_id"
     t.index ["campaign_id"], name: "index_conversations_on_campaign_id"
@@ -924,6 +927,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_23_000001) do
     t.index ["identifier", "account_id"], name: "index_conversations_on_identifier_and_account_id"
     t.index ["inbox_id"], name: "index_conversations_on_inbox_id"
     t.index ["priority"], name: "index_conversations_on_priority"
+    t.index ["private_owner_id"], name: "index_conversations_on_private_owner_id"
     t.index ["status", "account_id"], name: "index_conversations_on_status_and_account_id"
     t.index ["status", "priority"], name: "index_conversations_on_status_and_priority"
     t.index ["team_id"], name: "index_conversations_on_team_id"
@@ -1281,6 +1285,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_23_000001) do
     t.jsonb "additional_attributes", default: {}
     t.text "processed_message_content"
     t.jsonb "sentiment", default: {}
+    t.datetime "pinned_at"
+    t.bigint "pinned_by_id"
     t.index "((additional_attributes -> 'campaign_id'::text))", name: "index_messages_on_additional_attributes_campaign_id", using: :gin
     t.index ["account_id", "content_type", "created_at"], name: "idx_messages_account_content_created"
     t.index ["account_id", "created_at", "message_type"], name: "index_messages_on_account_created_type"
@@ -1288,6 +1294,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_23_000001) do
     t.index ["account_id"], name: "index_messages_on_account_id"
     t.index ["content"], name: "index_messages_on_content", opclass: :gin_trgm_ops, using: :gin
     t.index ["conversation_id", "account_id", "message_type", "created_at"], name: "index_messages_on_conversation_account_type_created"
+    t.index ["conversation_id", "pinned_at"], name: "index_messages_on_conversation_id_and_pinned_at"
     t.index ["conversation_id"], name: "index_messages_on_conversation_id"
     t.index ["created_at"], name: "index_messages_on_created_at"
     t.index ["inbox_id"], name: "index_messages_on_inbox_id"
@@ -1561,6 +1568,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_23_000001) do
     t.bigint "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "priority_level", default: 1, null: false
     t.index ["team_id", "user_id"], name: "index_team_members_on_team_id_and_user_id", unique: true
     t.index ["team_id"], name: "index_team_members_on_team_id"
     t.index ["user_id"], name: "index_team_members_on_user_id"
@@ -1575,6 +1583,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_23_000001) do
     t.datetime "updated_at", null: false
     t.string "icon", default: ""
     t.string "icon_color", default: ""
+    t.integer "auto_assignment_algorithm", default: 0, null: false
     t.index ["account_id"], name: "index_teams_on_account_id"
     t.index ["name", "account_id"], name: "index_teams_on_name_and_account_id", unique: true
   end
@@ -1722,7 +1731,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_23_000001) do
   add_foreign_key "campaign_recipients", "campaigns", on_delete: :cascade
   add_foreign_key "campaign_recipients", "contacts", on_delete: :cascade
   add_foreign_key "campaign_recipients", "inboxes", on_delete: :cascade
+  add_foreign_key "conversations", "users", column: "private_owner_id", on_delete: :nullify
   add_foreign_key "inboxes", "portals"
+  add_foreign_key "messages", "users", column: "pinned_by_id", on_delete: :nullify
   add_foreign_key "oauth_access_grants", "oauth_applications", column: "application_id"
   add_foreign_key "oauth_access_tokens", "oauth_applications", column: "application_id"
   add_foreign_key "oauth_openid_requests", "oauth_access_grants", column: "access_grant_id", on_delete: :cascade

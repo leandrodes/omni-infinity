@@ -80,6 +80,12 @@ class ContactAPI extends ApiClient {
     });
   }
 
+  getCompanies(page = 1, search = '') {
+    return axios.get(`${this.url}/companies`, {
+      params: { page, search },
+    });
+  }
+
   importContacts(file) {
     const formData = new FormData();
     formData.append('import_file', file);

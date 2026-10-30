@@ -68,16 +68,24 @@ class ConversationApi extends ApiClient {
     });
   }
 
-  assignAgent({ conversationId, agentId, assigneeType }) {
+  assignAgent({ conversationId, agentId, assigneeType, teamId, note }) {
     return axios.post(`${this.url}/${conversationId}/assignments`, {
       assignee_id: agentId,
       assignee_type: assigneeType,
+      ...(teamId ? { team_id: teamId } : {}),
+      ...(note ? { note } : {}),
     });
   }
 
   assignTeam({ conversationId, teamId }) {
     const params = { team_id: teamId };
     return axios.post(`${this.url}/${conversationId}/assignments`, params);
+  }
+
+  updateVisibility({ conversationId, restricted }) {
+    return axios.patch(`${this.url}/${conversationId}/visibility`, {
+      restricted,
+    });
   }
 
   markMessageRead({ id }) {

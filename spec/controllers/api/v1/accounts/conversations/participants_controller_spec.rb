@@ -84,6 +84,17 @@ RSpec.describe 'Conversation Participants API', type: :request do
         expect(conversation.conversation_participants).to be_empty
       end
 
+      it 'notifies the added participant' do
+        expect do
+          post api_v1_account_conversation_participants_url(account_id: account.id, conversation_id: conversation.display_id),
+               params: { user_ids: [participant.id] },
+               headers: agent.create_new_auth_token,
+               as: :json
+        end.to change { participant.notifications.count }.by(1)
+
+        expect(participant.notifications.last.notification_type).to eq('conversation_participant_added')
+      end
+
       it 'notifies unread counts when a participant is added' do
         account.enable_features!(:conversation_unread_counts, :unread_count_for_filters)
         allow(Rails.configuration.dispatcher).to receive(:dispatch)
@@ -154,6 +165,21 @@ RSpec.describe 'Conversation Participants API', type: :request do
         expect(conversation.conversation_participants.reload.pluck(:user_id)).to eq([participant.id])
       end
 
+      it 'notifies participants added by an update' do
+        create(:conversation_participant, conversation: conversation, user: participant)
+        create(:conversation_participant, conversation: conversation, user: participant_to_be_removed)
+        params = { user_ids: [participant.id, participant_to_be_added.id] }
+
+        expect do
+          put api_v1_account_conversation_participants_url(account_id: account.id, conversation_id: conversation.display_id),
+              params: params,
+              headers: agent.create_new_auth_token,
+              as: :json
+        end.to change { participant_to_be_added.notifications.count }.by(1)
+
+        expect(participant_to_be_added.notifications.last.notification_type).to eq('conversation_participant_added')
+      end
+
       it 'notifies unread counts when participant membership changes' do
         account.enable_features!(:conversation_unread_counts, :unread_count_for_filters)
         allow(Rails.configuration.dispatcher).to receive(:dispatch)
@@ -202,6 +228,28 @@ RSpec.describe 'Conversation Participants API', type: :request do
 
         expect(response).to have_http_status(:success)
         expect(conversation.conversation_participants.count).to eq(0)
+      end
+
+      it 'clears participant notifications without creating a removal notification' do
+        create(:conversation_participant, conversation: conversation, user: participant)
+        notification = create(
+          :notification,
+          account: account,
+          user: participant,
+          primary_actor: conversation,
+          notification_type: :conversation_participant_added,
+          read_at: nil
+        )
+
+        expect do
+          delete api_v1_account_conversation_participants_url(account_id: account.id, conversation_id: conversation.display_id),
+                 params: { user_ids: [participant.id] },
+                 headers: agent.create_new_auth_token,
+                 as: :json
+        end.to change { participant.notifications.count }.by(-1)
+
+        expect(Notification.exists?(notification.id)).to be(false)
+        expect(participant.notifications.where(notification_type: 'conversation_participant_removed')).not_to exist
       end
 
       it 'notifies unread counts when a participant is removed' do

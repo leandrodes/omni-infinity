@@ -57,6 +57,18 @@ RSpec.describe AccountBuilder do
         _user, account = account_builder.perform
         expect(account.custom_attributes['onboarding_step']).to eq('account_details')
       end
+
+      it 'applies the default attendance settings' do
+        _user, account = account_builder.perform
+
+        expect(account.settings).to include(
+          'enable_chatbot_conversations_filter' => true,
+          'chatbot_conversations_filter_roles' => ['administrator'],
+          'show_conversations_only_from_user_teams' => true,
+          'reactions_appear_as_response' => true,
+          'enable_contact_company_filter' => false
+        )
+      end
     end
   end
 end

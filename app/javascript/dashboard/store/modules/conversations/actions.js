@@ -312,12 +312,14 @@ const actions = {
 
   assignAgent: async (
     { dispatch },
-    { conversationId, agentId, assigneeType }
+    { conversationId, agentId, assigneeType, teamId, note }
   ) => {
     const response = await ConversationApi.assignAgent({
       conversationId,
       agentId,
       assigneeType,
+      teamId,
+      note,
     });
     dispatch('setCurrentChatAssignee', {
       conversationId,
@@ -347,6 +349,21 @@ const actions = {
 
   setCurrentChatTeam({ commit }, { team, conversationId }) {
     commit(types.ASSIGN_TEAM, { team, conversationId });
+  },
+
+  toggleConversationVisibility: async (
+    { commit },
+    { conversationId, restricted }
+  ) => {
+    const { data } = await ConversationApi.updateVisibility({
+      conversationId,
+      restricted,
+    });
+    commit(types.UPDATE_CONVERSATION_VISIBILITY, {
+      conversationId,
+      visibility: data.visibility,
+      privateOwnerId: data.private_owner_id,
+    });
   },
 
   toggleStatus: async (
@@ -471,6 +488,54 @@ const actions = {
     );
   },
 
+  editMessage: async ({ commit }, { conversationId, messageId, content }) => {
+    const { data } = await MessageApi.editMessage(
+      conversationId,
+      messageId,
+      content
+    );
+    commit(types.ADD_MESSAGE, data);
+    return data;
+  },
+
+  fetchPinnedMessages: async ({ commit }, conversationId) => {
+    try {
+      const { data } = await MessageApi.getPinnedMessages(conversationId);
+      commit(types.SET_PINNED_MESSAGES, {
+        conversationId,
+        messages: data.payload || [],
+      });
+    } catch {
+      commit(types.SET_PINNED_MESSAGES, { conversationId, messages: [] });
+    }
+  },
+
+  syncPinnedMessageFromUpdate({ commit }, message) {
+    const conversationId = message.conversation_id;
+    if (!conversationId) return;
+
+    if (message.pinned_at) {
+      commit(types.UPSERT_PINNED_MESSAGE, { conversationId, message });
+    } else {
+      commit(types.REMOVE_PINNED_MESSAGE, {
+        conversationId,
+        messageId: message.id,
+      });
+    }
+  },
+
+  pinMessage: async ({ commit }, { conversationId, messageId }) => {
+    const { data } = await MessageApi.pinMessage(conversationId, messageId);
+    commit(types.ADD_MESSAGE, data);
+    commit(types.UPSERT_PINNED_MESSAGE, { conversationId, message: data });
+  },
+
+  unpinMessage: async ({ commit }, { conversationId, messageId }) => {
+    const { data } = await MessageApi.unpinMessage(conversationId, messageId);
+    commit(types.ADD_MESSAGE, data);
+    commit(types.REMOVE_PINNED_MESSAGE, { conversationId, messageId });
+  },
+
   deleteMessage: async function deleteLabels(
     { commit },
     { conversationId, messageId }
@@ -478,7 +543,6 @@ const actions = {
     try {
       const { data } = await MessageApi.delete(conversationId, messageId);
       commit(types.ADD_MESSAGE, data);
-      commit(types.DELETE_CONVERSATION_ATTACHMENTS, data);
     } catch (error) {
       throw new Error(error);
     }
@@ -492,6 +556,12 @@ const actions = {
     } catch (error) {
       throw new Error(error);
     }
+  },
+
+  upsertConversation({ commit, dispatch }, conversation) {
+    commit(types.ADD_CONVERSATION, conversation);
+    commit(types.UPDATE_CONVERSATION, conversation);
+    dispatch('contacts/setContact', conversation.meta?.sender);
   },
 
   addConversation({ commit, state, dispatch, rootState }, conversation) {

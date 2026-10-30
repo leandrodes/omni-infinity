@@ -219,7 +219,9 @@
     "DELETE_CONVERSATION": {
       "TITLE": "Excluir conversa #{conversationId}",
       "DESCRIPTION": "Tem certeza que deseja excluir esta conversa?",
-      "CONFIRM": "Excluir"
+      "CONFIRM": "Excluir",
+      "BUTTON": "Excluir conversa",
+      "CANCEL": "Cancelar"
     },
     "CARD_CONTEXT_MENU": {
       "PENDING": "Deixar pendente",
@@ -362,7 +364,7 @@
       "LINK_COPIED": "URL da mensagem copiada para a área de transferência",
       "DELETE_CONFIRMATION": {
         "TITLE": "Você tem certeza que deseja excluir esta mensagem?",
-        "MESSAGE": "Você não pode desfazer essa ação",
+        "MESSAGE": "A mensagem será excluída para o cliente, mas continuará visível e esmaecida no histórico da equipe para auditoria.",
         "DELETE": "Excluir",
         "CANCEL": "Cancelar"
       },
@@ -384,7 +386,17 @@
           "outdated_information": "Informação desatualizada",
           "other": "Outro"
         }
-      }
+      },
+      "PIN": "Fixar no topo",
+      "UNPIN": "Desafixar",
+      "EDIT": "Editar mensagem",
+      "EDIT_TITLE": "Editar mensagem enviada",
+      "EDIT_DESCRIPTION": "A mensagem original continuará visível e a correção será enviada como uma nova mensagem citando a original.",
+      "EDIT_PLACEHOLDER": "Digite o texto corrigido",
+      "EDIT_SAVE": "Enviar correção",
+      "EDIT_CANCEL": "Cancelar",
+      "EDIT_SUCCESS": "Correção enviada.",
+      "EDIT_SIGNATURE_REQUIRED": "A assinatura é obrigatória nesta conta e será mantida automaticamente na correção."
     },
     "SIDEBAR": {
       "CONTACT": "Contatos",
@@ -404,7 +416,38 @@
       "UNMUTE": "Desilenciar microfone",
       "VIEW_CHAT_HISTORY": "Ver histórico da conversa",
       "GO_TO_CONVERSATION": "Ir para a conversa"
-    }
+    },
+    "PRIVACY": {
+      "TITLE": "Conversa privada",
+      "DESCRIPTION": "Visível apenas para o responsável e administradores.",
+      "ENABLED": "Conversa marcada como privada.",
+      "DISABLED": "Conversa voltou a ser pública.",
+      "ERROR": "Não foi possível alterar a privacidade da conversa."
+    },
+    "ASSIGNMENT_CONFLICT": {
+      "TITLE": "Agente fora do Time/Fila",
+      "DESCRIPTION": "A conversa está sendo atribuída a {agentName}, que não pertence ao Time/Fila atual. Escolha um Time/Fila ao qual o agente pertence para continuar.",
+      "TEAM_LABEL": "Novo Time/Fila",
+      "CONFIRM": "OK",
+      "CANCEL": "Cancelar",
+      "NO_TEAMS": "Este agente não pertence a nenhum Time/Fila. A atribuição não pode ser concluída.",
+      "NOTE_LABEL": "Observação para o novo responsável (opcional)",
+      "NOTE_PLACEHOLDER": "Ex.: Cliente apertou a opção errada no chatbot."
+    },
+    "PINNED": {
+      "TITLE": "Mensagens fixadas",
+      "PIN_SUCCESS": "Mensagem fixada no topo.",
+      "UNPIN_SUCCESS": "Mensagem desafixada.",
+      "PIN_ERROR": "Não foi possível fixar a mensagem.",
+      "UNPIN_ERROR": "Não foi possível desafixar a mensagem.",
+      "UNPIN": "Desafixar"
+    },
+    "CONTACT_HISTORY": {
+      "OLDER": "Conversa anterior com este contato",
+      "NEWER": "Próxima conversa com este contato"
+    },
+    "MESSAGE_CORRECTION": "Correção de mensagem",
+    "MESSAGE_DELETED": "Mensagem excluída"
   },
   "EMAIL_TRANSCRIPT": {
     "TITLE": "Enviar transcrição de conversa",

@@ -174,6 +174,7 @@ Authorization: Bearer SEU_TOKEN</code></pre>
         <tr><td><code>[[agente:1]]</code></td><td>Apelido para transferir somente para o agente 1.</td></tr>
         <tr><td><code>[[queue:1, agent:1]]</code></td><td>Transfere para o time 1 e atribui ao agente 1.</td></tr>
         <tr><td><code>[[fila:1, agente:1]]</code></td><td>Apelido para transferir para o time 1 e agente 1.</td></tr>
+        <tr><td><code>[[fila:1, manter_bot:1]]</code></td><td>Atribui ao time/fila 1 <strong>sem encerrar o chatbot</strong>. Use no início do fluxo para deixar a conversa visível ao time do bot.</td></tr>
       </tbody>
     </table>
 
@@ -186,7 +187,8 @@ Authorization: Bearer SEU_TOKEN</code></pre>
     <div class="callout ok">
       <strong>Após a transferência, o bot é desativado nesta conversa.</strong> Novas mensagens
       continuam com o time/agente humano e não reiniciam o Chatbot. Para testar novamente,
-      inicie uma nova conversa.
+      inicie uma nova conversa. Já o comando com <code>manter_bot:1</code> apenas coloca a
+      conversa no time indicado e mantém o fluxo do chatbot ativo.
     </div>
 
     <h2 id="ids-desta-conta">IDs desta conta</h2>

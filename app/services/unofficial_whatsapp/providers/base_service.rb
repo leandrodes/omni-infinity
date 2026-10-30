@@ -47,6 +47,23 @@ class UnofficialWhatsapp::Providers::BaseService
     raise 'Overwrite this method in child class'
   end
 
+  def mark_messages_as_read(_phone_number, _message_ids)
+    nil
+  end
+
+  def delete_message(_message)
+    nil
+  end
+
+  protected
+
+  def whatsapp_jid(phone_number)
+    value = phone_number.to_s
+    return value if value.include?('@')
+
+    "#{value.gsub(/\D/, '')}@s.whatsapp.net"
+  end
+
   def block_contact(_phone_number)
     raise 'Overwrite this method in child class'
   end

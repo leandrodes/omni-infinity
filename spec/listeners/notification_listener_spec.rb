@@ -139,10 +139,10 @@ describe NotificationListener do
       listener.message_created(event)
 
       expect(first_agent.notifications.count).to eq(1)
-      expect(first_agent.notifications.first.notification_type).to eq('conversation_mention')
+      expect(first_agent.notifications.first.notification_type).to eq('conversation_participant_added')
     end
 
-    it 'will create a mention notification when a user is mentioned in a private note' do
+    it 'will create a participant notification when a user is mentioned in a private note' do
       create(:inbox_member, user: first_agent, inbox: inbox)
 
       message = build(
@@ -156,7 +156,7 @@ describe NotificationListener do
       listener.message_created(event)
 
       expect(first_agent.notifications.count).to eq(1)
-      expect(first_agent.notifications.first.notification_type).to eq('conversation_mention')
+      expect(first_agent.notifications.first.notification_type).to eq('conversation_participant_added')
     end
 
     it 'will not create new message notifications for private messages without mentions' do
@@ -243,6 +243,26 @@ describe NotificationListener do
 
       expect(first_notification.reload.read_at).to be_present
       expect(second_notification.reload.read_at).to be_present
+    end
+
+    it 'creates an assignment notification for pending conversations' do
+      conversation.update!(status: :pending, assignee: first_agent)
+      notification_builder_mock = instance_double(NotificationBuilder, perform: true)
+      allow(NotificationBuilder).to receive(:new).and_return(notification_builder_mock)
+
+      event = Events::Base.new(
+        event_name,
+        Time.zone.now,
+        conversation: conversation,
+        notifiable_assignee_change: true
+      )
+
+      listener.assignee_changed(event)
+
+      expect(NotificationBuilder).to have_received(:new).with(
+        hash_including(notification_type: 'conversation_assignment', user: first_agent)
+      )
+      expect(notification_builder_mock).to have_received(:perform)
     end
 
     context 'when notifiable_assignee_change is true but assignee is nil' do

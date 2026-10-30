@@ -30,11 +30,13 @@ module Events::Types
   CONVERSATION_STATUS_CHANGED = 'conversation.status_changed'
   CONVERSATION_CONTACT_CHANGED = 'conversation.contact_changed'
   CONVERSATION_UNREAD_COUNT_CHANGED = 'conversation.unread_count_changed'
+  CONVERSATION_VISIBILITY_CHANGED = 'conversation.visibility_changed'
   ASSIGNEE_CHANGED = 'assignee.changed'
   TEAM_CHANGED = 'team.changed'
   CONVERSATION_TYPING_ON = 'conversation.typing_on'
   CONVERSATION_TYPING_OFF = 'conversation.typing_off'
   CONVERSATION_MENTIONED = 'conversation.mentioned'
+  CONVERSATION_PARTICIPANT_REMOVED = 'conversation.participant_removed'
 
   # message events
   MESSAGE_CREATED = 'message.created'

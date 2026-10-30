@@ -4,6 +4,8 @@ import { useAlert } from 'dashboard/composables';
 import { useI18n } from 'vue-i18n';
 import { useMapGetter } from 'dashboard/composables/store.js';
 import { useConversationRequiredAttributes } from 'dashboard/composables/useConversationRequiredAttributes';
+import { emitter } from 'shared/helpers/mitt';
+import { BUS_EVENTS } from 'shared/constants/busEvents';
 import wootConstants from 'dashboard/constants/globals';
 
 export function useBulkActions() {
@@ -56,17 +58,63 @@ export function useBulkActions() {
     return selectedConversations.value.includes(id);
   }
 
+  function shouldLeaveSelectedConversation({
+    conversationId,
+    agentId,
+    teamId,
+  }) {
+    const selectedChat = store.getters.getSelectedChat;
+    if (!selectedChat) return false;
+
+    const affectsSelectedChat = conversationId
+      ? Number(conversationId) === Number(selectedChat.id)
+      : selectedConversations.value
+          .map(Number)
+          .includes(Number(selectedChat.id));
+
+    if (!affectsSelectedChat) return false;
+
+    const currentUserId = store.getters.getCurrentUser?.id;
+    const assignedToOtherAgent =
+      agentId && Number(agentId) !== Number(currentUserId);
+    const teamChanged =
+      teamId !== undefined &&
+      teamId !== null &&
+      Number(teamId) !== Number(selectedChat.meta?.team?.id || 0);
+
+    return assignedToOtherAgent || teamChanged;
+  }
+
   // Same method used in context menu, conversationId being passed from there.
-  async function onAssignAgent(agent, conversationId = null) {
+  async function onAssignAgent(
+    agent,
+    conversationId = null,
+    teamId = null,
+    note = ''
+  ) {
     try {
+      const shouldLeaveConversation = shouldLeaveSelectedConversation({
+        conversationId,
+        agentId: agent.id,
+        teamId,
+      });
+
       await store.dispatch('bulkActions/process', {
         type: 'Conversation',
         ids: conversationId || selectedConversations.value,
         fields: {
           assignee_id: agent.id,
+          ...(teamId ? { team_id: teamId } : {}),
         },
+        ...(note ? { note } : {}),
       });
       store.dispatch('bulkActions/clearSelectedConversationIds');
+      if (shouldLeaveConversation) {
+        emitter.emit(
+          BUS_EVENTS.CONVERSATION_ACCESS_REVOKED,
+          conversationId || store.getters.getSelectedChat?.id
+        );
+      }
       if (conversationId) {
         useAlert(
           t('CONVERSATION.CARD_CONTEXT_MENU.API.AGENT_ASSIGNMENT.SUCCESFUL', {
@@ -142,6 +190,12 @@ export function useBulkActions() {
 
   async function onAssignTeamsForBulk(team) {
     try {
+      const selectedChatId = store.getters.getSelectedChat?.id;
+      const shouldLeaveConversation = shouldLeaveSelectedConversation({
+        agentId: null,
+        teamId: team.id,
+      });
+
       await store.dispatch('bulkActions/process', {
         type: 'Conversation',
         ids: selectedConversations.value,
@@ -150,6 +204,9 @@ export function useBulkActions() {
         },
       });
       store.dispatch('bulkActions/clearSelectedConversationIds');
+      if (shouldLeaveConversation) {
+        emitter.emit(BUS_EVENTS.CONVERSATION_ACCESS_REVOKED, selectedChatId);
+      }
       useAlert(t('BULK_ACTION.TEAMS.ASSIGN_SUCCESFUL'));
     } catch (err) {
       useAlert(t('BULK_ACTION.TEAMS.ASSIGN_FAILED'));

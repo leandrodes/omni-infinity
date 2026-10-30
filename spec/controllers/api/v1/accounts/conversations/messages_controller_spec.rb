@@ -230,15 +230,36 @@ RSpec.describe 'Conversation Messages API', type: :request do
         create(:inbox_member, inbox: conversation.inbox, user: agent)
       end
 
-      it 'deletes the message' do
+      it 'marks the message as deleted while preserving its audit content' do
+        original_content = message.content
+
         delete "/api/v1/accounts/#{account.id}/conversations/#{conversation.display_id}/messages/#{message.id}",
                headers: agent.create_new_auth_token,
                as: :json
 
         expect(response).to have_http_status(:success)
-        expect(message.reload.content).to eq 'This message was deleted'
+        expect(message.reload.content).to eq original_content
         expect(message.reload.deleted).to be true
-        expect(message.reload.content_attributes['bcc_emails']).to be_nil
+        expect(message.reload.content_attributes['bcc_emails']).to eq ['hello@chatwoot.com']
+        expect(message.reload.content_attributes['deleted_by_id']).to eq agent.id
+      end
+
+      it 'preserves attachments after deletion' do
+        message.attachments.new(file_type: :image, account_id: message.account_id)
+        message.attachments.first.file.attach(
+          io: Rails.root.join('spec/assets/avatar.png').open,
+          filename: 'avatar.png',
+          content_type: 'image/png'
+        )
+        message.save!
+
+        delete "/api/v1/accounts/#{account.id}/conversations/#{conversation.display_id}/messages/#{message.id}",
+               headers: agent.create_new_auth_token,
+               as: :json
+
+        expect(response).to have_http_status(:success)
+        expect(message.reload.attachments.count).to eq(1)
+        expect(message.reload.deleted).to be true
       end
 
       it 'deletes interactive messages' do
@@ -271,6 +292,49 @@ RSpec.describe 'Conversation Messages API', type: :request do
 
         expect(response).to have_http_status(:not_found)
       end
+    end
+  end
+
+  describe 'DELETE /api/v1/accounts/{account.id}/conversations/:conversation_id/messages/:id for unofficial WhatsApp' do
+    let(:agent) { create(:user, account: account, role: :agent) }
+    let(:provider) do
+      instance_double(
+        UnofficialWhatsapp::Providers::EvolutionService,
+        validate_provider_config?: true,
+        delete_message: nil
+      )
+    end
+    let(:channel) do
+      account.enable_features!(:saas_channel_evolution)
+      allow(UnofficialWhatsapp::Providers::EvolutionService).to receive(:new).and_return(provider)
+      Channel::UnofficialWhatsapp.create!(
+        account: account,
+        provider: 'evolution',
+        phone_number: '5511999999999',
+        connection_status: 'connected'
+      )
+    end
+    let(:inbox) { create(:inbox, account: account, channel: channel) }
+    let(:conversation) { create(:conversation, account: account, inbox: inbox, assignee: agent) }
+    let(:message) do
+      create(:message, account: account, conversation: conversation, inbox: inbox, sender: agent,
+                       message_type: :outgoing, content: 'mensagem enviada', source_id: 'WAMID-123')
+    end
+
+    before do
+      create(:inbox_member, inbox: inbox, user: agent)
+      message
+    end
+
+    it 'deletes for the customer on WhatsApp and keeps the message locally' do
+      delete "/api/v1/accounts/#{account.id}/conversations/#{conversation.display_id}/messages/#{message.id}",
+             headers: agent.create_new_auth_token,
+             as: :json
+
+      expect(response).to have_http_status(:success)
+      expect(provider).to have_received(:delete_message).with(message)
+      expect(message.reload.content).to eq('mensagem enviada')
+      expect(message.reload.deleted).to be true
     end
   end
 
@@ -379,6 +443,77 @@ RSpec.describe 'Conversation Messages API', type: :request do
           expect(message.reload.external_error).to eq('err123')
         end
       end
+    end
+  end
+
+  describe 'POST /api/v1/accounts/{account.id}/conversations/<id>/messages/<id>/edit' do
+    let(:agent) { create(:user, account: account, role: :agent) }
+    let(:channel) do
+      account.enable_features!(:saas_channel_evolution)
+      provider = instance_double(UnofficialWhatsapp::Providers::EvolutionService, validate_provider_config?: true)
+      allow(UnofficialWhatsapp::Providers::EvolutionService).to receive(:new).and_return(provider)
+      Channel::UnofficialWhatsapp.create!(
+        account: account,
+        provider: 'evolution',
+        phone_number: '5511999999999',
+        connection_status: 'connected'
+      )
+    end
+    let(:inbox) { create(:inbox, account: account, channel: channel) }
+    let(:conversation) { create(:conversation, account: account, inbox: inbox, assignee: agent) }
+    let!(:original_message) do
+      create(:message, account: account, conversation: conversation, inbox: inbox, sender: agent,
+                       message_type: :outgoing, content: 'texto original')
+    end
+
+    before do
+      account.update!(settings: account.settings.merge('signature_agents_can_disable' => true))
+      create(:inbox_member, inbox: inbox, user: agent)
+    end
+
+    it 'creates a quoted correction and keeps the original message' do
+      post edit_api_v1_account_conversation_message_url(
+        account_id: account.id,
+        conversation_id: conversation.display_id,
+        id: original_message.id
+      ), params: { content: 'texto corrigido' }, headers: agent.create_new_auth_token, as: :json
+
+      expect(response).to have_http_status(:success)
+      correction = conversation.messages.where(content: 'texto corrigido').last
+      expect(correction.content_attributes['message_correction']).to be(true)
+      expect(correction.content_attributes['in_reply_to']).to eq(original_message.id)
+      expect(original_message.reload.content).to eq('texto original')
+    end
+
+    it 'does not allow editing another agent message' do
+      other_agent = create(:user, account: account, role: :agent)
+      create(:inbox_member, inbox: inbox, user: other_agent)
+      original_message.update!(sender: other_agent)
+
+      post edit_api_v1_account_conversation_message_url(
+        account_id: account.id,
+        conversation_id: conversation.display_id,
+        id: original_message.id
+      ), params: { content: 'tentativa' }, headers: agent.create_new_auth_token, as: :json
+
+      expect(response).to have_http_status(:forbidden)
+      expect(conversation.messages.where(content: 'tentativa')).not_to exist
+    end
+
+    it 'keeps the mandatory signature in the correction' do
+      account.update!(settings: account.settings.merge('signature_agents_can_disable' => false))
+      agent.update!(message_signature: 'Assinatura Obrigatória')
+      original_message.update!(content: "texto original\nAssinatura Obrigatória")
+
+      post edit_api_v1_account_conversation_message_url(
+        account_id: account.id,
+        conversation_id: conversation.display_id,
+        id: original_message.id
+      ), params: { content: 'texto corrigido' }, headers: agent.create_new_auth_token, as: :json
+
+      expect(response).to have_http_status(:success)
+      correction = conversation.messages.where(content: "texto corrigido\nAssinatura Obrigatória").last
+      expect(correction).to be_present
     end
   end
 end

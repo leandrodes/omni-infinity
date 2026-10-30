@@ -63,6 +63,53 @@ export const applyPageFilters = (conversation, filters) => {
 };
 
 /**
+ * Applies the account-level visibility settings to a conversation.
+ * The backend applies the same rules, but conversations already in the local
+ * store can become invisible after an assignment or team change.
+ */
+export const applyAccountVisibilityFilter = (
+  conversation,
+  { role, settings = {}, teamIds = [], currentUserId }
+) => {
+  if (role === 'administrator') return true;
+
+  if (conversation.visibility === 'restricted') {
+    return Number(conversation.private_owner_id) === Number(currentUserId);
+  }
+
+  const isParticipant = (conversation.participant_ids || [])
+    .map(Number)
+    .includes(Number(currentUserId));
+  if (isParticipant) return true;
+
+  if (settings.hide_conversations_assigned_to_others) {
+    const assignee = conversation.meta?.assignee;
+    const isHumanAssignee =
+      conversation.meta?.assignee_type !== 'AgentBot' &&
+      assignee?.type !== 'agent_bot';
+    const isResolved = conversation.status === 'resolved';
+    const allowResolved =
+      isResolved && !settings.hide_resolved_conversations_assigned_to_others;
+
+    if (
+      isHumanAssignee &&
+      assignee?.id &&
+      assignee.id !== currentUserId &&
+      !allowResolved
+    ) {
+      return false;
+    }
+  }
+
+  if (settings.show_conversations_only_from_user_teams) {
+    const teamId = conversation.meta?.team?.id;
+    if (!teamId || !teamIds.includes(teamId)) return false;
+  }
+
+  return true;
+};
+
+/**
  * Filters conversations based on user role and permissions
  *
  * @param {Object} conversation - The conversation object to check permissions for

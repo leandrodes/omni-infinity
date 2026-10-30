@@ -10,13 +10,21 @@ import { CONVERSATION_PRIORITY } from '../../../../shared/constants/messages';
 import { CONVERSATION_EVENTS } from '../../../helper/AnalyticsHelper/events';
 import { useTrack } from 'dashboard/composables';
 import NextButton from 'dashboard/components-next/button/Button.vue';
+import AssignmentTeamConflictModal from 'dashboard/components-next/ConversationWorkflow/AssignmentTeamConflictModal.vue';
+import { assignmentTeamConflict } from 'dashboard/helper/assignmentTeamHelper';
+import { useAccount } from 'dashboard/composables/useAccount';
+import NextSwitch from 'dashboard/components-next/switch/Switch.vue';
+import { emitter } from 'shared/helpers/mitt';
+import { BUS_EVENTS } from 'shared/constants/busEvents';
 
 export default {
   components: {
     ContactDetailsItem,
+    NextSwitch,
     MultiselectDropdown,
     ConversationLabels,
     NextButton,
+    AssignmentTeamConflictModal,
   },
   props: {
     conversationId: {
@@ -28,12 +36,15 @@ export default {
     const { agentsList } = useAgentsList(true, {
       includeAIAssignees: true,
     });
+    const { currentAccount } = useAccount();
     return {
       agentsList,
+      currentAccount,
     };
   },
   data() {
     return {
+      pendingAgent: null,
       priorityOptions: [
         {
           id: null,
@@ -67,6 +78,7 @@ export default {
     ...mapGetters({
       currentChat: 'getSelectedChat',
       currentUser: 'getCurrentUser',
+      currentUserRole: 'getCurrentRole',
       teams: 'teams/getTeams',
     }),
     hasAnAssignedTeam() {
@@ -92,22 +104,7 @@ export default {
         );
       },
       set(agent) {
-        const agentId = agent ? agent.id : null;
-        const assigneeType = agent ? agent.assignee_type || 'User' : null;
-        this.$store.dispatch('setCurrentChatAssignee', {
-          conversationId: this.currentChat.id,
-          assignee: agent,
-          assigneeType,
-        });
-        this.$store
-          .dispatch('assignAgent', {
-            conversationId: this.currentChat.id,
-            agentId,
-            assigneeType,
-          })
-          .then(() => {
-            useAlert(this.$t('CONVERSATION.CHANGE_AGENT'));
-          });
+        this.attemptAssignAgent(agent);
       },
     },
     assignedTeam: {
@@ -116,11 +113,18 @@ export default {
       },
       set(team) {
         const conversationId = this.currentChat.id;
+        const previousTeamId = this.currentChat.meta.team?.id;
         const teamId = team ? team.id : 0;
         this.$store.dispatch('setCurrentChatTeam', { team, conversationId });
         this.$store
           .dispatch('assignTeam', { conversationId, teamId })
           .then(() => {
+            if (Number(teamId) !== Number(previousTeamId || 0)) {
+              emitter.emit(
+                BUS_EVENTS.CONVERSATION_ACCESS_REVOKED,
+                conversationId
+              );
+            }
             useAlert(this.$t('CONVERSATION.CHANGE_TEAM'));
           });
       },
@@ -159,6 +163,17 @@ export default {
           });
       },
     },
+    isPrivateConversation() {
+      return this.currentChat?.visibility === 'restricted';
+    },
+    canManagePrivacy() {
+      if (this.currentUserRole === 'administrator') return true;
+
+      return (
+        this.currentChat?.meta?.assignee?.id === this.currentUser?.id ||
+        this.currentChat?.private_owner_id === this.currentUser?.id
+      );
+    },
     showSelfAssign() {
       if (!this.assignedAgent) {
         return true;
@@ -173,6 +188,73 @@ export default {
     },
   },
   methods: {
+    commitAssignAgent(agent, team = null, note = '') {
+      const agentId = agent ? agent.id : null;
+      const assigneeType = agent ? agent.assignee_type || 'User' : null;
+      const conversationId = this.currentChat.id;
+      const previousTeamId = this.currentChat.meta.team?.id;
+
+      this.$store
+        .dispatch('assignAgent', {
+          conversationId,
+          agentId,
+          assigneeType,
+          teamId: team?.id,
+          note,
+        })
+        .then(() => {
+          if (team) {
+            this.$store.dispatch('setCurrentChatTeam', {
+              team,
+              conversationId,
+            });
+          }
+          const assignedToOtherAgent =
+            agentId && Number(agentId) !== Number(this.currentUser.id);
+          const teamChanged =
+            team && Number(team.id) !== Number(previousTeamId || 0);
+
+          if (assignedToOtherAgent || teamChanged) {
+            emitter.emit(
+              BUS_EVENTS.CONVERSATION_ACCESS_REVOKED,
+              conversationId
+            );
+          }
+          useAlert(this.$t('CONVERSATION.CHANGE_AGENT'));
+        })
+        .catch(() => {
+          useAlert(this.$t('CONVERSATION.CHANGE_AGENT_FAILED'));
+        });
+    },
+
+    attemptAssignAgent(agent) {
+      const hasConflict = assignmentTeamConflict({
+        agent,
+        conversations: [this.currentChat],
+        settings: this.currentAccount?.settings || {},
+      });
+
+      if (!hasConflict) {
+        this.commitAssignAgent(agent);
+        return;
+      }
+
+      this.pendingAgent = agent;
+      this.$nextTick(() => {
+        this.$refs.assignmentConflictModal?.open();
+      });
+    },
+
+    onConfirmAssignmentTeam({ team, note }) {
+      const agent = this.pendingAgent;
+      this.pendingAgent = null;
+      this.commitAssignAgent(agent, team, note);
+    },
+
+    onCloseAssignmentConflict() {
+      this.pendingAgent = null;
+    },
+
     onSelfAssign() {
       const {
         account_id,
@@ -213,6 +295,22 @@ export default {
         this.assignedTeam = null;
       } else {
         this.assignedTeam = selectedItemTeam;
+      }
+    },
+
+    async onTogglePrivacy(value) {
+      try {
+        await this.$store.dispatch('toggleConversationVisibility', {
+          conversationId: this.currentChat.id,
+          restricted: value,
+        });
+        useAlert(
+          value
+            ? this.$t('CONVERSATION.PRIVACY.ENABLED')
+            : this.$t('CONVERSATION.PRIVACY.DISABLED')
+        );
+      } catch {
+        useAlert(this.$t('CONVERSATION.PRIVACY.ERROR'));
       }
     },
 
@@ -300,10 +398,30 @@ export default {
         @select="onClickAssignPriority"
       />
     </div>
+    <div v-if="canManagePrivacy" class="flex flex-col gap-2">
+      <ContactDetailsItem compact :title="$t('CONVERSATION.PRIVACY.TITLE')" />
+      <div class="flex items-center justify-between gap-4 px-1">
+        <span class="text-xs text-n-slate-11">
+          {{ $t('CONVERSATION.PRIVACY.DESCRIPTION') }}
+        </span>
+        <NextSwitch
+          :model-value="isPrivateConversation"
+          @update:model-value="onTogglePrivacy"
+        />
+      </div>
+    </div>
     <ContactDetailsItem
       compact
       :title="$t('CONVERSATION_SIDEBAR.ACCORDION.CONVERSATION_LABELS')"
     />
     <ConversationLabels :conversation-id="conversationId" />
+    <AssignmentTeamConflictModal
+      ref="assignmentConflictModal"
+      :agent="pendingAgent"
+      :teams="teams"
+      :conversation-count="1"
+      @confirm="onConfirmAssignmentTeam"
+      @close="onCloseAssignmentConflict"
+    />
   </div>
 </template>

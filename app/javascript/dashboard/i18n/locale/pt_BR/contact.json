@@ -684,6 +684,10 @@
       "ACTION_BUTTONS": {
         "DISCARD": "Descartar",
         "SEND": "Enviar ({keyCode})"
+      },
+      "PRIVATE_CONVERSATION": {
+        "LABEL": "Conversa privada",
+        "DESCRIPTION": "Visível apenas para você e administradores."
       }
     }
   }

@@ -40,6 +40,8 @@ class Api::V1::Accounts::ConversationsController < Api::V1::Accounts::BaseContro
   def show; end
 
   def create
+    params[:private_owner_id] = Current.user&.id if params[:visibility].to_s == 'restricted'
+
     ActiveRecord::Base.transaction do
       @existing_whatsapp_conversation = find_existing_whatsapp_conversation
       @conversation = @existing_whatsapp_conversation ||
@@ -119,6 +121,7 @@ class Api::V1::Accounts::ConversationsController < Api::V1::Accounts::BaseContro
   end
 
   def update_last_seen
+    mark_unofficial_messages_as_read
     # High-traffic accounts generate excessive DB writes when agents frequently switch between conversations.
     # Throttle last_seen updates to once per hour when there are no unread messages to reduce DB load.
     # Always update immediately if there are unread messages to maintain accurate read/unread state.
@@ -164,6 +167,15 @@ class Api::V1::Accounts::ConversationsController < Api::V1::Accounts::BaseContro
 
   def attachment_params
     params.permit(:page)
+  end
+
+  def mark_unofficial_messages_as_read
+    return unless @conversation.inbox.channel_type == 'Channel::UnofficialWhatsapp'
+
+    source_ids = @conversation.unread_messages.incoming.pluck(:source_id).compact_blank.uniq
+    return if source_ids.empty?
+
+    UnofficialWhatsapp::MarkMessagesReadJob.perform_later(@conversation.id, source_ids)
   end
 
   def update_last_seen_on_conversation(last_seen_at, update_assignee)
@@ -267,12 +279,16 @@ class Api::V1::Accounts::ConversationsController < Api::V1::Accounts::BaseContro
   end
 
   def clear_read_notifications
-    return unless @conversation.open? && assignee?
+    return unless Current.user.is_a?(User)
+    return unless assignee? || participant?
+    return if assignee? && !@conversation.open?
 
-    Notification::ClearConversationQueueNotificationsService.new(
-      account: Current.account,
-      conversation: @conversation
-    ).perform
+    if @conversation.open?
+      Notification::ClearConversationQueueNotificationsService.new(
+        account: Current.account,
+        conversation: @conversation
+      ).perform
+    end
     Notification::MarkConversationReadService.new(
       user: Current.user,
       account: Current.account,
@@ -282,6 +298,10 @@ class Api::V1::Accounts::ConversationsController < Api::V1::Accounts::BaseContro
 
   def assignee?
     @conversation.assignee_id? && Current.user == @conversation.assignee
+  end
+
+  def participant?
+    @conversation.conversation_participants.exists?(user_id: Current.user.id)
   end
 end
 

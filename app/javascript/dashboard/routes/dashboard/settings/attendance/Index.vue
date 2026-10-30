@@ -15,6 +15,7 @@ const defaultSettings = {
   chatbot_conversations_filter_roles: ['administrator'],
   enable_resolved_conversations_filter: false,
   enable_pending_conversations_filter: false,
+  enable_unassigned_conversations_filter: false,
   show_inbox_name_in_conversation_list: false,
   show_conversation_id_in_conversation_list: false,
   show_conversation_team_in_conversation_list: false,
@@ -22,6 +23,7 @@ const defaultSettings = {
   hide_conversations_assigned_to_others: false,
   hide_resolved_conversations_assigned_to_others: false,
   show_conversations_only_from_user_teams: false,
+  enable_contact_company_filter: false,
   signature_agents_can_disable: false,
   agents_can_reopen_conversations: false,
   agents_can_join_conversations_as_participant: false,
@@ -121,6 +123,7 @@ const saveSettings = async () => {
             v-for="key in [
               'enable_resolved_conversations_filter',
               'enable_pending_conversations_filter',
+              'enable_unassigned_conversations_filter',
               'show_inbox_name_in_conversation_list',
               'show_conversation_id_in_conversation_list',
               'show_conversation_team_in_conversation_list',
@@ -146,8 +149,8 @@ const saveSettings = async () => {
           <div
             v-for="key in [
               'hide_conversations_assigned_to_others',
-              'hide_resolved_conversations_assigned_to_others',
               'show_conversations_only_from_user_teams',
+              'enable_contact_company_filter',
             ]"
             :key="key"
             class="flex items-center justify-between gap-4"

@@ -165,11 +165,16 @@ const setSavedFilter = () => {
   store.dispatch('notifications/setNotificationFilters', inboxFilters.value);
 };
 
-const openConversation = notificationItem => {
+const openConversation = async notificationItem => {
   const {
     primaryActor: { id: conversationId },
     notificationType,
   } = notificationItem;
+
+  if (notificationType === 'conversation_participant_removed') {
+    await markNotificationAsRead(notificationItem);
+    return;
+  }
 
   if (route.params.id === String(conversationId)) return;
 
@@ -179,7 +184,10 @@ const openConversation = notificationItem => {
 
   router.push({
     name: 'inbox_conversation',
-    params: { accountId: route.params.accountId, conversation_id: conversationId },
+    params: {
+      accountId: route.params.accountId,
+      conversation_id: conversationId,
+    },
   });
 };
 

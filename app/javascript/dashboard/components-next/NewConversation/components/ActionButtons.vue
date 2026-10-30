@@ -72,7 +72,10 @@ const {
 } = useUISettings();
 
 const sendWithSignature = computed(() => {
-  return fetchSignatureFlagFromUISettings(props.channelType);
+  return (
+    agentsCanDisableSignature.value &&
+    fetchSignatureFlagFromUISettings(props.channelType)
+  );
 });
 
 const showTwilioContentTemplates = computed(() => {

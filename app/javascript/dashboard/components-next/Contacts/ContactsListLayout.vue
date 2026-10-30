@@ -23,6 +23,7 @@ const props = defineProps({
   useInfiniteScroll: { type: Boolean, default: false },
   hasMore: { type: Boolean, default: false },
   isLoadingMore: { type: Boolean, default: false },
+  hideSearch: { type: Boolean, default: false },
 });
 
 const emit = defineEmits([
@@ -83,7 +84,7 @@ const showPagination = computed(() => {
     <div class="flex flex-col w-full h-full transition-all duration-300">
       <ContactListHeaderWrapper
         ref="contactListHeaderWrapper"
-        :show-search="isNotSegmentView && !isActiveView"
+        :show-search="!hideSearch && isNotSegmentView && !isActiveView"
         :search-value="searchValue"
         :active-sort="activeSort"
         :active-ordering="activeOrdering"

@@ -9,11 +9,14 @@ class ConversationPolicy < ApplicationPolicy
 
   def show?
     return true if administrator? || agent_bot?
-    return false unless agent_can_view_conversation?
-    return false if hidden_assigned_conversation?
-    return false if team_only_visibility? && !team_access?
+    return private_owner_can_view? if record.restricted?
+    return true if participant?
 
-    true
+    agent_can_view_conversation? && !hidden_assigned_conversation? && !team_access_blocked?
+  end
+
+  def private_owner_can_view?
+    record.private_owner_id == user.id
   end
 
   private
@@ -49,6 +52,10 @@ class ConversationPolicy < ApplicationPolicy
     return true if hide_resolved
 
     !record.resolved?
+  end
+
+  def team_access_blocked?
+    team_only_visibility? && !team_access?
   end
 
   def team_only_visibility?

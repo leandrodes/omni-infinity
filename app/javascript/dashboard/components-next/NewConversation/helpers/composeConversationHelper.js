@@ -129,16 +129,20 @@ export const prepareNewMessagePayload = ({
   ccEmails,
   bccEmails,
   currentUser,
+  assigneeId = currentUser?.id,
   attachedFiles = [],
   directUploadsEnabled = false,
   teamId = null,
+  visibility = 'shared',
 }) => {
   const payload = {
     inboxId: targetInbox.id,
     sourceId: targetInbox.sourceId,
     contactId: Number(selectedContact.id),
     message: { content: message },
-    assigneeId: currentUser.id,
+    ...(assigneeId ? { assigneeId } : {}),
+    status: 'open',
+    ...(visibility === 'restricted' ? { visibility } : {}),
   };
 
   if (teamId) {
@@ -173,15 +177,19 @@ export const prepareWhatsAppMessagePayload = ({
   message,
   templateParams,
   currentUser,
+  assigneeId = currentUser?.id,
   teamId = null,
+  visibility = 'shared',
 }) => {
   return {
     inboxId: targetInbox.id,
     sourceId: targetInbox.sourceId,
     contactId: selectedContact.id,
     message: { content: message, template_params: templateParams },
-    assigneeId: currentUser.id,
+    ...(assigneeId ? { assigneeId } : {}),
+    status: 'open',
     ...(teamId ? { teamId } : {}),
+    ...(visibility === 'restricted' ? { visibility } : {}),
   };
 };
 

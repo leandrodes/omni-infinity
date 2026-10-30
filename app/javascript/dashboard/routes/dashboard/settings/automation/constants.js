@@ -808,7 +808,7 @@ export const AUTOMATION_ACTION_TYPES = [
 ];
 
 export const DEFAULT_DELAY_MINUTES = 240; // 4 hours
-export const MIN_DELAY_MINUTES = 10;
+export const MIN_DELAY_MINUTES = 5;
 export const MAX_DELAY_MINUTES = 43200; // 30 days
 export const DEFAULT_TRIGGER_STATUS = 'pending';
 

@@ -714,6 +714,8 @@ RSpec.describe Conversation do
         last_activity_at: conversation.last_activity_at.to_i,
         inbox_id: conversation.inbox_id,
         status: conversation.status,
+        visibility: conversation.visibility,
+        private_owner_id: conversation.private_owner_id,
         contact_inbox: conversation.contact_inbox,
         timestamp: conversation.last_activity_at.to_i,
         can_reply: true,
@@ -765,6 +767,14 @@ RSpec.describe Conversation do
       conversation = create(:conversation, inbox: bot_inbox.inbox, assignee: agent)
 
       expect(conversation.assignee).to eq(agent)
+      expect(conversation.ai_assignee).to be_nil
+    end
+
+    it 'keeps a manually created conversation open when it has a team' do
+      team = create(:team, account: bot_inbox.inbox.account)
+      conversation = create(:conversation, inbox: bot_inbox.inbox, team: team, status: :open)
+
+      expect(conversation.status).to eq('open')
       expect(conversation.ai_assignee).to be_nil
     end
 

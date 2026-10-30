@@ -124,6 +124,7 @@ class Conversation < ApplicationRecord
   belongs_to :contact_inbox
   belongs_to :team, optional: true
   belongs_to :campaign, optional: true
+  belongs_to :private_owner, class_name: 'User', optional: true
 
   has_many :mentions, dependent: :destroy_async
   has_many :messages, dependent: :destroy_async, autosave: true
@@ -135,12 +136,18 @@ class Conversation < ApplicationRecord
   has_many :automation_rule_pending_executions, dependent: :delete_all
   has_many :typebot_conversations, dependent: :delete_all
 
+  enum :visibility, { shared: 0, restricted: 1 }
+
+  validates :private_owner_id, presence: true, if: :restricted?
+  before_validation :clear_private_owner, unless: :restricted?
+
   before_save :ensure_snooze_until_reset
   before_save :set_status_changed_at
   before_create :determine_conversation_status
   before_create :ensure_waiting_since
 
   after_update_commit :execute_after_update_commit_callbacks
+  after_update_commit :notify_visibility_change, if: :visibility_owner_changed?
   after_create_commit :notify_conversation_creation
   after_create_commit :load_attributes_created_by_db_triggers
   before_destroy :set_unread_count_deletion_data
@@ -310,8 +317,13 @@ class Conversation < ApplicationRecord
     self.status = :resolved and return if contact.blocked?
 
     return handle_campaign_status if campaign.present?
+    return if manual_open_conversation?
 
     set_active_bot_conversation if inbox.active_bot?
+  end
+
+  def manual_open_conversation?
+    status.to_s == 'open' && (assignee_id.present? || team_id.present?)
   end
 
   def handle_campaign_status
@@ -328,6 +340,18 @@ class Conversation < ApplicationRecord
 
   def notify_conversation_creation
     dispatcher_dispatch(CONVERSATION_CREATED)
+  end
+
+  def notify_visibility_change
+    dispatcher_dispatch(CONVERSATION_VISIBILITY_CHANGED)
+  end
+
+  def visibility_owner_changed?
+    saved_change_to_visibility? || saved_change_to_private_owner_id?
+  end
+
+  def clear_private_owner
+    self.private_owner_id = nil
   end
 
   def notify_conversation_deletion

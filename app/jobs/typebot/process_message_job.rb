@@ -7,9 +7,11 @@ module Typebot
   class ProcessMessageJob < ApplicationJob
     queue_as :default
 
-    ASSIGNMENT_BODY = '(?:(?:queue|team|fila|agent|agente)\s*:\s*\d+\s*,?\s*)+'
+    ASSIGNMENT_TOKEN = '(?:(?:queue|team|fila|agent|agente)\s*:\s*\d+|(?:manter_bot|keep_bot|continuar_bot)\s*(?::\s*(?:1|true|sim))?)'.freeze
+    ASSIGNMENT_BODY = "#{ASSIGNMENT_TOKEN}(?:\\s*,?\\s*#{ASSIGNMENT_TOKEN})*".freeze
     ASSIGNMENT_DIRECTIVE = /\[\[\s*(#{ASSIGNMENT_BODY})\s*\]\]|\{\{\s*(#{ASSIGNMENT_BODY})\s*\}\}/i
     ASSIGNMENT_PAIR = /(queue|team|fila|agent|agente)\s*:\s*(\d+)/i
+    KEEP_BOT_FLAG = /(?:manter_bot|keep_bot|continuar_bot)\s*(?::\s*(?:1|true|sim))?(?=\s|,|$)/i
 
     def perform(message_id)
       message = Message.find_by(id: message_id)
@@ -168,8 +170,11 @@ module Typebot
 
       team_id = nil
       agent_id = nil
+      keep_bot = false
 
       directives.each do |directive|
+        keep_bot ||= directive.match?(KEEP_BOT_FLAG)
+
         directive.scan(ASSIGNMENT_PAIR).each do |key, value|
           case key.downcase
           when 'queue', 'team', 'fila'
@@ -180,11 +185,11 @@ module Typebot
         end
       end
 
-      assign_conversation(conversation, team_id: team_id, agent_id: agent_id)
+      assign_conversation(conversation, team_id: team_id, agent_id: agent_id, keep_bot: keep_bot)
       content.gsub(ASSIGNMENT_DIRECTIVE, '').strip
     end
 
-    def assign_conversation(conversation, team_id:, agent_id:)
+    def assign_conversation(conversation, team_id:, agent_id:, keep_bot: false)
       account = conversation.account
       team = team_id && account.teams.find_by(id: team_id)
       agent = agent_id && account.users.find_by(id: agent_id)
@@ -198,6 +203,11 @@ module Typebot
       if agent && !assignable_agent?(conversation, agent)
         Rails.logger.warn("[Typebot] agent #{agent.id} is not assignable to inbox #{conversation.inbox_id}")
         agent = nil
+      end
+
+      if keep_bot && agent_id.blank?
+        route_team_and_keep_bot(conversation, team) if team
+        return
       end
 
       handoff = { assignee_agent_bot_id: nil, ai_assignee_type: nil }
@@ -217,6 +227,13 @@ module Typebot
       )
     rescue StandardError => e
       Rails.logger.error("[Typebot] assignment for conversation #{conversation.id} failed: #{e.class}: #{e.message}")
+    end
+
+    def route_team_and_keep_bot(conversation, team)
+      Typebot::ConversationPolicy.mark_bot_team!(conversation, team.id)
+      Rails.logger.info(
+        "[Typebot] conversation #{conversation.id} routed team=#{team.id} bot=kept"
+      )
     end
 
     def assignable_agent?(conversation, agent)

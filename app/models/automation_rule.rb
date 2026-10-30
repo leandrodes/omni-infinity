@@ -22,7 +22,7 @@ class AutomationRule < ApplicationRecord
   include Rails.application.routes.url_helpers
   include Reauthorizable
 
-  EXECUTION_DELAY_RANGE = (10..43_200) # minutes: 10 min to 30 days
+  EXECUTION_DELAY_RANGE = (5..43_200) # minutes: 5 min to 30 days
   # Conversation-level delayed rules key their episode on status; only status and attributes
   # that never change after the delay (inbox) are safe to also filter on.
   DELAYED_CONVERSATION_ATTRIBUTES = %w[status inbox_id].freeze

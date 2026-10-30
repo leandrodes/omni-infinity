@@ -33,6 +33,7 @@ import ActionButtons from './ActionButtons.vue';
 import InboxEmptyState from './InboxEmptyState.vue';
 import AttachmentPreviews from './AttachmentPreviews.vue';
 import CopilotReplyBottomPanel from 'dashboard/components/widgets/WootWriter/CopilotReplyBottomPanel.vue';
+import Switch from 'dashboard/components-next/switch/Switch.vue';
 import AudioRecorder from 'dashboard/components/widgets/WootWriter/AudioRecorder.vue';
 
 const props = defineProps({
@@ -136,6 +137,7 @@ const effectiveChannelType = computed(() =>
 const validationRules = computed(() => ({
   selectedContact: { required },
   targetInbox: { required },
+  targetTeam: { required },
   message: {
     required: requiredIf(
       !inboxTypes.value.isWhatsapp &&
@@ -149,14 +151,29 @@ const validationRules = computed(() => ({
 const v$ = useVuelidate(validationRules, {
   selectedContact: computed(() => props.selectedContact),
   targetInbox: computed(() => props.targetInbox),
+  targetTeam: computed(() => props.targetTeam),
   message: computed(() => state.message),
   subject: computed(() => state.subject),
 });
+
+const isPrivateConversation = computed(() => state.visibility === 'restricted');
+
+const targetAssigneeId = computed(() => {
+  if (isPrivateConversation.value) return props.currentUser?.id;
+  if (props.targetTeam?.is_member === false) return undefined;
+
+  return props.currentUser?.id;
+});
+
+const setPrivateConversation = value => {
+  state.visibility = value ? 'restricted' : 'shared';
+};
 
 const validationStates = computed(() => ({
   isContactInvalid:
     v$.value.selectedContact.$dirty && v$.value.selectedContact.$invalid,
   isInboxInvalid: v$.value.targetInbox.$dirty && v$.value.targetInbox.$invalid,
+  isTeamInvalid: v$.value.targetTeam.$dirty && v$.value.targetTeam.$invalid,
   isSubjectInvalid: v$.value.subject.$dirty && v$.value.subject.$invalid,
   isMessageInvalid: v$.value.message.$dirty && v$.value.message.$invalid,
 }));
@@ -171,9 +188,11 @@ const newMessagePayload = () => {
     ccEmails,
     bccEmails,
     currentUser: props.currentUser,
+    assigneeId: targetAssigneeId.value,
     attachedFiles,
     directUploadsEnabled: props.isDirectUploadsEnabled,
     teamId: props.targetTeam?.id,
+    visibility: state.visibility,
   });
 };
 
@@ -354,9 +373,13 @@ const attachRecordedAudio = file => {
     return;
   }
 
-  const upload = new DirectUpload(file, '/rails/active_storage/direct_uploads', {
-    directUploadWillCreateBlobWithXHR: xhr => setDirectUploadAuthHeaders(xhr),
-  });
+  const upload = new DirectUpload(
+    file,
+    '/rails/active_storage/direct_uploads',
+    {
+      directUploadWillCreateBlobWithXHR: xhr => setDirectUploadAuthHeaders(xhr),
+    }
+  );
 
   upload.create((error, blob) => {
     if (error) {
@@ -433,8 +456,10 @@ const ensureMandatorySignature = () => {
   );
 };
 
+const validateForm = () => v$.value.$validate();
+
 const handleSendMessage = async () => {
-  const isValid = await v$.value.$validate();
+  const isValid = await validateForm();
   if (!isValid) return;
 
   ensureMandatorySignature();
@@ -453,13 +478,18 @@ const handleSendMessage = async () => {
 };
 
 const handleSendWhatsappMessage = async ({ message, templateParams }) => {
+  const isValid = await validateForm();
+  if (!isValid) return;
+
   const whatsappMessagePayload = prepareWhatsAppMessagePayload({
     targetInbox: props.targetInbox,
     selectedContact: props.selectedContact,
     message,
     templateParams,
     currentUser: props.currentUser,
+    assigneeId: targetAssigneeId.value,
     teamId: props.targetTeam?.id,
+    visibility: state.visibility,
   });
   await emit('createConversation', {
     payload: whatsappMessagePayload,
@@ -468,13 +498,18 @@ const handleSendWhatsappMessage = async ({ message, templateParams }) => {
 };
 
 const handleSendTwilioMessage = async ({ message, templateParams }) => {
+  const isValid = await validateForm();
+  if (!isValid) return;
+
   const twilioMessagePayload = prepareWhatsAppMessagePayload({
     targetInbox: props.targetInbox,
     selectedContact: props.selectedContact,
     message,
     templateParams,
     currentUser: props.currentUser,
+    assigneeId: targetAssigneeId.value,
     teamId: props.targetTeam?.id,
+    visibility: state.visibility,
   });
   await emit('createConversation', {
     payload: twilioMessagePayload,
@@ -547,8 +582,31 @@ useKeyboardEvents({
         v-if="!showNoInboxAlert"
         :teams="teams"
         :target-team="targetTeam"
+        :has-errors="validationStates.isTeamInvalid"
         @update-team="handleTargetTeam"
       />
+
+      <div
+        v-if="!showNoInboxAlert"
+        class="flex items-center justify-between gap-4 px-4 py-3"
+      >
+        <div class="flex flex-col gap-1">
+          <span class="text-sm font-medium text-n-slate-12">
+            {{ t('COMPOSE_NEW_CONVERSATION.FORM.PRIVATE_CONVERSATION.LABEL') }}
+          </span>
+          <span class="text-xs text-n-slate-11">
+            {{
+              t(
+                'COMPOSE_NEW_CONVERSATION.FORM.PRIVATE_CONVERSATION.DESCRIPTION'
+              )
+            }}
+          </span>
+        </div>
+        <Switch
+          :model-value="isPrivateConversation"
+          @update:model-value="setPrivateConversation"
+        />
+      </div>
 
       <EmailOptions
         v-if="inboxTypes.isEmail"

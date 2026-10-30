@@ -9,6 +9,8 @@ import {
   isOnMentionsView,
   isOnParticipatingView,
   isOnUnattendedView,
+  isOnOpenTeamView,
+  isOnUnassignedView,
   isOnFoldersView,
 } from 'dashboard/store/modules/conversations/helpers/actionHelpers';
 import wootConstants from 'dashboard/constants/globals';
@@ -33,6 +35,10 @@ export function useConversationRoutePath() {
       conversationType = 'participating';
     } else if (isOnUnattendedView({ route: { name } })) {
       conversationType = 'unattended';
+    } else if (isOnOpenTeamView({ route: { name } })) {
+      conversationType = 'open_team';
+    } else if (isOnUnassignedView({ route: { name } })) {
+      conversationType = 'unassigned';
     }
 
     const isOnFolder = isOnFoldersView({ route: { name } });
@@ -64,6 +70,10 @@ export function useConversationRoutePath() {
       conversationType = CONVERSATION_TYPE.PARTICIPATING;
     } else if (isOnUnattendedView({ route: { name } })) {
       conversationType = CONVERSATION_TYPE.UNATTENDED;
+    } else if (isOnOpenTeamView({ route: { name } })) {
+      conversationType = CONVERSATION_TYPE.OPEN_TEAM;
+    } else if (isOnUnassignedView({ route: { name } })) {
+      conversationType = CONVERSATION_TYPE.UNASSIGNED;
     }
 
     const isOnFolder = isOnFoldersView({ route: { name } });

@@ -43,7 +43,9 @@ class Notification < ApplicationRecord
     participating_conversation_new_message: 5,
     sla_missed_first_response: 6,
     sla_missed_next_response: 7,
-    sla_missed_resolution: 8
+    sla_missed_resolution: 8,
+    conversation_participant_added: 9,
+    conversation_participant_removed: 10
   }.freeze
 
   enum notification_type: NOTIFICATION_TYPES
@@ -93,6 +95,8 @@ class Notification < ApplicationRecord
       'conversation_assignment' => 'notifications.notification_title.conversation_assignment',
       'assigned_conversation_new_message' => 'notifications.notification_title.assigned_conversation_new_message',
       'participating_conversation_new_message' => 'notifications.notification_title.assigned_conversation_new_message',
+      'conversation_participant_added' => 'notifications.notification_title.conversation_participant_added',
+      'conversation_participant_removed' => 'notifications.notification_title.conversation_participant_removed',
       'conversation_mention' => 'notifications.notification_title.conversation_mention',
       'sla_missed_first_response' => 'notifications.notification_title.sla_missed_first_response',
       'sla_missed_next_response' => 'notifications.notification_title.sla_missed_next_response',
@@ -105,7 +109,7 @@ class Notification < ApplicationRecord
     if notification_type == 'conversation_creation'
       I18n.t(i18n_key, display_id: conversation.display_id, inbox_name: primary_actor.inbox.name)
     elsif %w[conversation_assignment assigned_conversation_new_message participating_conversation_new_message
-             conversation_mention].include?(notification_type)
+             conversation_mention conversation_participant_added conversation_participant_removed].include?(notification_type)
       I18n.t(i18n_key, display_id: conversation.display_id)
     else
       I18n.t(i18n_key, display_id: primary_actor.display_id)
@@ -113,18 +117,25 @@ class Notification < ApplicationRecord
   end
   # rubocop:enable Metrics/MethodLength
 
+  # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity
   def push_message_body
     case notification_type
     when 'conversation_creation', 'sla_missed_first_response'
       message_body(conversation.messages.first)
     when 'assigned_conversation_new_message', 'participating_conversation_new_message', 'conversation_mention'
       message_body(secondary_actor)
+    when 'conversation_participant_added'
+      participant_message = conversation.messages.incoming.last || conversation.messages.outgoing.last
+      participant_message.present? ? message_body(participant_message) : ''
+    when 'conversation_participant_removed'
+      I18n.t('notifications.participant_removed_body')
     when 'conversation_assignment', 'sla_missed_next_response', 'sla_missed_resolution'
       message_body((conversation.messages.incoming.last || conversation.messages.outgoing.last))
     else
       ''
     end
   end
+  # rubocop:enable Metrics/AbcSize, Metrics/CyclomaticComplexity
 
   def conversation
     primary_actor

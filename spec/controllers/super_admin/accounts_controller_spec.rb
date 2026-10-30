@@ -25,6 +25,26 @@ RSpec.describe 'Super Admin accounts API', type: :request do
     end
   end
 
+  describe 'POST /super_admin/accounts' do
+    context 'when it is an authenticated super admin' do
+      it 'creates the account with default attendance settings' do
+        sign_in(super_admin, scope: :super_admin)
+
+        expect do
+          post '/super_admin/accounts', params: {
+            account: { name: 'New Tenant', locale: 'en', status: 'active' }
+          }
+        end.to change(Account, :count).by(1)
+
+        created_account = Account.find_by(name: 'New Tenant')
+        expect(created_account.settings).to include(
+          'enable_chatbot_conversations_filter' => true,
+          'show_conversations_only_from_user_teams' => true
+        )
+      end
+    end
+  end
+
   describe 'GET /super_admin/accounts/{account_id}' do
     context 'when it is an authenticated user' do
       it 'shows effective Captain model routing', if: ChatwootApp.enterprise? do

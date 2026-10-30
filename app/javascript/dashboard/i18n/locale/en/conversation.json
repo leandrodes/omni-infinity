@@ -232,7 +232,9 @@
     "DELETE_CONVERSATION": {
       "TITLE": "Delete conversation #{conversationId}",
       "DESCRIPTION": "Are you sure you want to delete this conversation?",
-      "CONFIRM": "Delete"
+      "CONFIRM": "Delete",
+      "BUTTON": "Delete conversation",
+      "CANCEL": "Cancel"
     },
     "CARD_CONTEXT_MENU": {
       "PENDING": "Mark as pending",
@@ -375,7 +377,7 @@
       "LINK_COPIED": "Message URL copied to the clipboard",
       "DELETE_CONFIRMATION": {
         "TITLE": "Are you sure you want to delete this message?",
-        "MESSAGE": "You cannot undo this action",
+        "MESSAGE": "The message will be deleted for the customer but will remain visible and faded in the team history for auditing.",
         "DELETE": "Delete",
         "CANCEL": "Cancel"
       },
@@ -397,7 +399,17 @@
           "outdated_information": "Outdated information",
           "other": "Other"
         }
-      }
+      },
+      "PIN": "Pin to top",
+      "UNPIN": "Unpin",
+      "EDIT": "Edit message",
+      "EDIT_TITLE": "Edit sent message",
+      "EDIT_DESCRIPTION": "The original message will remain visible and the correction will be sent as a new message quoting it.",
+      "EDIT_PLACEHOLDER": "Enter the corrected text",
+      "EDIT_SAVE": "Send correction",
+      "EDIT_CANCEL": "Cancel",
+      "EDIT_SUCCESS": "Correction sent.",
+      "EDIT_SIGNATURE_REQUIRED": "The signature is mandatory for this account and will be kept automatically in the correction."
     },
     "SIDEBAR": {
       "CONTACT": "Contact",
@@ -417,7 +429,34 @@
       "UNMUTE": "Unmute mic",
       "VIEW_CHAT_HISTORY": "View chat history",
       "GO_TO_CONVERSATION": "Go to conversation thread"
-    }
+    },
+    "PRIVACY": {
+      "TITLE": "Private conversation",
+      "DESCRIPTION": "Visible only to the assignee and administrators.",
+      "ENABLED": "Conversation marked as private.",
+      "DISABLED": "Conversation is public again.",
+      "ERROR": "Could not change conversation privacy."
+    },
+    "ASSIGNMENT_CONFLICT": {
+      "TITLE": "Agent outside the Team/Queue",
+      "DESCRIPTION": "This conversation is being assigned to {agentName}, who does not belong to the current Team/Queue. Choose a Team/Queue the agent belongs to continue.",
+      "TEAM_LABEL": "New Team/Queue",
+      "CONFIRM": "OK",
+      "CANCEL": "Cancel",
+      "NO_TEAMS": "This agent does not belong to any Team/Queue. The assignment cannot be completed.",
+      "NOTE_LABEL": "Note for the new assignee (optional)",
+      "NOTE_PLACEHOLDER": "E.g. Customer selected the wrong chatbot option."
+    },
+    "PINNED": {
+      "TITLE": "Pinned messages",
+      "PIN_SUCCESS": "Message pinned to top.",
+      "UNPIN_SUCCESS": "Message unpinned.",
+      "PIN_ERROR": "Could not pin the message.",
+      "UNPIN_ERROR": "Could not unpin the message.",
+      "UNPIN": "Unpin"
+    },
+    "MESSAGE_CORRECTION": "Message correction",
+    "MESSAGE_DELETED": "Deleted message"
   },
   "EMAIL_TRANSCRIPT": {
     "TITLE": "Send conversation transcript",

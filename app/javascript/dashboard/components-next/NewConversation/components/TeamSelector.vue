@@ -15,6 +15,10 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+  hasErrors: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const emit = defineEmits(['updateTeam']);
@@ -69,7 +73,7 @@ const handleTeamAction = ({ value }) => {
         :label="t('COMPOSE_NEW_CONVERSATION.FORM.TEAM_SELECTOR.BUTTON')"
         variant="link"
         size="sm"
-        color="slate"
+        :color="hasErrors ? 'ruby' : 'slate'"
         class="hover:!no-underline"
         @click="isDropdownOpen = !isDropdownOpen"
       />

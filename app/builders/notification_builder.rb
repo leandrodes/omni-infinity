@@ -28,7 +28,7 @@ class NotificationBuilder
     # skip notifications for blocked conversations except for user mentions
     return if primary_actor.contact.blocked? && notification_type != 'conversation_mention'
     # respect conversation access (inbox/team membership and custom-role permissions)
-    return unless user_can_access_conversation?
+    return unless notification_allowed_for_user?
 
     user.notifications.create!(
       notification_type: notification_type,
@@ -37,6 +37,16 @@ class NotificationBuilder
       # secondary_actor is secondary_actor if present, else current_user
       secondary_actor: secondary_actor || current_user
     )
+  end
+
+  def notification_allowed_for_user?
+    return false if restricted_conversation? && user.id != primary_actor.private_owner_id
+
+    user_can_access_conversation?
+  end
+
+  def restricted_conversation?
+    primary_actor.is_a?(Conversation) && primary_actor.restricted?
   end
 
   def user_can_access_conversation?

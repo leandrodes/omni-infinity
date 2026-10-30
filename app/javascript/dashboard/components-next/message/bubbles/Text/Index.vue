@@ -54,6 +54,15 @@ const handleSeeOriginal = () => {
       <span v-if="isEmpty" class="text-n-slate-11">
         {{ $t('CONVERSATION.NO_CONTENT') }}
       </span>
+      <span
+        v-if="
+          contentAttributes.messageCorrection ||
+          contentAttributes.message_correction
+        "
+        class="text-xs font-medium text-n-slate-11"
+      >
+        {{ $t('CONVERSATION.MESSAGE_CORRECTION') }}
+      </span>
       <FormattedContent v-if="renderContent" :content="renderContent" />
       <span
         v-if="contactInfoRequestState === 'pending'"

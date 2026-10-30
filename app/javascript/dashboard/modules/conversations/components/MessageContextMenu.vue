@@ -59,6 +59,9 @@ export default {
     return {
       isCannedResponseModalOpen: false,
       showDeleteModal: false,
+      showEditModal: false,
+      editedContent: '',
+      isEditingMessage: false,
     };
   },
   computed: {
@@ -66,6 +69,7 @@ export default {
       getAccount: 'accounts/getAccount',
       currentAccountId: 'getCurrentAccountId',
       getUISettings: 'getUISettings',
+      messageSignature: 'getMessageSignature',
     }),
     plainTextContent() {
       return this.getPlainText(this.messageContent);
@@ -82,6 +86,19 @@ export default {
     contentAttributes() {
       return useSnakeCase(
         this.message.content_attributes ?? this.message.contentAttributes
+      );
+    },
+    isPinned() {
+      return !!(this.message.pinned_at ?? this.message.pinnedAt);
+    },
+    signatureRequired() {
+      const account = this.getAccount(this.currentAccountId);
+      return account?.settings?.signature_agents_can_disable !== true;
+    },
+    canSaveEdit() {
+      const content = this.effectiveContent(this.editedContent);
+      return (
+        !!content && content !== this.effectiveContent(this.messageContent)
       );
     },
   },
@@ -140,6 +157,65 @@ export default {
       this.$emit('replyTo', this.message);
       this.handleClose();
     },
+    effectiveContent(content) {
+      const cleaned = (content || '').trim();
+      if (!this.signatureRequired) return cleaned;
+
+      const signature = (this.messageSignature || '').trim();
+      if (!signature || cleaned.endsWith(signature)) return cleaned;
+
+      return [cleaned, signature].filter(Boolean).join('\n');
+    },
+    openEditModal() {
+      this.editedContent = this.messageContent || '';
+      this.showEditModal = true;
+      this.handleClose();
+    },
+    closeEditModal() {
+      this.showEditModal = false;
+      this.editedContent = '';
+    },
+    async confirmEdit() {
+      if (!this.canSaveEdit || this.isEditingMessage) return;
+      this.isEditingMessage = true;
+      try {
+        await this.$store.dispatch('editMessage', {
+          conversationId: this.conversationId,
+          messageId: this.messageId,
+          content: this.effectiveContent(this.editedContent),
+        });
+        useAlert(this.$t('CONVERSATION.CONTEXT_MENU.EDIT_SUCCESS'));
+        this.closeEditModal();
+      } catch (error) {
+        useAlert(parseAPIErrorResponse(error));
+      } finally {
+        this.isEditingMessage = false;
+      }
+    },
+    async handlePin() {
+      try {
+        await this.$store.dispatch('pinMessage', {
+          conversationId: this.conversationId,
+          messageId: this.messageId,
+        });
+        useAlert(this.$t('CONVERSATION.PINNED.PIN_SUCCESS'));
+      } catch {
+        useAlert(this.$t('CONVERSATION.PINNED.PIN_ERROR'));
+      }
+      this.handleClose();
+    },
+    async handleUnpin() {
+      try {
+        await this.$store.dispatch('unpinMessage', {
+          conversationId: this.conversationId,
+          messageId: this.messageId,
+        });
+        useAlert(this.$t('CONVERSATION.PINNED.UNPIN_SUCCESS'));
+      } catch {
+        useAlert(this.$t('CONVERSATION.PINNED.UNPIN_ERROR'));
+      }
+      this.handleClose();
+    },
     openDeleteModal() {
       this.handleClose();
       this.showDeleteModal = true;
@@ -180,6 +256,47 @@ export default {
         :on-close="hideCannedResponseModal"
       />
     </woot-modal>
+    <!-- Edit Message -->
+    <woot-modal
+      v-if="showEditModal && enabledOptions['edit']"
+      v-model:show="showEditModal"
+      :on-close="closeEditModal"
+    >
+      <div class="edit-message-modal">
+        <h2 class="mb-2 text-base font-medium">
+          {{ $t('CONVERSATION.CONTEXT_MENU.EDIT_TITLE') }}
+        </h2>
+        <p class="mb-3 text-sm text-n-slate-11">
+          {{ $t('CONVERSATION.CONTEXT_MENU.EDIT_DESCRIPTION') }}
+        </p>
+        <p
+          v-if="signatureRequired"
+          class="mb-3 text-xs font-medium text-n-amber-11"
+        >
+          {{ $t('CONVERSATION.CONTEXT_MENU.EDIT_SIGNATURE_REQUIRED') }}
+        </p>
+        <textarea
+          v-model="editedContent"
+          class="w-full min-h-28 p-3 text-sm border rounded-lg resize-y border-n-weak bg-n-background focus:outline-none focus:ring-2 focus:ring-n-brand"
+          :placeholder="$t('CONVERSATION.CONTEXT_MENU.EDIT_PLACEHOLDER')"
+          maxlength="150000"
+        />
+        <div class="flex justify-end gap-2 mt-4">
+          <NextButton
+            faded
+            slate
+            :label="$t('CONVERSATION.CONTEXT_MENU.EDIT_CANCEL')"
+            @click="closeEditModal"
+          />
+          <NextButton
+            :label="$t('CONVERSATION.CONTEXT_MENU.EDIT_SAVE')"
+            :is-loading="isEditingMessage"
+            :disabled="!canSaveEdit || isEditingMessage"
+            @click="confirmEdit"
+          />
+        </div>
+      </div>
+    </woot-modal>
     <!-- Confirm Deletion -->
     <woot-delete-modal
       v-if="showDeleteModal && enabledOptions['delete']"
@@ -216,6 +333,33 @@ export default {
           }"
           variant="icon"
           @click.stop="handleReplyTo"
+        />
+        <MenuItem
+          v-if="enabledOptions['pin']"
+          :option="{
+            icon: 'pin',
+            label: $t('CONVERSATION.CONTEXT_MENU.PIN'),
+          }"
+          variant="icon"
+          @click.stop="handlePin"
+        />
+        <MenuItem
+          v-if="enabledOptions['unpin']"
+          :option="{
+            icon: 'pin',
+            label: $t('CONVERSATION.CONTEXT_MENU.UNPIN'),
+          }"
+          variant="icon"
+          @click.stop="handleUnpin"
+        />
+        <MenuItem
+          v-if="enabledOptions['edit']"
+          :option="{
+            icon: 'edit',
+            label: $t('CONVERSATION.CONTEXT_MENU.EDIT'),
+          }"
+          variant="icon"
+          @click.stop="openEditModal"
         />
         <MenuItem
           v-if="enabledOptions['copy']"
@@ -294,6 +438,14 @@ export default {
 
   hr {
     @apply m-1 border-b border-solid border-n-strong;
+  }
+}
+
+.edit-message-modal {
+  @apply p-6;
+
+  textarea {
+    @apply outline-none;
   }
 }
 

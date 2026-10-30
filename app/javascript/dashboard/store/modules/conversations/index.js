@@ -11,6 +11,7 @@ import { CONTENT_TYPES } from 'dashboard/components-next/message/constants.js';
 const state = {
   allConversations: [],
   attachments: {},
+  pinnedMessages: {},
   listLoadingStatus: true,
   chatStatusFilter: wootConstants.STATUS_TYPE.OPEN,
   chatSortFilter: wootConstants.SORT_BY_TYPE.LATEST,
@@ -155,6 +156,41 @@ export const mutations = {
   [types.ASSIGN_TEAM](_state, { team, conversationId }) {
     const [chat] = _state.allConversations.filter(c => c.id === conversationId);
     chat.meta.team = team;
+  },
+
+  [types.SET_PINNED_MESSAGES](_state, { conversationId, messages }) {
+    _state.pinnedMessages = {
+      ..._state.pinnedMessages,
+      [conversationId]: messages,
+    };
+  },
+
+  [types.UPSERT_PINNED_MESSAGE](_state, { conversationId, message }) {
+    const current = _state.pinnedMessages[conversationId] || [];
+    const next = current.filter(item => item.id !== message.id);
+    _state.pinnedMessages = {
+      ..._state.pinnedMessages,
+      [conversationId]: [message, ...next],
+    };
+  },
+
+  [types.REMOVE_PINNED_MESSAGE](_state, { conversationId, messageId }) {
+    const current = _state.pinnedMessages[conversationId] || [];
+    _state.pinnedMessages = {
+      ..._state.pinnedMessages,
+      [conversationId]: current.filter(item => item.id !== messageId),
+    };
+  },
+
+  [types.UPDATE_CONVERSATION_VISIBILITY](
+    _state,
+    { conversationId, visibility, privateOwnerId }
+  ) {
+    const chat = getConversationById(_state)(conversationId);
+    if (!chat) return;
+
+    chat.visibility = visibility;
+    chat.private_owner_id = privateOwnerId;
   },
 
   [types.UPDATE_CONVERSATION_LAST_ACTIVITY](

@@ -105,7 +105,17 @@ const notificationDetails = computed(() => {
   const type = props.inboxItem?.notificationType?.toUpperCase() || '';
   const [icon = '', color = 'text-n-blue-11'] =
     NOTIFICATION_TYPES_MAPPING[type] || [];
-  return { text: type ? t(`INBOX.TYPES_NEXT.${type}`) : '', icon, color };
+  if (!type) return { text: '', icon, color };
+
+  const translationKey = `INBOX.TYPES_NEXT.${type}`;
+  const translatedText = t(translationKey);
+  const fallbackText = type.replaceAll('_', ' ').toLowerCase();
+
+  return {
+    text: translatedText === translationKey ? fallbackText : translatedText,
+    icon,
+    color,
+  };
 });
 
 const snoozedUntilTime = computed(() => {

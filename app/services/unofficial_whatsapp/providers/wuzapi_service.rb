@@ -136,6 +136,16 @@ class UnofficialWhatsapp::Providers::WuzapiService < UnofficialWhatsapp::Provide
     end
   end
 
+  def mark_messages_as_read(phone_number, message_ids)
+    ids = Array(message_ids).compact_blank.uniq
+    return if ids.empty?
+
+    user_post('/chat/markread', {
+                'Id' => ids,
+                'ChatPhone' => whatsapp_jid(phone_number)
+              })
+  end
+
   def endpoint
     @endpoint ||= config_for('WUZAPI_ENDPOINT', nil).to_s.chomp('/')
   end
@@ -155,9 +165,25 @@ class UnofficialWhatsapp::Providers::WuzapiService < UnofficialWhatsapp::Provide
     GlobalConfig.get(key)[key].presence || ENV.fetch(key, default)
   end
 
+  def delete_message(message)
+    return if message.source_id.blank?
+
+    payload = {
+      'Phone' => message.conversation.contact_inbox.source_id,
+      'Id' => message.source_id
+    }
+    response = user_post('/chat/delete', payload)
+    parsed = response.parsed_response.is_a?(Hash) ? response.parsed_response : {}
+    return if response.success? && parsed['success'] != false
+
+    raise WuzapiError, error_message(response).to_s
+  end
+
   def send_text_message(phone_number, message)
     id = outbound_message_id(message)
-    response = user_post('/chat/send/text', { 'Phone' => phone_number, 'Body' => message.outgoing_content, 'Id' => id })
+    payload = { 'Phone' => phone_number, 'Body' => message.outgoing_content, 'Id' => id }
+    payload['ContextInfo'] = quoted_context_info if quoted_context_info.present?
+    response = user_post('/chat/send/text', payload)
     process_response(response, message, id)
   end
 
@@ -167,6 +193,7 @@ class UnofficialWhatsapp::Providers::WuzapiService < UnofficialWhatsapp::Provide
     media_type = wuzapi_media_type(attachment.file_type)
     payload = { 'Phone' => phone_number, media_type => data_url(attachment), 'Id' => id }
     payload['Caption'] = message.outgoing_content if %w[image video document].include?(media_type)
+    payload['ContextInfo'] = quoted_context_info if quoted_context_info.present?
     if media_type == 'audio'
       payload['MimeType'] = audio_mime_type(attachment)
       payload['PTT'] = true
@@ -186,6 +213,30 @@ class UnofficialWhatsapp::Providers::WuzapiService < UnofficialWhatsapp::Provide
   #   { "type": "buttons", "body": "...", "buttons": [{ "title": "...", "id": "..." }] }
   #   { "type": "list", "body": "...", "button": "Menu",
   #     "sections": [{ "title": "...", "rows": [{ "title": "...", "description": "...", "id": "..." }] }] }
+  def quoted_context_info
+    quoted_id = @message&.content_attributes&.dig('in_reply_to_external_id')
+    return if quoted_id.blank?
+
+    {
+      'StanzaId' => quoted_id,
+      'Participant' => quoted_participant_jid
+    }
+  end
+
+  def quoted_participant_jid
+    return whatsapp_jid(@message.conversation.contact_inbox.source_id) unless quoted_message&.outgoing?
+
+    business_number = @message.inbox.channel.try(:phone_number)
+    business_number.present? ? whatsapp_jid(business_number) : whatsapp_jid(@message.conversation.contact_inbox.source_id)
+  end
+
+  def quoted_message
+    return @quoted_message if defined?(@quoted_message)
+
+    quoted_message_id = @message&.content_attributes&.dig('in_reply_to')
+    @quoted_message = quoted_message_id.present? && @message.conversation.messages.find_by(id: quoted_message_id)
+  end
+
   def interactive_payload(message)
     attrs = message.content_attributes || {}
     data = attrs['interactive'] || attrs[:interactive]
