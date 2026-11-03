@@ -1,21 +1,28 @@
 <script>
-import parse from 'date-fns/parse';
 import differenceInMinutes from 'date-fns/differenceInMinutes';
 import { generateTimeSlots } from '../helpers/businessHour';
 import Icon from 'dashboard/components-next/icon/Icon.vue';
 import NextSelect from 'dashboard/components-next/select/Select.vue';
 
-const timeSlots = generateTimeSlots(30);
+const timeOptions = generateTimeSlots(30).map(value => ({
+  value,
+  label: value,
+}));
 
-const groupByPeriod = slots =>
-  ['AM', 'PM']
-    .map(period => ({
-      label: period,
-      options: slots
-        .filter(s => s.endsWith(period))
-        .map(s => ({ value: s, label: s })),
-    }))
-    .filter(g => g.options.length);
+const timeToDate = value => {
+  const [hour = 0, minute = 0] = value.split(':').map(Number);
+  return new Date(1970, 0, 1, hour, minute);
+};
+
+const isValidRange = (from, to) => {
+  if (!from || !to) return false;
+  return differenceInMinutes(timeToDate(to), timeToDate(from)) > 0;
+};
+
+const rangeMinutes = (from, to) => {
+  if (!isValidRange(from, to)) return 0;
+  return differenceInMinutes(timeToDate(to), timeToDate(from));
+};
 
 export default {
   components: {
@@ -32,17 +39,18 @@ export default {
       default: () => ({
         from: '',
         to: '',
+        from2: '',
+        to2: '',
+        secondPeriodEnabled: false,
+        valid2: true,
       }),
     },
   },
   emits: ['update'],
+  data() {
+    return { timeOptions };
+  },
   computed: {
-    fromTimeSlots() {
-      return groupByPeriod(timeSlots);
-    },
-    toTimeSlots() {
-      return groupByPeriod(timeSlots.filter(slot => slot !== '12:00 AM'));
-    },
     isDayEnabled: {
       get() {
         return Boolean(this.timeSlot.from && this.timeSlot.to);
@@ -51,8 +59,8 @@ export default {
         const newSlot = value
           ? {
               ...this.timeSlot,
-              from: timeSlots[0],
-              to: timeSlots[16],
+              from: '08:00',
+              to: '18:00',
               valid: true,
               openAllDay: false,
             }
@@ -60,7 +68,11 @@ export default {
               ...this.timeSlot,
               from: '',
               to: '',
+              from2: '',
+              to2: '',
+              secondPeriodEnabled: false,
               valid: false,
+              valid2: true,
               openAllDay: false,
             };
         this.$emit('update', newSlot);
@@ -71,12 +83,10 @@ export default {
         return this.timeSlot.from;
       },
       set(value) {
-        const fromDate = parse(value, 'hh:mm a', new Date());
-        const valid = differenceInMinutes(this.toDate, fromDate) / 60 > 0;
         this.$emit('update', {
           ...this.timeSlot,
           from: value,
-          valid,
+          valid: isValidRange(value, this.timeSlot.to),
         });
       },
     },
@@ -85,39 +95,73 @@ export default {
         return this.timeSlot.to;
       },
       set(value) {
-        const toDate = parse(value, 'hh:mm a', new Date());
-        if (value === '12:00 AM') {
-          this.$emit('update', {
-            ...this.timeSlot,
-            to: value,
-            valid: true,
-          });
-        } else {
-          const valid = differenceInMinutes(toDate, this.fromDate) / 60 > 0;
-          this.$emit('update', {
-            ...this.timeSlot,
-            to: value,
-            valid,
-          });
-        }
+        this.$emit('update', {
+          ...this.timeSlot,
+          to: value,
+          valid: isValidRange(this.timeSlot.from, value),
+        });
       },
     },
-    fromDate() {
-      return parse(this.fromTime, 'hh:mm a', new Date());
+    secondPeriodEnabled: {
+      get() {
+        return this.timeSlot.secondPeriodEnabled;
+      },
+      set(value) {
+        this.$emit('update', {
+          ...this.timeSlot,
+          secondPeriodEnabled: value,
+          from2: value ? this.timeSlot.from2 || '13:00' : '',
+          to2: value ? this.timeSlot.to2 || '18:00' : '',
+          valid2:
+            !value ||
+            isValidRange(
+              this.timeSlot.from2 || '13:00',
+              this.timeSlot.to2 || '18:00'
+            ),
+        });
+      },
     },
-    toDate() {
-      return parse(this.toTime, 'hh:mm a', new Date());
+    fromTime2: {
+      get() {
+        return this.timeSlot.from2;
+      },
+      set(value) {
+        this.$emit('update', {
+          ...this.timeSlot,
+          from2: value,
+          valid2: isValidRange(value, this.timeSlot.to2),
+        });
+      },
+    },
+    toTime2: {
+      get() {
+        return this.timeSlot.to2;
+      },
+      set(value) {
+        this.$emit('update', {
+          ...this.timeSlot,
+          to2: value,
+          valid2: isValidRange(this.timeSlot.from2, value),
+        });
+      },
     },
     totalHours() {
       if (this.timeSlot.openAllDay) return '24h';
 
-      const totalMinutes = differenceInMinutes(this.toDate, this.fromDate);
+      const totalMinutes =
+        rangeMinutes(this.timeSlot.from, this.timeSlot.to) +
+        (this.secondPeriodEnabled
+          ? rangeMinutes(this.timeSlot.from2, this.timeSlot.to2)
+          : 0);
       const [h, m] = [Math.floor(totalMinutes / 60), totalMinutes % 60];
 
       return [h && `${h}h`, m && `${m}m`].filter(Boolean).join(' ') || '0m';
     },
     hasError() {
-      return !this.timeSlot.valid;
+      return (
+        !this.timeSlot.valid ||
+        (this.secondPeriodEnabled && !this.timeSlot.valid2)
+      );
     },
     isOpenAllDay: {
       get() {
@@ -127,16 +171,20 @@ export default {
         if (value) {
           this.$emit('update', {
             ...this.timeSlot,
-            from: '12:00 AM',
-            to: '11:59 PM',
+            from: '00:00',
+            to: '23:59',
+            from2: '',
+            to2: '',
+            secondPeriodEnabled: false,
             valid: true,
+            valid2: true,
             openAllDay: value,
           });
         } else {
           this.$emit('update', {
             ...this.timeSlot,
-            from: '09:00 AM',
-            to: '05:00 PM',
+            from: '08:00',
+            to: '18:00',
             valid: true,
             openAllDay: value,
           });
@@ -164,8 +212,8 @@ export default {
       </div>
     </td>
     <td class="py-3 ltr:pr-3 rtl:pl-3">
-      <div v-if="isDayEnabled" class="flex flex-col gap-1.5">
-        <div class="flex items-center gap-4">
+      <div v-if="isDayEnabled" class="flex flex-col gap-2">
+        <div class="flex flex-wrap items-center gap-3">
           <div class="flex items-center gap-2">
             <input
               v-model="isOpenAllDay"
@@ -174,26 +222,53 @@ export default {
               type="checkbox"
               :title="$t('INBOX_MGMT.BUSINESS_HOURS.ALL_DAY')"
             />
-            <span class="text-body-main text-n-slate-12">{{
-              $t('INBOX_MGMT.BUSINESS_HOURS.ALL_DAY')
-            }}</span>
+            <span class="text-body-main text-n-slate-12">
+              {{ $t('INBOX_MGMT.BUSINESS_HOURS.ALL_DAY') }}
+            </span>
           </div>
           <NextSelect
             v-model="fromTime"
-            :groups="fromTimeSlots"
+            :options="timeOptions"
             :placeholder="$t('INBOX_MGMT.BUSINESS_HOURS.DAY.CHOOSE')"
             :disabled="isOpenAllDay"
           />
           <div class="flex items-center">
-            <Icon icon="i-lucide-minus size-4" />
+            <Icon icon="i-lucide-minus" class="size-4" />
           </div>
           <NextSelect
             v-model="toTime"
-            :groups="toTimeSlots"
+            :options="timeOptions"
             :placeholder="$t('INBOX_MGMT.BUSINESS_HOURS.DAY.CHOOSE')"
             :disabled="isOpenAllDay"
           />
         </div>
+
+        <label v-if="!isOpenAllDay" class="flex items-center gap-2">
+          <input v-model="secondPeriodEnabled" type="checkbox" class="m-0" />
+          <span class="text-body-main text-n-slate-11">
+            {{ $t('INBOX_MGMT.BUSINESS_HOURS.SECOND_PERIOD') }}
+          </span>
+        </label>
+
+        <div
+          v-if="secondPeriodEnabled"
+          class="flex flex-wrap items-center gap-3"
+        >
+          <NextSelect
+            v-model="fromTime2"
+            :options="timeOptions"
+            :placeholder="$t('INBOX_MGMT.BUSINESS_HOURS.DAY.CHOOSE')"
+          />
+          <div class="flex items-center">
+            <Icon icon="i-lucide-minus" class="size-4" />
+          </div>
+          <NextSelect
+            v-model="toTime2"
+            :options="timeOptions"
+            :placeholder="$t('INBOX_MGMT.BUSINESS_HOURS.DAY.CHOOSE')"
+          />
+        </div>
+
         <span v-if="hasError" class="error text-label-small text-n-ruby-9">
           {{ $t('INBOX_MGMT.BUSINESS_HOURS.DAY.VALIDATION_ERROR') }}
         </span>

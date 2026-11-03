@@ -9,7 +9,10 @@ class SmartReceptionListener < BaseListener
     conversation = message.conversation
     return unless conversation.account.feature_enabled?('saas_ai_smart_reception')
 
-    setting = conversation.inbox.smart_reception_setting
+    inbox = conversation.inbox
+    return if inbox.out_of_office?
+
+    setting = inbox.smart_reception_setting
     return unless setting&.enabled?
     return unless SmartReception::ConversationPolicy.available?(conversation)
 

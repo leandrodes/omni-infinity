@@ -51,6 +51,36 @@ RSpec.describe WorkingHour do
     end
   end
 
+  context 'with a second period' do
+    let(:inbox) { create(:inbox) }
+
+    before do
+      Time.zone = 'UTC'
+      inbox.working_hours.find_by(day_of_week: 5).update!(
+        open_hour: 8,
+        open_minutes: 0,
+        close_hour: 11,
+        close_minutes: 59,
+        second_period_enabled: true,
+        second_open_hour: 13,
+        second_open_minutes: 0,
+        second_close_hour: 18,
+        second_close_minutes: 0
+      )
+      travel_to '18.02.2022 14:00'.to_datetime
+    end
+
+    it 'considers the second period as business hours' do
+      expect(described_class.today.open_now?).to be true
+    end
+
+    it 'keeps the lunch break closed' do
+      travel_to '18.02.2022 12:30'.to_datetime do
+        expect(described_class.today.closed_now?).to be true
+      end
+    end
+  end
+
   context 'when open_all_day is true' do
     let(:inbox) { create(:inbox) }
 

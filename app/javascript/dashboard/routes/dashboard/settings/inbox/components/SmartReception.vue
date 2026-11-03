@@ -513,66 +513,69 @@ onMounted(() => {
           <div
             v-for="(rule, index) in rules"
             :key="index"
-            class="grid grid-cols-1 gap-2 p-3 border rounded-lg border-n-weak lg:grid-cols-12"
+            class="flex flex-col gap-3 p-3 border rounded-lg border-n-weak"
           >
-            <input
-              v-model="rule.keywords"
-              class="px-3 py-2 text-sm border rounded-lg reset-base lg:col-span-4 border-n-weak bg-n-alpha-black2 text-n-slate-12"
-              :placeholder="
-                t('INBOX_MGMT.SMART_RECEPTION.KEYWORDS_PLACEHOLDER')
-              "
-            />
-            <select
-              v-model="rule.action"
-              class="px-3 py-2 text-sm border rounded-lg reset-base lg:col-span-2 border-n-weak bg-n-alpha-black2 text-n-slate-12"
-            >
-              <option value="transfer">
-                {{ t('INBOX_MGMT.SMART_RECEPTION.TRANSFER') }}
-              </option>
-              <option value="resolve">
-                {{ t('INBOX_MGMT.SMART_RECEPTION.RESOLVE') }}
-              </option>
-            </select>
-            <select
-              v-if="rule.action === 'transfer'"
-              v-model="rule.team_id"
-              class="px-3 py-2 text-sm border rounded-lg reset-base lg:col-span-2 border-n-weak bg-n-alpha-black2 text-n-slate-12"
-            >
-              <option value="">
-                {{ t('INBOX_MGMT.SMART_RECEPTION.TEAM') }}
-              </option>
-              <option
-                v-for="team in teamOptions"
-                :key="team.value"
-                :value="team.value"
+            <div class="flex items-start gap-2">
+              <input
+                v-model="rule.keywords"
+                class="flex-1 min-w-0 px-3 py-2 text-sm border rounded-lg reset-base border-n-weak bg-n-alpha-black2 text-n-slate-12"
+                :placeholder="
+                  t('INBOX_MGMT.SMART_RECEPTION.KEYWORDS_PLACEHOLDER')
+                "
+              />
+              <NextButton
+                type="button"
+                ruby
+                faded
+                sm
+                icon="i-lucide-trash"
+                @click="removeRule(index)"
+              />
+            </div>
+            <div class="grid grid-cols-1 gap-2 md:grid-cols-3">
+              <select
+                v-model="rule.action"
+                class="w-full px-3 py-2 text-sm border rounded-lg reset-base border-n-weak bg-n-alpha-black2 text-n-slate-12"
               >
-                {{ team.label }}
-              </option>
-            </select>
-            <select
-              v-model="rule.label_id"
-              class="px-3 py-2 text-sm border rounded-lg reset-base lg:col-span-2 border-n-weak bg-n-alpha-black2 text-n-slate-12"
-            >
-              <option value="">
-                {{ t('INBOX_MGMT.SMART_RECEPTION.LABEL') }}
-              </option>
-              <option
-                v-for="label in labelOptions"
-                :key="label.value"
-                :value="label.value"
+                <option value="transfer">
+                  {{ t('INBOX_MGMT.SMART_RECEPTION.TRANSFER') }}
+                </option>
+                <option value="resolve">
+                  {{ t('INBOX_MGMT.SMART_RECEPTION.RESOLVE') }}
+                </option>
+              </select>
+              <select
+                v-if="rule.action === 'transfer'"
+                v-model="rule.team_id"
+                class="w-full px-3 py-2 text-sm border rounded-lg reset-base border-n-weak bg-n-alpha-black2 text-n-slate-12"
               >
-                {{ label.label }}
-              </option>
-            </select>
-            <NextButton
-              type="button"
-              ruby
-              faded
-              sm
-              icon="i-lucide-trash"
-              class="lg:col-span-1"
-              @click="removeRule(index)"
-            />
+                <option value="">
+                  {{ t('INBOX_MGMT.SMART_RECEPTION.TEAM') }}
+                </option>
+                <option
+                  v-for="team in teamOptions"
+                  :key="team.value"
+                  :value="team.value"
+                >
+                  {{ team.label }}
+                </option>
+              </select>
+              <select
+                v-model="rule.label_id"
+                class="w-full px-3 py-2 text-sm border rounded-lg reset-base border-n-weak bg-n-alpha-black2 text-n-slate-12"
+              >
+                <option value="">
+                  {{ t('INBOX_MGMT.SMART_RECEPTION.LABEL') }}
+                </option>
+                <option
+                  v-for="label in labelOptions"
+                  :key="label.value"
+                  :value="label.value"
+                >
+                  {{ label.label }}
+                </option>
+              </select>
+            </div>
           </div>
         </div>
       </section>
@@ -585,32 +588,36 @@ onMounted(() => {
           {{ t('INBOX_MGMT.SMART_RECEPTION.ATTACHMENTS_HELP') }}
         </p>
 
-        <div class="grid grid-cols-1 gap-2 mt-4 lg:grid-cols-12">
+        <div class="flex flex-col gap-3 mt-4">
           <input
             ref="attachmentInput"
             type="file"
-            class="text-sm lg:col-span-5 text-n-slate-11"
+            class="w-full text-sm text-n-slate-11"
             @change="onAttachmentSelected"
           />
-          <input
-            v-model="newAttachment.keywords"
-            class="px-3 py-2 text-sm border rounded-lg reset-base lg:col-span-3 border-n-weak bg-n-alpha-black2 text-n-slate-12"
-            :placeholder="t('INBOX_MGMT.SMART_RECEPTION.KEYWORDS_PLACEHOLDER')"
-          />
-          <input
-            v-model="newAttachment.caption"
-            class="px-3 py-2 text-sm border rounded-lg reset-base lg:col-span-2 border-n-weak bg-n-alpha-black2 text-n-slate-12"
-            :placeholder="t('INBOX_MGMT.SMART_RECEPTION.CAPTION')"
-          />
-          <NextButton
-            type="button"
-            sm
-            :is-loading="isUploading"
-            :disabled="!newAttachment.file || !newAttachment.keywords"
-            icon="i-lucide-upload"
-            :label="t('INBOX_MGMT.SMART_RECEPTION.ATTACH')"
-            @click="uploadAttachment"
-          />
+          <div class="grid grid-cols-1 gap-2 md:grid-cols-3">
+            <input
+              v-model="newAttachment.keywords"
+              class="w-full px-3 py-2 text-sm border rounded-lg reset-base border-n-weak bg-n-alpha-black2 text-n-slate-12"
+              :placeholder="
+                t('INBOX_MGMT.SMART_RECEPTION.KEYWORDS_PLACEHOLDER')
+              "
+            />
+            <input
+              v-model="newAttachment.caption"
+              class="w-full px-3 py-2 text-sm border rounded-lg reset-base border-n-weak bg-n-alpha-black2 text-n-slate-12"
+              :placeholder="t('INBOX_MGMT.SMART_RECEPTION.CAPTION')"
+            />
+            <NextButton
+              type="button"
+              sm
+              :is-loading="isUploading"
+              :disabled="!newAttachment.file || !newAttachment.keywords"
+              icon="i-lucide-upload"
+              :label="t('INBOX_MGMT.SMART_RECEPTION.ATTACH')"
+              @click="uploadAttachment"
+            />
+          </div>
         </div>
 
         <ul v-if="attachments.length" class="flex flex-col gap-2 mt-4">

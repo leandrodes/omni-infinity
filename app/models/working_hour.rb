@@ -36,7 +36,13 @@ class WorkingHour < ApplicationRecord
   validates :open_minutes,  inclusion: 0..59, unless: :closed_all_day?
   validates :close_minutes, inclusion: 0..59, unless: :closed_all_day?
 
+  validates :second_open_hour,     inclusion: 0..23, if: :second_period_enabled?
+  validates :second_close_hour,    inclusion: 0..23, if: :second_period_enabled?
+  validates :second_open_minutes,  inclusion: 0..59, if: :second_period_enabled?
+  validates :second_close_minutes, inclusion: 0..59, if: :second_period_enabled?
+
   validate :close_after_open, unless: :closed_all_day?
+  validate :second_close_after_open, if: :second_period_enabled?
   validate :open_all_day_and_closed_all_day
 
   def self.today
@@ -50,10 +56,8 @@ class WorkingHour < ApplicationRecord
     return false if closed_all_day?
     return true if open_all_day?
 
-    open_time = Time.zone.now.in_time_zone(inbox.timezone).change({ hour: open_hour, min: open_minutes })
-    close_time = Time.zone.now.in_time_zone(inbox.timezone).change({ hour: close_hour, min: close_minutes })
-
-    time.between?(open_time, close_time)
+    in_range?(time, open_hour, open_minutes, close_hour, close_minutes) ||
+      (second_period_enabled? && in_range?(time, second_open_hour, second_open_minutes, second_close_hour, second_close_minutes))
   end
 
   def open_now?
@@ -84,6 +88,21 @@ class WorkingHour < ApplicationRecord
     self.open_minutes = 0
     self.close_hour = 23
     self.close_minutes = 59
+    self.second_period_enabled = false
+  end
+
+  def in_range?(time, range_open_hour, range_open_minutes, range_close_hour, range_close_minutes)
+    current_time = time.in_time_zone(inbox.timezone)
+    open_time = current_time.change({ hour: range_open_hour, min: range_open_minutes })
+    close_time = current_time.change({ hour: range_close_hour, min: range_close_minutes })
+    time.between?(open_time, close_time)
+  end
+
+  def second_close_after_open
+    return if second_open_hour.blank? || second_open_minutes.blank? || second_close_hour.blank? || second_close_minutes.blank?
+    return if second_open_hour.hours + second_open_minutes.minutes < second_close_hour.hours + second_close_minutes.minutes
+
+    errors.add(:second_close_hour, 'Closing time cannot be before opening time')
   end
 
   def open_all_day_and_closed_all_day

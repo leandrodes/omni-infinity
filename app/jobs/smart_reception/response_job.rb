@@ -12,14 +12,15 @@ class SmartReception::ResponseJob < ApplicationJob
     conversation = Conversation.find_by(id: conversation_id)
     return unless conversation
 
-    setting = conversation.inbox.smart_reception_setting
+    inbox = conversation.inbox
+    setting = inbox.smart_reception_setting
     return unless setting&.enabled?
     return unless conversation.account.feature_enabled?('saas_ai_smart_reception')
 
     redis = Redis.new(Redis::Config.app)
     first_key = format(FIRST_MESSAGE_KEY, conversation.id)
 
-    unless SmartReception::ConversationPolicy.available?(conversation)
+    if inbox.out_of_office? || !SmartReception::ConversationPolicy.available?(conversation)
       redis.del(first_key)
       return
     end

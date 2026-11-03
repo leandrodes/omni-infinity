@@ -3,7 +3,8 @@
 module OutOfOffisable
   extend ActiveSupport::Concern
 
-  OFFISABLE_ATTRS = %w[day_of_week closed_all_day open_hour open_minutes close_hour close_minutes open_all_day].freeze
+  OFFISABLE_ATTRS = %w[day_of_week closed_all_day open_hour open_minutes close_hour close_minutes open_all_day
+                       second_period_enabled second_open_hour second_open_minutes second_close_hour second_close_minutes].freeze
   DEFAULT_WORKING_HOURS = [
     { day_of_week: 0, closed_all_day: true, open_all_day: false },
     { day_of_week: 1, open_hour: 9, open_minutes: 0, close_hour: 17, close_minutes: 0, open_all_day: false },
@@ -36,7 +37,12 @@ module OutOfOffisable
         'open_minutes' => wh.open_minutes,
         'close_hour' => wh.close_hour,
         'close_minutes' => wh.close_minutes,
-        'open_all_day' => wh.open_all_day
+        'open_all_day' => wh.open_all_day,
+        'second_period_enabled' => wh.second_period_enabled,
+        'second_open_hour' => wh.second_open_hour,
+        'second_open_minutes' => wh.second_open_minutes,
+        'second_close_hour' => wh.second_close_hour,
+        'second_close_minutes' => wh.second_close_minutes
       }
     end
   end

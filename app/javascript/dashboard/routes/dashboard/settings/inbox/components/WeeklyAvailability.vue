@@ -57,7 +57,11 @@ export default {
     ...mapGetters({ uiFlags: 'inboxes/getUIFlags' }),
     hasError() {
       if (!this.isBusinessHoursEnabled) return false;
-      return this.timeSlots.filter(slot => slot.from && !slot.valid).length > 0;
+      return this.timeSlots.some(
+        slot =>
+          (slot.from && !slot.valid) ||
+          (slot.secondPeriodEnabled && !slot.valid2)
+      );
     },
     timeZones() {
       return [...timeZoneOptions()];

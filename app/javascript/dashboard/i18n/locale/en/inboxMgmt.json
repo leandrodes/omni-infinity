@@ -1490,7 +1490,8 @@
         "VALIDATION_ERROR": "Starting time should be before closing time.",
         "CHOOSE": "Choose"
       },
-      "ALL_DAY": "All-Day"
+      "ALL_DAY": "All-Day",
+      "SECOND_PERIOD": "Add second time range"
     },
     "IMAP": {
       "TITLE": "IMAP",
@@ -1713,8 +1714,8 @@
       "KEYWORDS_PLACEHOLDER": "Keywords separated by comma",
       "TRANSFER": "Transfer to team",
       "RESOLVE": "Resolve conversation",
-      "TEAM": "Select team",
-      "LABEL": "Select label",
+      "TEAM": "Team",
+      "LABEL": "Label",
       "ATTACHMENTS_TITLE": "Attachments sent by the AI",
       "ATTACHMENTS_HELP": "When the message matches the keywords, the file is sent together with the AI response.",
       "CAPTION": "Optional caption",
