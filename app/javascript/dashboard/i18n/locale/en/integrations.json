@@ -27,6 +27,10 @@
     "LOADING": "Fetching integrations",
     "SEARCH_PLACEHOLDER": "Search integrations...",
     "NO_RESULTS": "No integrations found matching your search",
+    "TRANSCRIPTION": {
+      "TITLE": "Audio Transcription",
+      "DESCRIPTION": "Configure how incoming audio messages are transcribed, using the internal system or your own provider."
+    },
     "CAPTAIN": {
       "DISABLED": "Captain is not enabled on your account.",
       "CLICK_HERE_TO_CONFIGURE": "Click here to configure",
@@ -223,8 +227,8 @@
         }
       },
       "CTA_MODAL": {
-        "TITLE": "Integrate with OpenAI",
-        "DESC": "Bring advanced AI features to your dashboard with OpenAI's GPT models. To begin, enter the API key from your OpenAI account.",
+        "TITLE": "Configure Copilot",
+        "DESC": "Connect an AI provider to enable reply suggestions, summaries, and message improvements. Copilot uses OpenAI today; more providers will be added in the future.",
         "KEY_PLACEHOLDER": "Enter your OpenAI API key",
         "BUTTONS": {
           "NEED_HELP": "Need help?",

@@ -8,6 +8,7 @@ import DashboardApps from './DashboardApps/Index.vue';
 import Slack from './Slack.vue';
 import Linear from './Linear.vue';
 import Shopify from './Shopify.vue';
+import Transcription from './Transcription.vue';
 
 export default {
   routes: [
@@ -38,6 +39,15 @@ export default {
           path: 'webhook',
           component: Webhook,
           name: 'settings_integrations_webhook',
+          meta: {
+            featureFlag: FEATURE_FLAGS.INTEGRATIONS,
+            permissions: ['administrator'],
+          },
+        },
+        {
+          path: 'transcription',
+          component: Transcription,
+          name: 'settings_integrations_transcription',
           meta: {
             featureFlag: FEATURE_FLAGS.INTEGRATIONS,
             permissions: ['administrator'],

@@ -33,7 +33,7 @@ export function useCaptain() {
   });
 
   const captainTasksEnabled = computed(() => {
-    return isCloudFeatureEnabled(FEATURE_FLAGS.CAPTAIN_TASKS);
+    return isCloudFeatureEnabled(FEATURE_FLAGS.SAAS_AI_COPILOT);
   });
 
   // === Limits (Enterprise) ===

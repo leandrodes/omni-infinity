@@ -11,6 +11,7 @@
       "DISABLED": "Desativado"
     },
     "CONFIGURE": "Configurar",
+    "DISABLED_HINT": "Este recurso não está habilitado para a sua conta. Fale com o suporte para habilitar.",
     "ADD_BUTTON": "Adicionar um novo hook",
     "DELETE": {
       "TITLE": {

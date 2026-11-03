@@ -3,6 +3,7 @@ import { isEmptyObject } from '../../../../helper/commons';
 import { mapGetters } from 'vuex';
 import { useAlert } from 'dashboard/composables';
 import { useIntegrationHook } from 'dashboard/composables/useIntegrationHook';
+import { useAccount } from 'dashboard/composables/useAccount';
 import NewHook from './NewHook.vue';
 import SingleIntegrationHooks from './SingleIntegrationHooks.vue';
 import MultipleIntegrationHooks from './MultipleIntegrationHooks.vue';
@@ -25,6 +26,7 @@ export default {
   },
   setup(props) {
     const { integrationId } = props;
+    const { currentAccount } = useAccount();
 
     const {
       integration,
@@ -38,6 +40,7 @@ export default {
       isIntegrationMultiple,
       isIntegrationSingle,
       isHookTypeInbox,
+      currentAccount,
     };
   },
   data() {
@@ -51,8 +54,18 @@ export default {
   },
   computed: {
     ...mapGetters({ uiFlags: 'integrations/getUIFlags' }),
+    copilotDisabled() {
+      return (
+        this.integrationId === 'openai' &&
+        !this.currentAccount?.features?.saas_ai_copilot
+      );
+    },
     showIntegrationHooks() {
-      return !this.uiFlags.isFetching && !isEmptyObject(this.integration);
+      return (
+        !this.copilotDisabled &&
+        !this.uiFlags.isFetching &&
+        !isEmptyObject(this.integration)
+      );
     },
     showAddButton() {
       return this.showIntegrationHooks && this.isIntegrationMultiple;
@@ -126,6 +139,12 @@ export default {
       />
     </template>
     <template #body>
+      <div
+        v-if="copilotDisabled"
+        class="p-4 text-sm rounded-xl outline outline-1 outline-n-container bg-n-card text-n-slate-11"
+      >
+        {{ $t('INTEGRATION_APPS.DISABLED_HINT') }}
+      </div>
       <div v-if="showIntegrationHooks" class="w-full">
         <div v-if="isIntegrationMultiple">
           <MultipleIntegrationHooks

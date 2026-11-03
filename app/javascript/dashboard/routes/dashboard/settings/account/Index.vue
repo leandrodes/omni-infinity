@@ -13,7 +13,6 @@ import NextButton from 'dashboard/components-next/button/Button.vue';
 import AccountId from './components/AccountId.vue';
 import BuildInfo from './components/BuildInfo.vue';
 import AccountDelete from './components/AccountDelete.vue';
-import AudioTranscription from './components/AudioTranscription.vue';
 import SectionLayout from './components/SectionLayout.vue';
 
 export default {
@@ -23,7 +22,6 @@ export default {
     AccountId,
     BuildInfo,
     AccountDelete,
-    AudioTranscription,
     SectionLayout,
     WithLabel,
     NextInput,
@@ -60,9 +58,6 @@ export default {
       uiFlags: 'accounts/getUIFlags',
       isOnChatwootCloud: 'globalConfig/isOnChatwootCloud',
     }),
-    showAudioTranscriptionConfig() {
-      return true;
-    },
     languagesSortedByCode() {
       const enabledLanguages = [...this.enabledLanguages];
       return enabledLanguages.sort((l1, l2) =>
@@ -227,7 +222,6 @@ export default {
 
       <woot-loading-state v-if="uiFlags.isFetchingItem" />
     </div>
-    <AudioTranscription v-if="showAudioTranscriptionConfig" />
 
     <div v-if="!uiFlags.isFetchingItem && isOnChatwootCloud">
       <AccountDelete />

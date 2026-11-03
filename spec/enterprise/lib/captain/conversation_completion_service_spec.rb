@@ -14,7 +14,7 @@ RSpec.describe Captain::ConversationCompletionService do
     allow(mock_chat).to receive(:with_instructions)
     allow(mock_chat).to receive(:with_schema).and_return(mock_chat)
     allow(account).to receive(:feature_enabled?).and_call_original
-    allow(account).to receive(:feature_enabled?).with('captain_tasks').and_return(true)
+    allow(account).to receive(:feature_enabled?).with('saas_ai_copilot').and_return(true)
     allow(Integrations::Openai::KeyValidator).to receive(:valid?).and_return(true)
   end
 
@@ -263,9 +263,9 @@ RSpec.describe Captain::ConversationCompletionService do
       end
     end
 
-    context 'when captain_tasks feature is disabled' do
+    context 'when saas_ai_copilot feature is disabled' do
       before do
-        allow(account).to receive(:feature_enabled?).with('captain_tasks').and_return(false)
+        allow(account).to receive(:feature_enabled?).with('saas_ai_copilot').and_return(false)
         create(:message, conversation: conversation, message_type: :incoming, content: 'Hello')
       end
 

@@ -37,8 +37,13 @@ const showCopilotLauncher = computed(() => {
     currentAccountId.value,
     FEATURE_FLAGS.CAPTAIN
   );
+  const isCopilotEnabled = isFeatureEnabledonAccount.value(
+    currentAccountId.value,
+    FEATURE_FLAGS.SAAS_AI_COPILOT
+  );
   return (
     isCaptainEnabled &&
+    isCopilotEnabled &&
     !uiSettings.value.is_copilot_panel_open &&
     !isConversationRoute.value
   );

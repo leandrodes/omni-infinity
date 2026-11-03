@@ -22,6 +22,10 @@
     "LOADING": "Obtendo integrações",
     "SEARCH_PLACEHOLDER": "Pesquisar integrações...",
     "NO_RESULTS": "Nenhuma integração encontrada correspondente à sua busca",
+    "TRANSCRIPTION": {
+      "TITLE": "Transcrição de Áudio",
+      "DESCRIPTION": "Configure como as mensagens de áudio recebidas serão transcritas, usando o sistema interno ou um provedor próprio."
+    },
     "CAPTAIN": {
       "DISABLED": "O Captain não está ativado na sua conta.",
       "CLICK_HERE_TO_CONFIGURE": "Clique aqui para configurar",
@@ -218,8 +222,8 @@
         }
       },
       "CTA_MODAL": {
-        "TITLE": "Integração com o OpenAI",
-        "DESC": "Traga funcionalidades avançadas de IA para o seu painel com os modelos GPT da OpenAI. Para começar, insira a chave API da sua conta OpenAI.",
+        "TITLE": "Configurar Copiloto",
+        "DESC": "Conecte um provedor de IA para habilitar sugestões, resumos e melhorias nas mensagens. Hoje o Copiloto usa a OpenAI; novos provedores serão adicionados futuramente.",
         "KEY_PLACEHOLDER": "Insira sua chave de API da OpenAI",
         "BUTTONS": {
           "NEED_HELP": "Precisa de ajuda?",

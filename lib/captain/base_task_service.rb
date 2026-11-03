@@ -156,7 +156,7 @@ class Captain::BaseTaskService
   end
 
   def captain_tasks_enabled?
-    account.feature_enabled?('captain_tasks')
+    account.feature_enabled?('saas_ai_copilot')
   end
 
   # Extension point consulted by the Enterprise quota wrapper. Subclasses

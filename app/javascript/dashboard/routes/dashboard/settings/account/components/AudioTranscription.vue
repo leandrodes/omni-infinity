@@ -9,6 +9,10 @@ import NextInput from 'next/input/Input.vue';
 import NextButton from 'dashboard/components-next/button/Button.vue';
 import TranscriptionSettingsAPI from 'dashboard/api/transcriptionSettings';
 
+const props = defineProps({
+  embedded: { type: Boolean, default: false },
+});
+
 const { t } = useI18n();
 const { accountId, currentAccount, updateAccount } = useAccount();
 
@@ -108,9 +112,13 @@ const saveSettings = async () => {
 
 <template>
   <SectionLayout
-    :title="t('GENERAL_SETTINGS.FORM.AUDIO_TRANSCRIPTION.TITLE')"
-    :description="t('GENERAL_SETTINGS.FORM.AUDIO_TRANSCRIPTION.NOTE')"
-    with-border
+    :title="
+      props.embedded ? '' : t('GENERAL_SETTINGS.FORM.AUDIO_TRANSCRIPTION.TITLE')
+    "
+    :description="
+      props.embedded ? '' : t('GENERAL_SETTINGS.FORM.AUDIO_TRANSCRIPTION.NOTE')
+    "
+    :with-border="!props.embedded"
   >
     <template #headerActions>
       <div class="flex justify-end">
@@ -134,10 +142,7 @@ const saveSettings = async () => {
         </select>
       </div>
 
-      <p
-        v-if="systemBlocked"
-        class="text-sm font-medium text-n-ruby-11"
-      >
+      <p v-if="systemBlocked" class="text-sm font-medium text-n-ruby-11">
         {{
           t(
             'GENERAL_SETTINGS.FORM.AUDIO_TRANSCRIPTION.PROVIDER.SYSTEM_NOT_ALLOWED'
@@ -155,7 +160,9 @@ const saveSettings = async () => {
             type="text"
             class="w-full"
             :placeholder="
-              t('GENERAL_SETTINGS.FORM.AUDIO_TRANSCRIPTION.ENDPOINT.PLACEHOLDER')
+              t(
+                'GENERAL_SETTINGS.FORM.AUDIO_TRANSCRIPTION.ENDPOINT.PLACEHOLDER'
+              )
             "
           />
           <p class="mt-1 text-xs text-n-slate-11">
@@ -184,7 +191,9 @@ const saveSettings = async () => {
             type="text"
             class="w-full"
             :placeholder="
-              t('GENERAL_SETTINGS.FORM.AUDIO_TRANSCRIPTION.LANGUAGE.PLACEHOLDER')
+              t(
+                'GENERAL_SETTINGS.FORM.AUDIO_TRANSCRIPTION.LANGUAGE.PLACEHOLDER'
+              )
             "
           />
         </div>

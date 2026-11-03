@@ -12,7 +12,7 @@ RSpec.describe Captain::CsatUtilityAnalysisService do
   describe '#perform' do
     before do
       allow(account).to receive(:feature_enabled?).and_call_original
-      allow(account).to receive(:feature_enabled?).with('captain_tasks').and_return(true)
+      allow(account).to receive(:feature_enabled?).with('saas_ai_copilot').and_return(true)
       allow(service).to receive(:make_api_call).and_return({
                                                              message: '{"classification":"LIKELY_UTILITY","optimized_message":"Utility-safe message"}'
                                                            })

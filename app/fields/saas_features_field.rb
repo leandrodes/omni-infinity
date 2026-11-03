@@ -13,7 +13,6 @@ class SaasFeaturesField < Administrate::Field::Base
 
   OTHER_SAAS_FEATURES = %w[
     saas_groups
-    saas_campaigns
     saas_channel_wacalls
   ].freeze
 
@@ -25,6 +24,7 @@ class SaasFeaturesField < Administrate::Field::Base
   COMMUNICATION_FEATURES = %w[
     voice_recorder
     campaigns
+    whatsapp_campaign
   ].freeze
 
   # "Transcrição de Áudio" is backed by accounts.transcription_allow_system so
@@ -43,7 +43,7 @@ class SaasFeaturesField < Administrate::Field::Base
     shopify_integration whatsapp_embedded_signup
     whatsapp_embedded_signup_inbox_creation
     auto_resolve_conversations api_and_webhooks chatwoot_v4 crm_integration
-    ip_lookup report_rollup voice_recorder whatsapp_campaign
+    ip_lookup report_rollup voice_recorder whatsapp_campaign saas_campaigns
     whatsapp_manual_transfer
   ]).freeze
 
@@ -65,7 +65,8 @@ class SaasFeaturesField < Administrate::Field::Base
     'canned_responses' => 'Respostas prontas',
     'integrations' => 'Integrações',
     'voice_recorder' => 'Envio de Áudio',
-    'campaigns' => 'Campanhas',
+    'campaigns' => 'Campanhas WhatsApp Não Oficial',
+    'whatsapp_campaign' => 'Campanhas WhatsApp Oficial',
     'report_rollup' => 'Consolidação de relatórios',
     'channel_website' => 'Canal de site',
     'reports' => 'Relatórios',
@@ -77,7 +78,6 @@ class SaasFeaturesField < Administrate::Field::Base
     'chatwoot_v4' => 'Chatwoot V4',
     'channel_instagram' => 'Canal do Instagram',
     'crm_integration' => 'Integração de CRM',
-    'whatsapp_campaign' => 'Campanha de WhatsApp',
     'assignment_v2' => 'Atribuição Automática',
     'whatsapp_manual_transfer' => 'Transferência manual de WhatsApp',
     'data_import' => 'Importação de dados',

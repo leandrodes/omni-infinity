@@ -25,6 +25,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  disabled: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const getters = useStoreGetters();
@@ -51,6 +55,8 @@ const actionURL = computed(() =>
 <template>
   <div
     class="flex flex-col flex-1 p-4 m-px outline outline-n-container outline-1 bg-n-card rounded-xl"
+    :class="{ 'opacity-60 grayscale': disabled }"
+    :title="disabled ? $t('INTEGRATION_APPS.DISABLED_HINT') : ''"
   >
     <div class="flex items-start justify-between">
       <div class="flex h-12 w-12 mb-2">
@@ -74,7 +80,7 @@ const actionURL = computed(() =>
         class="font-medium mb-2 text-n-slate-12 flex justify-between items-center"
       >
         <span class="text-heading-3 text-n-slate-12">{{ name }}</span>
-        <router-link :to="actionURL">
+        <router-link v-if="!disabled" :to="actionURL">
           <Button
             :label="$t('INTEGRATION_APPS.CONFIGURE')"
             icon="i-woot-settings"
@@ -82,6 +88,14 @@ const actionURL = computed(() =>
             xs
           />
         </router-link>
+        <Button
+          v-else
+          :label="$t('INTEGRATION_APPS.CONFIGURE')"
+          icon="i-woot-settings"
+          link
+          xs
+          disabled
+        />
       </div>
       <p class="text-n-slate-11 text-body-main">
         {{ replaceInstallationName(description) }}

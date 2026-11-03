@@ -48,6 +48,7 @@ export const FEATURE_FLAGS = {
   CAPTAIN_CUSTOM_TOOLS: 'custom_tools',
   CAPTAIN_V2: 'captain_integration_v2',
   CAPTAIN_TASKS: 'captain_tasks',
+  SAAS_AI_COPILOT: 'saas_ai_copilot',
   CAPTAIN_DOCUMENT_AUTO_SYNC: 'captain_document_auto_sync',
   SAML: 'saml',
   COMPANIES: 'companies',

@@ -38,7 +38,7 @@ module Enterprise::Api::V1::Accounts::Articles::BulkActionsController
   end
 
   def captain_available?
-    return true if Current.account.feature_enabled?('captain_tasks')
+    return true if Current.account.feature_enabled?('saas_ai_copilot')
 
     render_could_not_create_error(I18n.t('portals.articles.captain_not_available'))
     false

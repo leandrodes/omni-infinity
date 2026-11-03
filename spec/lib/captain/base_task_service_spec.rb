@@ -26,7 +26,7 @@ RSpec.describe Captain::BaseTaskService do
     # Stub captain enabled check to allow OSS specs to test base functionality
     # without enterprise module interference
     allow(account).to receive(:feature_enabled?).and_call_original
-    allow(account).to receive(:feature_enabled?).with('captain_tasks').and_return(true)
+    allow(account).to receive(:feature_enabled?).with('saas_ai_copilot').and_return(true)
     allow(Integrations::Openai::KeyValidator).to receive(:valid?).and_return(true)
   end
 
@@ -125,9 +125,9 @@ RSpec.describe Captain::BaseTaskService do
       allow(mock_chat).to receive(:ask).and_return(mock_response)
     end
 
-    context 'when captain_tasks is disabled' do
+    context 'when saas_ai_copilot is disabled' do
       before do
-        allow(account).to receive(:feature_enabled?).with('captain_tasks').and_return(false)
+        allow(account).to receive(:feature_enabled?).with('saas_ai_copilot').and_return(false)
       end
 
       it 'returns disabled error' do

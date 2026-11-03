@@ -26,7 +26,7 @@ export function useLabelSuggestions() {
   const conversationId = computed(() => currentChat.value?.id);
 
   const captainTasksEnabled = computed(() => {
-    return isCloudFeatureEnabled(FEATURE_FLAGS.CAPTAIN_TASKS);
+    return isCloudFeatureEnabled(FEATURE_FLAGS.SAAS_AI_COPILOT);
   });
 
   const aiIntegration = computed(

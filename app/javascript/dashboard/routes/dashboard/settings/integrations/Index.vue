@@ -1,6 +1,8 @@
 <script setup>
 import { useStoreGetters, useStore } from 'dashboard/composables/store';
 import { computed, onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { useAccount } from 'dashboard/composables/useAccount';
 import { useBranding } from 'shared/composables/useBranding';
 import { picoSearch } from '@chatwoot/pico-search';
 import IntegrationItem from './IntegrationItem.vue';
@@ -9,14 +11,28 @@ import BaseSettingsHeader from '../components/BaseSettingsHeader.vue';
 
 const store = useStore();
 const getters = useStoreGetters();
+const { t } = useI18n();
+const { currentAccount } = useAccount();
 const { replaceInstallationName } = useBranding();
 
 const searchQuery = ref('');
 const uiFlags = getters['integrations/getUIFlags'];
 
-const integrationList = computed(
-  () => getters['integrations/getAppIntegrations'].value
+const copilotEnabled = computed(
+  () => !!currentAccount.value?.features?.saas_ai_copilot
 );
+
+const transcriptionItem = computed(() => ({
+  id: 'transcription',
+  name: t('INTEGRATION_SETTINGS.TRANSCRIPTION.TITLE'),
+  description: t('INTEGRATION_SETTINGS.TRANSCRIPTION.DESCRIPTION'),
+  enabled: !!currentAccount.value?.audio_transcriptions,
+}));
+
+const integrationList = computed(() => [
+  ...getters['integrations/getAppIntegrations'].value,
+  transcriptionItem.value,
+]);
 
 const filteredIntegrationList = computed(() => {
   const query = searchQuery.value.trim();
@@ -65,7 +81,10 @@ onMounted(() => {
             :logo="item.logo"
             :name="item.name"
             :description="item.description"
-            :enabled="item.enabled"
+            :enabled="
+              item.id === 'openai' && !copilotEnabled ? false : item.enabled
+            "
+            :disabled="item.id === 'openai' && !copilotEnabled"
           />
         </div>
       </div>

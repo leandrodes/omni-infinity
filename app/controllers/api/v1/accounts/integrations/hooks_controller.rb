@@ -2,6 +2,7 @@ class Api::V1::Accounts::Integrations::HooksController < Api::V1::Accounts::Inte
   before_action :fetch_hook, except: [:create]
   before_action :check_authorization
   before_action :ensure_shopify_enabled, if: :shopify_hook?
+  before_action :ensure_copilot_enabled, if: :openai_hook?, only: %i[create update]
 
   def create
     @hook = Current.account.hooks.create!(permitted_params)
@@ -46,5 +47,13 @@ class Api::V1::Accounts::Integrations::HooksController < Api::V1::Accounts::Inte
 
   def ensure_shopify_enabled
     head :not_found unless Shopify::FeatureGate.enabled?(account: Current.account)
+  end
+
+  def openai_hook?
+    action_name == 'create' ? permitted_params[:app_id] == 'openai' : @hook.app_id == 'openai'
+  end
+
+  def ensure_copilot_enabled
+    head :forbidden unless Current.account.feature_enabled?('saas_ai_copilot')
   end
 end

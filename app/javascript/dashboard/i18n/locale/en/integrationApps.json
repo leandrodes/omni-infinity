@@ -11,6 +11,7 @@
       "DISABLED": "Disabled"
     },
     "CONFIGURE": "Configure",
+    "DISABLED_HINT": "This feature is not enabled for your account. Contact support to enable it.",
     "ADD_BUTTON": "Add a new hook",
     "DELETE": {
       "TITLE": {

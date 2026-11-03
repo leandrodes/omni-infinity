@@ -39,7 +39,7 @@ RSpec.describe Captain::BaseTaskService, type: :model do
     before do
       allow(ChatwootApp).to receive(:chatwoot_cloud?).and_return(true)
       allow(account).to receive(:feature_enabled?).and_call_original
-      allow(account).to receive(:feature_enabled?).with('captain_tasks').and_return(true)
+      allow(account).to receive(:feature_enabled?).with('saas_ai_copilot').and_return(true)
       allow(Integrations::Openai::KeyValidator).to receive(:valid?).and_return(true)
     end
 
@@ -178,7 +178,7 @@ RSpec.describe Captain::BaseTaskService, type: :model do
 
     context 'when captain is disabled' do
       before do
-        allow(account).to receive(:feature_enabled?).with('captain_tasks').and_return(false)
+        allow(account).to receive(:feature_enabled?).with('saas_ai_copilot').and_return(false)
       end
 
       context 'when on Chatwoot Cloud' do
@@ -216,7 +216,7 @@ RSpec.describe Captain::BaseTaskService, type: :model do
 
     context 'when captain is enabled' do
       before do
-        allow(account).to receive(:feature_enabled?).with('captain_tasks').and_return(true)
+        allow(account).to receive(:feature_enabled?).with('saas_ai_copilot').and_return(true)
       end
 
       it 'proceeds with the task' do

@@ -47,7 +47,7 @@ RSpec.describe 'Article Bulk Actions API', type: :request do
 
     context 'when authenticated as admin' do
       before do
-        account.enable_features!('captain_tasks')
+        account.enable_features!('saas_ai_copilot')
       end
 
       it 'enqueues translation jobs for each article' do
