@@ -1382,7 +1382,14 @@
         "CHOOSE": "Selecione"
       },
       "ALL_DAY": "O dia todo",
-      "SECOND_PERIOD": "Adicionar segundo horário"
+      "SECOND_PERIOD": "Adicionar segundo horário",
+      "OUT_OF_OFFICE_ACTION": "Fora do horário de atendimento",
+      "OUT_OF_OFFICE_ACTION_HELP": "Escolha o que acontece com as conversas que receberem mensagens fora do horário de funcionamento.",
+      "OUT_OF_OFFICE_ACTION_NONE": "Manter conversa como está",
+      "OUT_OF_OFFICE_ACTION_RESOLVE": "Resolver conversa",
+      "OUT_OF_OFFICE_ACTION_PENDING_TEAM": "Deixar pendente em uma fila",
+      "OUT_OF_OFFICE_TEAM": "Fila/equipe para fora do horário",
+      "OUT_OF_OFFICE_TEAM_PLACEHOLDER": "Selecionar equipe"
     },
     "IMAP": {
       "TITLE": "IMAP",

@@ -49,17 +49,22 @@ class Inbox < ApplicationRecord
   include InboxBrandedEmailLayoutable
   include InboxBotStatus
 
+  OUT_OF_OFFICE_ACTIONS = %w[none resolve pending_team].freeze
+
   # Not allowing characters:
   validates :name, presence: true
   validates :account_id, presence: true
   validates :timezone, inclusion: { in: TZInfo::Timezone.all_identifiers }
   validates :out_of_office_message, length: { maximum: Limits::OUT_OF_OFFICE_MESSAGE_MAX_LENGTH }
   validates :greeting_message, length: { maximum: Limits::GREETING_MESSAGE_MAX_LENGTH }
+  validates :out_of_office_action, inclusion: { in: OUT_OF_OFFICE_ACTIONS }
+  validate :out_of_office_team_required
   validate :ensure_valid_max_assignment_limit
   validate :account_inbox_limit, on: :create
 
   belongs_to :account
   belongs_to :portal, optional: true
+  belongs_to :out_of_office_team, class_name: 'Team', optional: true
 
   belongs_to :channel, polymorphic: true, dependent: :destroy
 
@@ -214,6 +219,12 @@ class Inbox < ApplicationRecord
 
   def auto_assignment_v2_enabled?
     account.feature_enabled?('assignment_v2')
+  end
+
+  def out_of_office_team_required
+    return unless out_of_office_action == 'pending_team' && out_of_office_team_id.blank?
+
+    errors.add(:out_of_office_team_id, 'é obrigatório para deixar conversas pendentes em uma fila')
   end
 
   # Callers (Reauthorizable) only invoke this on a real transition, so the previous

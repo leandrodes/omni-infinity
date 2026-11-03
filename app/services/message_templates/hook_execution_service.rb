@@ -6,6 +6,7 @@ class MessageTemplates::HookExecutionService
     return if message.auto_reply_email?
 
     trigger_templates
+    apply_out_of_office_action
   end
 
   private
@@ -17,6 +18,13 @@ class MessageTemplates::HookExecutionService
     ::MessageTemplates::Template::OutOfOffice.new(conversation: conversation).perform if should_send_out_of_office_message?
     ::MessageTemplates::Template::Greeting.new(conversation: conversation).perform if should_send_greeting?
     ::MessageTemplates::Template::EmailCollect.new(conversation: conversation).perform if inbox.enable_email_collect && should_send_email_collect?
+  end
+
+  def apply_out_of_office_action
+    return unless message.incoming?
+    return unless inbox.out_of_office?
+
+    ::Inboxes::OutOfOfficeActionService.new(conversation: conversation).perform
   end
 
   def should_send_out_of_office_message?

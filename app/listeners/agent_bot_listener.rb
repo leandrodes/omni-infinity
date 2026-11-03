@@ -18,7 +18,6 @@ class AgentBotListener < BaseListener
     agent_bots_for(inbox, conversation).each { |agent_bot| process_webhook_bot_event(agent_bot, payload) }
   end
 
-
   def conversation_updated(event)
     conversation = extract_conversation_and_account(event)[0]
     changed_attributes = extract_changed_attributes(event)
@@ -31,6 +30,7 @@ class AgentBotListener < BaseListener
   def message_created(event)
     message = extract_message_and_account(event)[0]
     inbox = message.inbox
+    return if inbox.out_of_office?
     return unless message.webhook_sendable?
     return if message.conversation.resolved?
     return if chatbot_keyword_message?(message)
@@ -68,6 +68,7 @@ class AgentBotListener < BaseListener
   def message_updated(event)
     message = extract_message_and_account(event)[0]
     inbox = message.inbox
+    return if inbox.out_of_office?
     return unless message.webhook_sendable?
 
     method_name = __method__.to_s

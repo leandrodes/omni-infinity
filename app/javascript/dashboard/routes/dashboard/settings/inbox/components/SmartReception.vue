@@ -314,13 +314,13 @@ onMounted(() => {
         />
       </SettingsFieldSection>
 
-      <details class="mt-4 border rounded-xl border-n-weak bg-n-card">
-        <summary
-          class="px-4 py-3 text-sm font-medium cursor-pointer text-n-slate-12"
-        >
-          {{ t('INBOX_MGMT.SMART_RECEPTION.ADVANCED') }}
-        </summary>
-        <div class="flex flex-col gap-2 px-4 pb-4">
+      <section class="mt-4 border rounded-xl border-n-weak bg-n-card">
+        <div class="px-4 py-3 border-b border-n-weak">
+          <h3 class="text-heading-3 text-n-slate-12">
+            {{ t('INBOX_MGMT.SMART_RECEPTION.ADVANCED') }}
+          </h3>
+        </div>
+        <div class="flex flex-col gap-2 px-4 py-4">
           <SettingsFieldSection
             :label="t('INBOX_MGMT.SMART_RECEPTION.TEMPERATURE')"
             :help-text="t('INBOX_MGMT.SMART_RECEPTION.TEMPERATURE_HELP')"
@@ -486,7 +486,7 @@ onMounted(() => {
             <Switch v-model="form.read_help_center" />
           </SettingsFieldSection>
         </div>
-      </details>
+      </section>
 
       <section class="p-4 mt-4 border rounded-xl border-n-weak bg-n-card">
         <div class="flex items-start justify-between gap-4">

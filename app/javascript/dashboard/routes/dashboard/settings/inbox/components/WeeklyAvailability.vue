@@ -14,6 +14,7 @@ import {
 } from '../helpers/businessHour';
 import NextButton from 'dashboard/components-next/button/Button.vue';
 import ComboBox from 'dashboard/components-next/combobox/ComboBox.vue';
+import NextSelect from 'dashboard/components-next/select/Select.vue';
 
 const DEFAULT_TIMEZONE = {
   label: 'Pacific Time (US & Canada) (GMT-07:00)',
@@ -28,6 +29,7 @@ export default {
     NextButton,
     WootMessageEditor,
     ComboBox,
+    NextSelect,
   },
   mixins: [inboxMixin],
   props: {
@@ -41,6 +43,8 @@ export default {
       isBusinessHoursEnabled: false,
       unavailableMessage: '',
       timeZone: DEFAULT_TIMEZONE,
+      outOfOfficeAction: 'none',
+      outOfOfficeTeamId: '',
       dayNames: {
         0: 'Sunday',
         1: 'Monday',
@@ -54,9 +58,41 @@ export default {
     };
   },
   computed: {
-    ...mapGetters({ uiFlags: 'inboxes/getUIFlags' }),
+    ...mapGetters({ uiFlags: 'inboxes/getUIFlags', teams: 'teams/getTeams' }),
+    outOfOfficeActionOptions() {
+      return [
+        {
+          value: 'none',
+          label: this.$t('INBOX_MGMT.BUSINESS_HOURS.OUT_OF_OFFICE_ACTION_NONE'),
+        },
+        {
+          value: 'resolve',
+          label: this.$t(
+            'INBOX_MGMT.BUSINESS_HOURS.OUT_OF_OFFICE_ACTION_RESOLVE'
+          ),
+        },
+        {
+          value: 'pending_team',
+          label: this.$t(
+            'INBOX_MGMT.BUSINESS_HOURS.OUT_OF_OFFICE_ACTION_PENDING_TEAM'
+          ),
+        },
+      ];
+    },
+    outOfOfficeTeamOptions() {
+      return (this.teams || []).map(team => ({
+        value: team.id,
+        label: team.name,
+      }));
+    },
     hasError() {
       if (!this.isBusinessHoursEnabled) return false;
+      if (
+        this.outOfOfficeAction === 'pending_team' &&
+        !this.outOfOfficeTeamId
+      ) {
+        return true;
+      }
       return this.timeSlots.some(
         slot =>
           (slot.from && !slot.valid) ||
@@ -92,6 +128,7 @@ export default {
   },
   mounted() {
     this.setDefaults();
+    this.$store.dispatch('teams/get');
   },
   methods: {
     setDefaults() {
@@ -100,6 +137,8 @@ export default {
         out_of_office_message: unavailableMessage,
         working_hours: timeSlots = [],
         timezone: timeZone,
+        out_of_office_action: outOfOfficeAction = 'none',
+        out_of_office_team_id: outOfOfficeTeamId,
       } = this.inbox;
       const slots = timeSlotParse(timeSlots).length
         ? timeSlotParse(timeSlots)
@@ -107,6 +146,8 @@ export default {
       this.isBusinessHoursEnabled = isEnabled;
       this.unavailableMessage = unavailableMessage || '';
       this.timeSlots = slots;
+      this.outOfOfficeAction = outOfOfficeAction || 'none';
+      this.outOfOfficeTeamId = outOfOfficeTeamId || '';
       this.timeZone =
         this.timeZones.find(item => timeZone === item.value) ||
         DEFAULT_TIMEZONE;
@@ -125,6 +166,11 @@ export default {
           out_of_office_message: this.unavailableMessage,
           working_hours: timeSlotTransform(this.timeSlots),
           timezone: this.timeZone.value,
+          out_of_office_action: this.outOfOfficeAction,
+          out_of_office_team_id:
+            this.outOfOfficeAction === 'pending_team'
+              ? this.outOfOfficeTeamId
+              : null,
           channel: {},
         };
         await this.$store.dispatch('inboxes/updateInbox', payload);
@@ -178,6 +224,30 @@ export default {
         :options="timeZones"
         :placeholder="$t('INBOX_MGMT.BUSINESS_HOURS.DAY.CHOOSE')"
         class="[&>div>button]:!bg-n-alpha-black2"
+      />
+    </SettingsFieldSection>
+
+    <SettingsFieldSection
+      v-if="isBusinessHoursEnabled"
+      :label="$t('INBOX_MGMT.BUSINESS_HOURS.OUT_OF_OFFICE_ACTION')"
+      :help-text="$t('INBOX_MGMT.BUSINESS_HOURS.OUT_OF_OFFICE_ACTION_HELP')"
+    >
+      <NextSelect
+        v-model="outOfOfficeAction"
+        :options="outOfOfficeActionOptions"
+      />
+    </SettingsFieldSection>
+
+    <SettingsFieldSection
+      v-if="isBusinessHoursEnabled && outOfOfficeAction === 'pending_team'"
+      :label="$t('INBOX_MGMT.BUSINESS_HOURS.OUT_OF_OFFICE_TEAM')"
+    >
+      <NextSelect
+        v-model="outOfOfficeTeamId"
+        :options="outOfOfficeTeamOptions"
+        :placeholder="
+          $t('INBOX_MGMT.BUSINESS_HOURS.OUT_OF_OFFICE_TEAM_PLACEHOLDER')
+        "
       />
     </SettingsFieldSection>
 

@@ -19,6 +19,7 @@ module Typebot
       return if message.content_attributes&.dig('bot_response')
       return if message.content_attributes&.dig('campaign_id')
       return if message.content.blank?
+      return if message.inbox.out_of_office?
       return unless Typebot::ConversationPolicy.bot_enabled?(message.conversation)
 
       config = Typebot::AgentBotConfig.for_inbox(message.inbox)

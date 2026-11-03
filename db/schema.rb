@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_11_03_000003) do
+ActiveRecord::Schema[7.2].define(version: 2026_11_03_000004) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -1192,8 +1192,11 @@ ActiveRecord::Schema[7.2].define(version: 2026_11_03_000003) do
     t.string "business_name"
     t.jsonb "csat_config", default: {}, null: false
     t.boolean "transcribe_audio", default: true, null: false
+    t.string "out_of_office_action", default: "none", null: false
+    t.bigint "out_of_office_team_id"
     t.index ["account_id"], name: "index_inboxes_on_account_id"
     t.index ["channel_id", "channel_type"], name: "index_inboxes_on_channel_id_and_channel_type"
+    t.index ["out_of_office_team_id"], name: "index_inboxes_on_out_of_office_team_id"
     t.index ["portal_id"], name: "index_inboxes_on_portal_id"
   end
 
@@ -1799,6 +1802,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_11_03_000003) do
   add_foreign_key "contact_attachments", "contacts"
   add_foreign_key "conversations", "users", column: "private_owner_id", on_delete: :nullify
   add_foreign_key "inboxes", "portals"
+  add_foreign_key "inboxes", "teams", column: "out_of_office_team_id", on_delete: :nullify
   add_foreign_key "messages", "users", column: "pinned_by_id", on_delete: :nullify
   add_foreign_key "oauth_access_grants", "oauth_applications", column: "application_id"
   add_foreign_key "oauth_access_tokens", "oauth_applications", column: "application_id"
