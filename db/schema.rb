@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_11_03_000001) do
+ActiveRecord::Schema[7.2].define(version: 2026_11_03_000002) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -1546,6 +1546,56 @@ ActiveRecord::Schema[7.2].define(version: 2026_11_03_000001) do
     t.index ["account_id"], name: "index_sla_policies_on_account_id"
   end
 
+  create_table "smart_reception_attachments", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "smart_reception_setting_id", null: false
+    t.string "keywords"
+    t.string "caption"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_smart_reception_attachments_on_account_id"
+    t.index ["smart_reception_setting_id"], name: "index_smart_reception_attachments_on_setting"
+  end
+
+  create_table "smart_reception_keyword_rules", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "smart_reception_setting_id", null: false
+    t.string "keywords", null: false
+    t.string "action", default: "transfer", null: false
+    t.bigint "team_id"
+    t.bigint "label_id"
+    t.boolean "enabled", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_smart_reception_keyword_rules_on_account_id"
+    t.index ["smart_reception_setting_id"], name: "index_smart_reception_rules_on_setting"
+  end
+
+  create_table "smart_reception_settings", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "inbox_id", null: false
+    t.string "name", default: "Recepção Inteligente", null: false
+    t.string "provider", default: "openai", null: false
+    t.string "model", default: "gpt-4.1-mini", null: false
+    t.text "api_key"
+    t.decimal "temperature", precision: 2, scale: 1, default: "0.2", null: false
+    t.integer "max_response_tokens", default: 500, null: false
+    t.integer "max_history_messages", default: 20, null: false
+    t.boolean "use_previous_conversations", default: false, null: false
+    t.integer "min_wait_seconds", default: 5, null: false
+    t.integer "max_wait_seconds", default: 20, null: false
+    t.text "primary_prompt"
+    t.text "secondary_prompt"
+    t.bigint "label_id"
+    t.bigint "team_id"
+    t.boolean "read_help_center", default: false, null: false
+    t.boolean "enabled", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_smart_reception_settings_on_account_id"
+    t.index ["inbox_id"], name: "index_smart_reception_settings_on_inbox_id", unique: true
+  end
+
   create_table "taggings", id: :serial, force: :cascade do |t|
     t.integer "tag_id"
     t.string "taggable_type"
@@ -1748,6 +1798,12 @@ ActiveRecord::Schema[7.2].define(version: 2026_11_03_000001) do
   add_foreign_key "oauth_access_grants", "oauth_applications", column: "application_id"
   add_foreign_key "oauth_access_tokens", "oauth_applications", column: "application_id"
   add_foreign_key "oauth_openid_requests", "oauth_access_grants", column: "access_grant_id", on_delete: :cascade
+  add_foreign_key "smart_reception_attachments", "accounts"
+  add_foreign_key "smart_reception_attachments", "smart_reception_settings"
+  add_foreign_key "smart_reception_keyword_rules", "accounts"
+  add_foreign_key "smart_reception_keyword_rules", "smart_reception_settings"
+  add_foreign_key "smart_reception_settings", "accounts"
+  add_foreign_key "smart_reception_settings", "inboxes"
   add_foreign_key "transcription_settings", "accounts"
   add_foreign_key "typebot_account_workspaces", "accounts", on_delete: :cascade
   add_foreign_key "typebot_conversations", "conversations", on_delete: :cascade

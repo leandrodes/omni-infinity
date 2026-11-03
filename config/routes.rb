@@ -315,6 +315,8 @@ Rails.application.routes.draw do
             get :agent_bot, on: :member
             get :message_templates, on: :member
             post :set_agent_bot, on: :member
+            resource :smart_reception_setting, only: [:show, :update], controller: 'smart_reception/settings'
+            resources :smart_reception_attachments, only: [:create, :destroy], controller: 'smart_reception/attachments'
             delete :avatar, on: :member
             post :sync_templates, on: :member
             put :whatsapp_business_management_token, on: :member

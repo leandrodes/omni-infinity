@@ -27,6 +27,7 @@ import WhatsappCallingPage from './settingsPage/WhatsappCallingPage.vue';
 import CustomerSatisfactionPage from './settingsPage/CustomerSatisfactionPage.vue';
 import CollaboratorsPage from './settingsPage/CollaboratorsPage.vue';
 import BotConfiguration from './components/BotConfiguration.vue';
+import SmartReception from './components/SmartReception.vue';
 import AccountHealth from './components/AccountHealth.vue';
 import TwilioHealth from './components/TwilioHealth.vue';
 import WhatsappManualMigrationDialog from './components/WhatsappManualMigrationDialog.vue';
@@ -55,6 +56,7 @@ export default {
   components: {
     Banner,
     BotConfiguration,
+    SmartReception,
     CollaboratorsPage,
     ConfigurationPage,
     VoiceConfigurationPage,
@@ -170,6 +172,14 @@ export default {
     shouldShowTwilioHealth() {
       return this.isATwilioChannel && this.inbox.medium === 'sms';
     },
+    isSmartReceptionInbox() {
+      return [
+        'Channel::Whatsapp',
+        'Channel::UnofficialWhatsapp',
+        'Channel::Telegram',
+        'Channel::WebWidget',
+      ].includes(this.inbox.channel_type);
+    },
     whatsAppAPIProviderName() {
       if (this.isAWhatsAppCloudChannel) {
         return this.$t('INBOX_MGMT.ADD.WHATSAPP.PROVIDERS.WHATSAPP_CLOUD');
@@ -241,6 +251,22 @@ export default {
           {
             key: 'bot-configuration',
             name: this.$t('INBOX_MGMT.TABS.BOT_CONFIGURATION'),
+          },
+        ];
+      }
+
+      if (
+        this.isSmartReceptionInbox &&
+        this.isFeatureEnabledonAccount(
+          this.accountId,
+          FEATURE_FLAGS.SAAS_AI_SMART_RECEPTION
+        )
+      ) {
+        visibleToAllChannelTabs = [
+          ...visibleToAllChannelTabs,
+          {
+            key: 'smart-reception',
+            name: this.$t('INBOX_MGMT.TABS.SMART_RECEPTION'),
           },
         ];
       }
@@ -1424,6 +1450,9 @@ export default {
         </div>
         <div v-if="selectedTabKey === 'bot-configuration'">
           <BotConfiguration :inbox="inbox" />
+        </div>
+        <div v-if="selectedTabKey === 'smart-reception'">
+          <SmartReception :inbox="inbox" />
         </div>
         <div v-if="selectedTabKey === 'whatsapp-health'">
           <AccountHealth

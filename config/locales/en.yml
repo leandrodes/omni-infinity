@@ -415,6 +415,15 @@ en:
       transcript_subject: 'Conversation Transcript'
     survey:
       response: 'Please rate this conversation, %{link}'
+  smart_reception:
+    actions:
+      transfer: Transfer to team
+      resolve: Resolve conversation
+    errors:
+      chatbot_enabled: Disconnect the chatbot before enabling Smart Reception.
+      smart_reception_enabled: Disconnect Smart Reception before enabling the chatbot.
+      disabled: Smart Reception is not enabled for this account.
+      setting_missing: Configure Smart Reception before adding attachments.
   contacts:
     online:
       delete: '%{contact_name} is Online, please try again later'

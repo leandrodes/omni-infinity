@@ -1,3 +1,4 @@
+# rubocop:disable Metrics/ClassLength
 class Api::V1::Accounts::InboxesController < Api::V1::Accounts::BaseController
   include Api::V1::InboxesHelper
   before_action :fetch_inbox, except: [:index, :create]
@@ -68,6 +69,11 @@ class Api::V1::Accounts::InboxesController < Api::V1::Accounts::BaseController
   end
 
   def set_agent_bot
+    if @agent_bot && @inbox.smart_reception_setting&.enabled?
+      return render json: { error: I18n.t('smart_reception.errors.smart_reception_enabled') },
+                    status: :unprocessable_entity
+    end
+
     if @agent_bot
       agent_bot_inbox = @inbox.agent_bot_inbox || AgentBotInbox.new(inbox: @inbox)
       agent_bot_inbox.agent_bot = @agent_bot
@@ -239,3 +245,4 @@ class Api::V1::Accounts::InboxesController < Api::V1::Accounts::BaseController
 end
 
 Api::V1::Accounts::InboxesController.prepend_mod_with('Api::V1::Accounts::InboxesController')
+# rubocop:enable Metrics/ClassLength

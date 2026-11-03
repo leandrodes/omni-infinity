@@ -386,6 +386,15 @@ pt_BR:
       transcript_subject: 'Transcrição da conversa'
     survey:
       response: 'Por favor, classifique esta conversa, %{link}'
+  smart_reception:
+    actions:
+      transfer: Transferir para equipe
+      resolve: Resolver conversa
+    errors:
+      chatbot_enabled: Desconecte o chatbot antes de habilitar a Recepção Inteligente.
+      smart_reception_enabled: Desconecte a Recepção Inteligente antes de habilitar o chatbot.
+      disabled: A Recepção Inteligente não está habilitada para esta conta.
+      setting_missing: Configure a Recepção Inteligente antes de adicionar anexos.
   contacts:
     online:
       delete: '%{contact_name} está Online, por favor, tente novamente mais tarde'
