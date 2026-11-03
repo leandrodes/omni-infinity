@@ -303,13 +303,14 @@ const onSelectMacro = macro => {
 function createSuggestionPlugin({
   trigger,
   minChars = 0,
+  matcher,
   showMenu,
   searchTerm,
   isAllowed = () => true,
   interceptEnter = false,
 }) {
   return suggestionsPlugin({
-    matcher: triggerCharacters(trigger, minChars),
+    matcher: matcher || triggerCharacters(trigger, minChars),
     suggestionClass: '',
     onEnter: args => {
       if (!isAllowed()) return false;
@@ -335,6 +336,33 @@ function createSuggestionPlugin({
     },
   });
 }
+
+// Macros should only trigger at the start of a line with "#" followed by a letter.
+// This keeps USSD-style text like *21# and *22# from opening the macro picker.
+const macroTriggerMatcher = $position => {
+  if ($position.depth === 0) return null;
+
+  const textFrom = $position.before();
+  const textTo = $position.end();
+  const text = $position.doc.textBetween(textFrom, textTo, '\0', '\0');
+  const cursorOffset = $position.pos - $position.start();
+  const lineBreakIndex = Math.max(
+    text.lastIndexOf('\n', cursorOffset - 1),
+    text.lastIndexOf('\0', cursorOffset - 1)
+  );
+  const lineStart = lineBreakIndex + 1;
+  const lineToCursor = text.slice(lineStart, cursorOffset);
+
+  if (!/^#\p{L}/u.test(lineToCursor)) return null;
+
+  return {
+    range: {
+      from: $position.start() + lineStart,
+      to: $position.pos,
+    },
+    text: lineToCursor.slice(1),
+  };
+};
 
 const plugins = computed(() => {
   if (!props.enableSuggestions) {
@@ -373,6 +401,7 @@ const plugins = computed(() => {
     }),
     createSuggestionPlugin({
       trigger: '#',
+      matcher: macroTriggerMatcher,
       showMenu: showMacroMenu,
       searchTerm: macroSearchKey,
       isAllowed: () => props.enableMacros,
