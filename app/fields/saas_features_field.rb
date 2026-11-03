@@ -22,16 +22,21 @@ class SaasFeaturesField < Administrate::Field::Base
     saas_ai_smart_reception
   ].freeze
 
+  COMMUNICATION_FEATURES = %w[
+    voice_recorder
+    campaigns
+  ].freeze
+
   # "Transcrição de Áudio" is backed by accounts.transcription_allow_system so
   # that toggling it controls the internal (system) Whisper directly. The flag
   # is kept out of the rendered lists to avoid a duplicated toggle.
-  TRANSCRIPTION_FLAG = 'saas_ai_transcription'
+  TRANSCRIPTION_FLAG = 'saas_ai_transcription'.freeze
 
-  SAAS_FEATURES = (FUNCTIONALITY_FEATURES + OTHER_SAAS_FEATURES + AI_FEATURES + [TRANSCRIPTION_FLAG]).freeze
+  SAAS_FEATURES = (FUNCTIONALITY_FEATURES + OTHER_SAAS_FEATURES + AI_FEATURES + COMMUNICATION_FEATURES + [TRANSCRIPTION_FLAG]).freeze
 
   # Features that either already have their own SaaS toggle or are Captain/
   # enterprise-adjacent and should not show up under "Outras funcionalidades".
-  HIDDEN_OTHER_FEATURES = (FUNCTIONALITY_FEATURES + AI_FEATURES + [TRANSCRIPTION_FLAG] + %w[
+  HIDDEN_OTHER_FEATURES = (FUNCTIONALITY_FEATURES + AI_FEATURES + COMMUNICATION_FEATURES + [TRANSCRIPTION_FLAG] + %w[
     campaigns captain_tasks
     captain_integration captain_integration_v2
     linear_integration notion_integration channel_tiktok
@@ -59,7 +64,8 @@ class SaasFeaturesField < Administrate::Field::Base
     'automations' => 'Automações',
     'canned_responses' => 'Respostas prontas',
     'integrations' => 'Integrações',
-    'voice_recorder' => 'Gravador de voz',
+    'voice_recorder' => 'Envio de Áudio',
+    'campaigns' => 'Campanhas',
     'report_rollup' => 'Consolidação de relatórios',
     'channel_website' => 'Canal de site',
     'reports' => 'Relatórios',
@@ -92,10 +98,9 @@ class SaasFeaturesField < Administrate::Field::Base
     @other_features ||= begin
       premium = SuperAdmin::AccountFeaturesHelper.account_premium_features
       features = SuperAdmin::AccountFeaturesHelper.filtered_features(data)
-        .reject do |key_array, _value|
-          key = key_array.first
-          HIDDEN_OTHER_FEATURES.include?(key) || premium.include?(key)
-        end
+      features = features.reject do |key_array, _value|
+        hidden_other_feature?(key_array.first, premium)
+      end
 
       OTHER_SAAS_FEATURES.each do |feature_key|
         next if features.keys.any? { |key_array| key_array.first == feature_key }
@@ -109,5 +114,11 @@ class SaasFeaturesField < Administrate::Field::Base
 
   def label_for(feature_key, fallback = nil)
     OTHER_FEATURE_LABELS[feature_key] || fallback || feature_key.humanize
+  end
+
+  private
+
+  def hidden_other_feature?(feature_key, premium)
+    HIDDEN_OTHER_FEATURES.include?(feature_key) || premium.include?(feature_key)
   end
 end

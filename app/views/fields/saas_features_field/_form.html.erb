@@ -34,6 +34,17 @@
     </div>
   </div>
 
+  <h3 class="mt-8 mb-3 text-sm font-semibold text-slate-700">Comunicação e Engajamento</h3>
+  <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <% SaasFeaturesField::COMMUNICATION_FEATURES.each do |feature_key| %>
+      <% val = field.data[feature_key] %>
+      <div class="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm outline outline-1 outline-n-container">
+        <span class="text-sm text-slate-700"><%= field.label_for(feature_key) %></span>
+        <span><%= check_box "enabled_features", "feature_#{feature_key}", { checked: val, class: "h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-600" }, true, false %></span>
+      </div>
+    <% end %>
+  </div>
+
   <hr class="my-8 shadow-sm outline outline-1 outline-n-container">
 
   <h3 class="mb-3 text-sm font-semibold text-slate-700">Outras funcionalidades</h3>
