@@ -59,14 +59,31 @@ export const mutations = {
 
   [types.EDIT_CONTACT]: ($state, data) => {
     const existingAttachments = $state.records[data.id]?.attachments;
-    $state.records[data.id] = existingAttachments
-      ? { ...data, attachments: existingAttachments }
-      : data;
+    const existingContactFiles = $state.records[data.id]?.contact_files;
+    $state.records[data.id] = {
+      ...data,
+      ...(existingAttachments && { attachments: existingAttachments }),
+      ...(existingContactFiles && { contact_files: existingContactFiles }),
+    };
   },
 
   [types.SET_CONTACT_ATTACHMENTS]: ($state, { id, data }) => {
     if (!$state.records[id]) $state.records[id] = {};
     $state.records[id].attachments = data;
+  },
+
+  [types.SET_CONTACT_FILES]: ($state, { id, data }) => {
+    if (!$state.records[id]) $state.records[id] = {};
+    $state.records[id].contact_files = data;
+  },
+
+  [types.DELETE_CONTACT_FILE]: ($state, { id, fileId }) => {
+    const contact = $state.records[id];
+    if (!contact?.contact_files) return;
+
+    contact.contact_files = contact.contact_files.filter(
+      file => String(file.id) !== String(fileId)
+    );
   },
 
   [types.DELETE_CONTACT]: ($state, id) => {

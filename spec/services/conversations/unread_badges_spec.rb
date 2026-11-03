@@ -91,6 +91,17 @@ RSpec.describe Conversations::UnreadBadges do
     expect(counts[:unassigned_count]).to eq(1)
   end
 
+  it 'shows all pending conversations to administrators even when assigned conversations are hidden' do
+    agent = create(:user, account: account, role: :agent)
+    create(:inbox_member, inbox: inbox, user: agent)
+    create(:conversation, account: account, inbox: inbox, contact: contact, assignee: agent, status: :pending)
+    account.update!(settings: account.settings.merge('hide_conversations_assigned_to_others' => true))
+
+    counts = described_class.new(account: account, user: user).perform
+
+    expect(counts[:pending_count]).to eq(1)
+  end
+
   it 'separates chatbot pending from human pending conversations' do
     agent_bot = create(:agent_bot, account: account)
     bot_conversation = create(

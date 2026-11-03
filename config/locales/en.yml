@@ -132,6 +132,8 @@ en:
         invalid: Invalid email
       phone_number:
         invalid: should be in e164 format
+      attachments:
+        file_required: Please select at least one file to upload.
     companies:
       domain:
         invalid: must be a valid domain name

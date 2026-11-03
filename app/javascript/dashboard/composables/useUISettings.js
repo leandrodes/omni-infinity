@@ -9,6 +9,7 @@ export const DEFAULT_CONVERSATION_SIDEBAR_ITEMS_ORDER = Object.freeze([
   { name: 'contact_attributes' },
   { name: 'contact_notes' },
   { name: 'shared_files' },
+  { name: 'contact_files' },
   { name: 'previous_conversation' },
   { name: 'conversation_participants' },
   { name: 'linear_issues' },
@@ -46,7 +47,16 @@ const useConversationSidebarItemsOrder = uiSettings => {
     const itemsOrderCopy = [...itemsOrder];
     // If the sidebar order doesn't have the new elements, then add them to the list.
     DEFAULT_CONVERSATION_SIDEBAR_ITEMS_ORDER.forEach(item => {
-      if (!itemsOrderCopy.find(i => i.name === item.name)) {
+      if (itemsOrderCopy.find(i => i.name === item.name)) return;
+
+      const anchor = item.name === 'contact_files' ? 'shared_files' : null;
+      const anchorIndex = anchor
+        ? itemsOrderCopy.findIndex(i => i.name === anchor)
+        : -1;
+
+      if (anchorIndex >= 0) {
+        itemsOrderCopy.splice(anchorIndex + 1, 0, item);
+      } else {
         itemsOrderCopy.push(item);
       }
     });
@@ -157,8 +167,7 @@ export function useUISettings() {
     return id ? getters['accounts/getAccount']?.value?.(id) : null;
   });
   const agentsCanDisableSignature = computed(
-    () =>
-      currentAccount.value?.settings?.signature_agents_can_disable === true
+    () => currentAccount.value?.settings?.signature_agents_can_disable === true
   );
 
   const updateUISettings = (settings = {}) => {

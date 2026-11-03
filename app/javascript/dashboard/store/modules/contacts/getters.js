@@ -25,6 +25,7 @@ export const getters = {
     });
   },
   getContactAttachments: $state => id => $state.records[id]?.attachments || [],
+  getContactFiles: $state => id => $state.records[id]?.contact_files || [],
   getMeta: $state => {
     return $state.meta;
   },

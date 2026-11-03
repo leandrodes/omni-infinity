@@ -22,6 +22,7 @@ import { assignmentTeamConflict } from 'dashboard/helper/assignmentTeamHelper';
 
 import { useUISettings } from 'dashboard/composables/useUISettings';
 import { useAccount } from 'dashboard/composables/useAccount';
+import { useAdmin } from 'dashboard/composables/useAdmin';
 import { useAlert } from 'dashboard/composables';
 import { useBulkActions } from 'dashboard/composables/chatlist/useBulkActions';
 import { useFilter } from 'shared/composables/useFilter';
@@ -66,6 +67,7 @@ const props = defineProps({
 const emit = defineEmits(['conversationLoad']);
 const { uiSettings } = useUISettings();
 const { currentAccount } = useAccount();
+const { isAdmin } = useAdmin();
 const { t } = useI18n();
 const router = useRouter();
 const store = useStore();
@@ -90,7 +92,9 @@ watch(
       activeAssigneeTab.value = wootConstants.ASSIGNEE_TYPE.ALL;
     } else if (value === 'pending') {
       activeStatus.value = wootConstants.STATUS_TYPE.PENDING;
-      activeAssigneeTab.value = wootConstants.ASSIGNEE_TYPE.ME;
+      activeAssigneeTab.value = isAdmin.value
+        ? wootConstants.ASSIGNEE_TYPE.ALL
+        : wootConstants.ASSIGNEE_TYPE.ME;
     } else if (
       value === 'open_team' ||
       value === 'unassigned' ||
@@ -262,7 +266,7 @@ const assigneeTabItems = computed(() => {
       },
     ];
 
-    if (!isPendingView || !hideAssignedToOthers.value) {
+    if (!isPendingView || !hideAssignedToOthers.value || isAdmin.value) {
       items.push({
         key: 'participating',
         name: t('CHAT_LIST.ASSIGNEE_TYPE_TABS.participating'),
@@ -271,7 +275,7 @@ const assigneeTabItems = computed(() => {
       });
     }
 
-    if (!hideAssignedToOthers.value) {
+    if (!hideAssignedToOthers.value || isAdmin.value) {
       items.push({
         key: 'all',
         name: t('CHAT_LIST.ASSIGNEE_TYPE_TABS.all'),

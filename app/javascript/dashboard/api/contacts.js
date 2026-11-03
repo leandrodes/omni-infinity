@@ -41,6 +41,28 @@ class ContactAPI extends ApiClient {
     });
   }
 
+  getContactFiles(contactId) {
+    return axios.get(`${this.url}/${contactId}/contact_attachments`);
+  }
+
+  uploadContactFiles(contactId, files) {
+    const formData = new FormData();
+    files.forEach(file => formData.append('files[]', file));
+    return axios.post(
+      `${this.url}/${contactId}/contact_attachments`,
+      formData,
+      {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      }
+    );
+  }
+
+  deleteContactFile(contactId, fileId) {
+    return axios.delete(
+      `${this.url}/${contactId}/contact_attachments/${fileId}`
+    );
+  }
+
   getContactableInboxes(contactId) {
     return axios.get(`${this.url}/${contactId}/contactable_inboxes`);
   }

@@ -522,7 +522,8 @@
       "MACROS": "Macros",
       "LINEAR_ISSUES": "Linked Linear Issues",
       "SHOPIFY_ORDERS": "Shopify Orders",
-      "SHARED_FILES": "Attachments"
+      "SHARED_FILES": "Conversation Attachments",
+      "CONTACT_FILES": "Contact Attachments"
     },
     "SHARED_FILES": {
       "EMPTY": "No attachments yet",
@@ -535,6 +536,23 @@
       "MORE_COUNT": "+{count}",
       "UNTITLED_FILE": "Untitled file",
       "JUMP_TO_MESSAGE": "Jump to message"
+    },
+    "CONTACT_FILES": {
+      "ADD": "Add",
+      "HINT": "Files saved for this contact",
+      "EMPTY": "No contact attachments yet",
+      "LOAD_ERROR": "Could not load contact attachments.",
+      "UPLOAD_ERROR": "Could not upload the selected files.",
+      "DELETE": "Delete attachment",
+      "DELETE_SUCCESS": "Contact attachment deleted successfully.",
+      "DELETE_ERROR": "Could not delete the contact attachment.",
+      "DELETE_CONFIRM": {
+        "TITLE": "Delete contact attachment",
+        "DESCRIPTION": "Are you sure you want to delete this contact attachment?",
+        "CONFIRM": "Yes, delete",
+        "CANCEL": "Cancel"
+      },
+      "UPLOAD_SUCCESS": "Contact attachments uploaded successfully."
     },
     "SHOPIFY": {
       "ORDER_ID": "Order #{id}",

@@ -99,6 +99,9 @@
       "AUDIO_TRANSCRIPTION": {
         "TITLE": "Transcribe Audio Messages",
         "NOTE": "Automatically transcribe audio messages in conversations. Generate a text transcript whenever an incoming audio message arrives, and display it alongside the message.",
+        "ENABLE": {
+          "LABEL": "Enable audio transcription?"
+        },
         "API": {
           "SUCCESS": "Audio transcription setting updated successfully",
           "ERROR": "Failed to update audio transcription setting"

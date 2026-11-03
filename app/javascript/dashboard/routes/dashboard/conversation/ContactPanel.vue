@@ -18,6 +18,7 @@ import ContactNotes from './contact/ContactNotes.vue';
 import ConversationInfo from './ConversationInfo.vue';
 import CustomAttributes from './customAttributes/CustomAttributes.vue';
 import SharedFiles from './SharedFiles.vue';
+import ContactFiles from './ContactFiles.vue';
 import Draggable from 'vuedraggable';
 import MacrosList from './Macros/List.vue';
 import ShopifyOrdersList from 'dashboard/components/widgets/conversation/ShopifyOrdersList.vue';
@@ -321,6 +322,18 @@ onMounted(() => {
               "
             >
               <SharedFiles />
+            </AccordionItem>
+          </div>
+          <div v-else-if="element.name === 'contact_files'">
+            <AccordionItem
+              :title="$t('CONVERSATION_SIDEBAR.ACCORDION.CONTACT_FILES')"
+              :is-open="isContactSidebarItemOpen('is_contact_files_open')"
+              compact
+              @toggle="
+                value => toggleSidebarUIState('is_contact_files_open', value)
+              "
+            >
+              <ContactFiles :contact-id="contactId" />
             </AccordionItem>
           </div>
         </template>

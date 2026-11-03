@@ -120,11 +120,14 @@ const saveSettings = async () => {
     "
     :with-border="!props.embedded"
   >
-    <template #headerActions>
-      <div class="flex justify-end">
-        <Switch v-model="isEnabled" @change="toggleAudioTranscription" />
-      </div>
-    </template>
+    <div
+      class="flex items-center justify-between gap-4 p-3 rounded-xl outline outline-1 outline-n-container bg-n-card"
+    >
+      <span class="text-sm font-medium text-n-slate-12">
+        {{ t('GENERAL_SETTINGS.FORM.AUDIO_TRANSCRIPTION.ENABLE.LABEL') }}
+      </span>
+      <Switch v-model="isEnabled" @change="toggleAudioTranscription" />
+    </div>
 
     <div v-if="isEnabled" class="grid gap-4 mt-2">
       <div>

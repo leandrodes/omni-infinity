@@ -131,6 +131,28 @@ export const actions = {
     }
   },
 
+  fetchContactFiles: async ({ commit }, id) => {
+    const response = await ContactAPI.getContactFiles(id);
+    commit(types.SET_CONTACT_FILES, {
+      id,
+      data: response.data.payload,
+    });
+  },
+
+  uploadContactFiles: async ({ commit }, { id, files }) => {
+    const response = await ContactAPI.uploadContactFiles(id, files);
+    commit(types.SET_CONTACT_FILES, {
+      id,
+      data: response.data.payload,
+    });
+    return response.data.payload;
+  },
+
+  deleteContactFile: async ({ commit }, { id, fileId }) => {
+    await ContactAPI.deleteContactFile(id, fileId);
+    commit(types.DELETE_CONTACT_FILE, { id, fileId });
+  },
+
   update: async ({ commit }, { id, isFormData = false, ...contactParams }) => {
     const { avatar, customAttributes, ...paramsToDecamelize } = contactParams;
     const decamelizedContactParams = {

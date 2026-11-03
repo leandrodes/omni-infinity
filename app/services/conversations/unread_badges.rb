@@ -70,7 +70,7 @@ class Conversations::UnreadBadges
   end
 
   def pending_visible_conversations
-    return pending_base unless hide_assigned_to_others?
+    return pending_base if administrator? || !hide_assigned_to_others?
 
     pending_base.where(assignee_id: user.id)
   end

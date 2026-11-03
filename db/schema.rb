@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_11_03_000000) do
+ActiveRecord::Schema[7.2].define(version: 2026_11_03_000001) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -788,6 +788,15 @@ ActiveRecord::Schema[7.2].define(version: 2026_11_03_000000) do
     t.index ["account_id", "domain"], name: "index_companies_on_account_and_domain", unique: true, where: "(domain IS NOT NULL)"
     t.index ["account_id"], name: "index_companies_on_account_id"
     t.index ["name", "account_id"], name: "index_companies_on_name_and_account_id"
+  end
+
+  create_table "contact_attachments", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "contact_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_contact_attachments_on_account_id"
+    t.index ["contact_id"], name: "index_contact_attachments_on_contact_id"
   end
 
   create_table "contact_inboxes", force: :cascade do |t|
@@ -1731,6 +1740,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_11_03_000000) do
   add_foreign_key "campaign_recipients", "campaigns", on_delete: :cascade
   add_foreign_key "campaign_recipients", "contacts", on_delete: :cascade
   add_foreign_key "campaign_recipients", "inboxes", on_delete: :cascade
+  add_foreign_key "contact_attachments", "accounts"
+  add_foreign_key "contact_attachments", "contacts"
   add_foreign_key "conversations", "users", column: "private_owner_id", on_delete: :nullify
   add_foreign_key "inboxes", "portals"
   add_foreign_key "messages", "users", column: "pinned_by_id", on_delete: :nullify

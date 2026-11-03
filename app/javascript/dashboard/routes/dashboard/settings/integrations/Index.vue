@@ -26,7 +26,7 @@ const transcriptionItem = computed(() => ({
   id: 'transcription',
   name: t('INTEGRATION_SETTINGS.TRANSCRIPTION.TITLE'),
   description: t('INTEGRATION_SETTINGS.TRANSCRIPTION.DESCRIPTION'),
-  enabled: !!currentAccount.value?.audio_transcriptions,
+  enabled: !!currentAccount.value?.settings?.audio_transcriptions,
 }));
 
 const integrationList = computed(() => [
