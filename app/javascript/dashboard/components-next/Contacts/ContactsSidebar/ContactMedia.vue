@@ -12,6 +12,7 @@ import GalleryView from 'dashboard/components/widgets/conversation/components/Ga
 import Media from 'dashboard/components-next/SharedAttachments/Media.vue';
 import Files from 'dashboard/components-next/SharedAttachments/Files.vue';
 import Spinner from 'dashboard/components-next/spinner/Spinner.vue';
+import ContactFiles from 'dashboard/components-next/Contacts/ContactsSidebar/ContactFiles.vue';
 
 const MEDIA_PEEK_LIMIT = 12;
 const FILES_PEEK_LIMIT = 6;
@@ -24,9 +25,8 @@ const { t } = useI18n();
 const attachmentsByContact = useMapGetter('contacts/getContactAttachments');
 const uiFlags = useMapGetter('contacts/getUIFlags');
 
-const attachments = computed(() =>
-  attachmentsByContact.value(route.params.contactId)
-);
+const contactId = computed(() => route.params.contactId);
+const attachments = computed(() => attachmentsByContact.value(contactId.value));
 const isFetching = computed(() => uiFlags.value.isFetchingAttachments);
 
 const hasContent = computed(() =>
@@ -68,34 +68,54 @@ const onJumpToMessage = attachment => {
 };
 
 onMounted(() => {
-  store.dispatch('contacts/fetchAttachments', route.params.contactId);
+  store.dispatch('contacts/fetchAttachments', contactId.value);
 });
 </script>
 
 <template>
-  <div class="px-6">
-    <div v-if="isFetching" class="flex justify-center p-3">
-      <Spinner class="size-5" />
-    </div>
-    <p v-else-if="!hasContent" class="p-3 text-sm text-center text-n-slate-11">
-      {{ t('CONVERSATION_SIDEBAR.SHARED_FILES.EMPTY') }}
-    </p>
-    <div v-else class="flex flex-col gap-5">
-      <Media
-        :attachments="attachments"
-        :peek-limit="MEDIA_PEEK_LIMIT"
-        show-jump-to-message
-        @select="onMediaSelect"
-        @jump-to-message="onJumpToMessage"
-      />
-      <Files
-        :attachments="attachments"
-        :peek-limit="FILES_PEEK_LIMIT"
-        show-jump-to-message
-        @select="onFileSelect"
-        @jump-to-message="onJumpToMessage"
-      />
-    </div>
+  <div class="flex flex-col gap-6 px-6">
+    <section class="flex flex-col gap-2">
+      <h4
+        class="text-xs font-semibold tracking-wider uppercase text-n-slate-11"
+      >
+        {{ t('CONVERSATION_SIDEBAR.ACCORDION.CONTACT_FILES') }}
+      </h4>
+      <ContactFiles :contact-id="contactId" />
+    </section>
+
+    <section class="flex flex-col gap-5">
+      <h4
+        class="text-xs font-semibold tracking-wider uppercase text-n-slate-11"
+      >
+        {{ t('CONVERSATION_SIDEBAR.ACCORDION.SHARED_FILES') }}
+      </h4>
+      <div v-if="isFetching" class="flex justify-center p-3">
+        <Spinner class="size-5" />
+      </div>
+      <p
+        v-else-if="!hasContent"
+        class="p-3 text-sm text-center text-n-slate-11"
+      >
+        {{ t('CONVERSATION_SIDEBAR.SHARED_FILES.EMPTY') }}
+      </p>
+      <template v-else>
+        <Media
+          :attachments="attachments"
+          :peek-limit="MEDIA_PEEK_LIMIT"
+          show-jump-to-message
+          @select="onMediaSelect"
+          @jump-to-message="onJumpToMessage"
+        />
+        <Files
+          :attachments="attachments"
+          :peek-limit="FILES_PEEK_LIMIT"
+          show-jump-to-message
+          @select="onFileSelect"
+          @jump-to-message="onJumpToMessage"
+        />
+      </template>
+    </section>
+
     <GalleryView
       v-if="showGallery && selectedAttachment"
       v-model:show="showGallery"
