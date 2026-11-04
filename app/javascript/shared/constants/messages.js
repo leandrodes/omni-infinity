@@ -100,6 +100,10 @@ export const AUDIO_FORMATS = {
 
 export const MESSAGE_VARIABLES = [
   {
+    label: 'Saudação (Bom dia / Boa tarde / Boa noite)',
+    key: 'greeting',
+  },
+  {
     label: 'Conversation Id',
     key: 'conversation.id',
   },

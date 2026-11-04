@@ -482,6 +482,14 @@ const getNameVariables = (prefix, name) => {
   };
 };
 
+// Time-based greeting used by the {{greeting}} variable.
+export const getGreetingVariable = (date = new Date()) => {
+  const hour = date.getHours();
+  if (hour < 12) return 'Bom dia';
+  if (hour < 18) return 'Boa tarde';
+  return 'Boa noite';
+};
+
 // {{agent.*}} values for the message sender.
 export const getAgentVariables = user => ({
   ...getNameVariables('agent', user.name),

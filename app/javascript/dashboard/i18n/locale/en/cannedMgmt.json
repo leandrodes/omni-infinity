@@ -83,6 +83,14 @@
         "NO": "No, keep "
       }
     },
-    "HEADER_BTN_TXT_FAREWELL": "Add farewell message"
+    "HEADER_BTN_TXT_FAREWELL": "Add farewell message",
+    "EDITOR": {
+      "EMOJI": "Add emoji",
+      "VARIABLES": "Insert variable"
+    },
+    "AVAILABILITY": {
+      "ALL_INBOXES": "Available to all teams",
+      "SELECT_INBOXES": "Select the inboxes where this message will be available."
+    }
   }
 }

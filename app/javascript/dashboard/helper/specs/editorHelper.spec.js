@@ -19,6 +19,7 @@ import {
   getContactVariables,
   getContentNode,
   getFormattingForEditor,
+  getGreetingVariable,
   getMenuAnchor,
   getSelectionCoords,
   insertAtCursor,
@@ -1310,6 +1311,23 @@ describe('Menu positioning helpers', () => {
       expect(result).toHaveProperty('width', 300);
       expect(result.left).toBeGreaterThanOrEqual(0);
     });
+  });
+});
+
+describe('getGreetingVariable', () => {
+  it('returns Bom dia before noon', () => {
+    expect(getGreetingVariable(new Date(2026, 0, 1, 8, 0))).toBe('Bom dia');
+    expect(getGreetingVariable(new Date(2026, 0, 1, 11, 59))).toBe('Bom dia');
+  });
+
+  it('returns Boa tarde in the afternoon', () => {
+    expect(getGreetingVariable(new Date(2026, 0, 1, 12, 0))).toBe('Boa tarde');
+    expect(getGreetingVariable(new Date(2026, 0, 1, 17, 59))).toBe('Boa tarde');
+  });
+
+  it('returns Boa noite in the evening', () => {
+    expect(getGreetingVariable(new Date(2026, 0, 1, 18, 0))).toBe('Boa noite');
+    expect(getGreetingVariable(new Date(2026, 0, 1, 23, 59))).toBe('Boa noite');
   });
 });
 

@@ -3,6 +3,13 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useStore, useMapGetter } from 'dashboard/composables/store';
 import { useMessageFormatter } from 'shared/composables/useMessageFormatter';
+import { getMessageVariables } from '@chatwoot/utils';
+import {
+  getAgentVariables,
+  getContactVariables,
+  getGreetingVariable,
+  resolveVariablesInMessage,
+} from 'dashboard/helper/editorHelper';
 import Dialog from 'dashboard/components-next/dialog/Dialog.vue';
 import wootConstants from 'dashboard/constants/globals';
 
@@ -17,8 +24,19 @@ const dialogRef = ref(null);
 const currentStatus = ref('');
 const targetStatus = ref('');
 const conversationContext = ref(null);
+const conversationInboxId = ref(null);
 const selectedFarewellId = ref(null);
 const isLoadingFarewells = ref(false);
+
+const availableFarewellMessages = computed(() =>
+  farewellMessages.value.filter(message => {
+    if (message.available_for_all_inboxes !== false) return true;
+
+    return (message.inbox_ids || [])
+      .map(Number)
+      .includes(conversationInboxId.value);
+  })
+);
 
 const statusLabel = status =>
   t(`CONVERSATION.STATUS_CONFIRMATION.STATUS.${status || 'unknown'}`);
@@ -42,10 +60,30 @@ const isResolving = computed(
 );
 
 const selectedFarewell = computed(() =>
-  farewellMessages.value.find(
+  availableFarewellMessages.value.find(
     message => Number(message.id) === Number(selectedFarewellId.value)
   )
 );
+
+const buildMessageVariables = () => {
+  const conversation = store.getters.getConversationById?.(
+    conversationContext.value?.id
+  );
+  const contact = conversation?.meta?.sender?.id
+    ? store.getters['contacts/getContact'](conversation.meta.sender.id)
+    : {};
+  const inbox = conversation
+    ? store.getters['inboxes/getInbox'](conversation.inbox_id)
+    : {};
+  const currentUser = store.getters.getCurrentUser || {};
+
+  return {
+    ...getMessageVariables({ conversation, contact, inbox }),
+    ...getContactVariables(contact),
+    ...getAgentVariables(currentUser),
+    greeting: getGreetingVariable(),
+  };
+};
 
 const farewellPreview = message =>
   getPlainText(message.content || '')
@@ -70,6 +108,7 @@ const open = async ({ conversation, status, snoozedUntil, ...context }) => {
     snoozedUntil,
     ...context,
   };
+  conversationInboxId.value = Number(conversation?.inbox_id);
   selectedFarewellId.value = null;
   dialogRef.value?.open();
 
@@ -84,15 +123,26 @@ const handleClose = () => {
   currentStatus.value = '';
   targetStatus.value = '';
   conversationContext.value = null;
+  conversationInboxId.value = null;
   selectedFarewellId.value = null;
   emit('close');
 };
 
 const handleConfirm = () => {
+  const farewell = selectedFarewell.value;
+
   emit('confirm', {
     ...conversationContext.value,
     status: targetStatus.value,
-    farewellMessage: selectedFarewell.value || null,
+    farewellMessage: farewell
+      ? {
+          ...farewell,
+          content: resolveVariablesInMessage(
+            farewell.content,
+            buildMessageVariables()
+          ),
+        }
+      : null,
   });
   close();
 };
@@ -130,7 +180,7 @@ defineExpose({ open, close });
       </div>
 
       <div
-        v-else-if="farewellMessages.length"
+        v-else-if="availableFarewellMessages.length"
         class="flex flex-col gap-2 max-h-72 overflow-y-auto"
       >
         <label
@@ -150,7 +200,7 @@ defineExpose({ open, close });
         </label>
 
         <label
-          v-for="message in farewellMessages"
+          v-for="message in availableFarewellMessages"
           :key="message.id"
           class="flex items-start gap-3 p-3 border rounded-lg cursor-pointer border-n-weak hover:bg-n-alpha-black2"
         >

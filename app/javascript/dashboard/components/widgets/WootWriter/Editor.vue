@@ -963,7 +963,16 @@ onMounted(() => {
   }
 });
 
-defineExpose({ focusEditorInputField });
+function insertTextIntoEditor(text) {
+  if (!editorView || !text) return;
+
+  const { from, to } = editorView.state.selection;
+  editorView.dispatch(editorView.state.tr.insertText(text, from, to));
+  emitOnChange();
+  editorView.focus();
+}
+
+defineExpose({ focusEditorInputField, insertText: insertTextIntoEditor });
 
 // BUS Event to insert text or markdown into the editor at the
 // current cursor position.

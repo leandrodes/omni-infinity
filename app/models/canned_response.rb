@@ -22,9 +22,15 @@ class CannedResponse < ApplicationRecord
   validates :message_type, inclusion: { in: MESSAGE_TYPES }
 
   belongs_to :account
+  has_many :canned_response_inboxes, dependent: :destroy
+  has_many :inboxes, through: :canned_response_inboxes
 
   scope :quick, -> { where(message_type: 'quick') }
   scope :farewell, -> { where(message_type: 'farewell') }
+
+  def as_json(options = nil)
+    super(options).merge('inbox_ids' => inbox_ids)
+  end
 
   scope :order_by_search, lambda { |search|
     short_code_starts_with = sanitize_sql_array(['WHEN short_code ILIKE ? THEN 1', "#{search}%"])

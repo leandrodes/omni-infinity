@@ -3,21 +3,25 @@
 import { useVuelidate } from '@vuelidate/core';
 import { required, minLength } from '@vuelidate/validators';
 import { useAlert } from 'dashboard/composables';
-import WootMessageEditor from 'dashboard/components/widgets/WootWriter/Editor.vue';
 import NextButton from 'dashboard/components-next/button/Button.vue';
+import NextSwitch from 'dashboard/components-next/switch/Switch.vue';
 import Modal from '../../../../components/Modal.vue';
+import CannedMessageEditor from './CannedMessageEditor.vue';
 
 export default {
   components: {
     NextButton,
+    NextSwitch,
     Modal,
-    WootMessageEditor,
+    CannedMessageEditor,
   },
   props: {
     id: { type: Number, default: null },
     edcontent: { type: String, default: '' },
     edshortCode: { type: String, default: '' },
     messageType: { type: String, default: 'quick' },
+    initialAvailableForAllInboxes: { type: Boolean, default: true },
+    initialInboxIds: { type: Array, default: () => [] },
     onClose: { type: Function, default: () => {} },
   },
   setup() {
@@ -31,6 +35,8 @@ export default {
       },
       shortCode: this.edshortCode,
       content: this.edcontent,
+      availableForAllInboxes: this.initialAvailableForAllInboxes,
+      inboxIds: [...this.initialInboxIds],
       show: true,
     };
   },
@@ -44,6 +50,12 @@ export default {
     },
   },
   computed: {
+    inboxes() {
+      return this.$store.getters['inboxes/getInboxes'];
+    },
+    isAvailabilityValid() {
+      return this.availableForAllInboxes || this.inboxIds.length > 0;
+    },
     pageTitle() {
       const title =
         this.messageType === 'farewell'
@@ -51,6 +63,9 @@ export default {
           : this.$t('CANNED_MGMT.EDIT.TITLE');
       return `${title} - ${this.edshortCode}`;
     },
+  },
+  mounted() {
+    this.$store.dispatch('inboxes/get');
   },
   methods: {
     setPageName({ name }) {
@@ -73,6 +88,8 @@ export default {
           short_code: this.shortCode,
           content: this.content,
           message_type: this.messageType,
+          available_for_all_inboxes: this.availableForAllInboxes,
+          inbox_ids: this.inboxIds,
         })
         .then(() => {
           // Reset Form, Show success message
@@ -116,18 +133,41 @@ export default {
             {{ $t('CANNED_MGMT.EDIT.FORM.CONTENT.LABEL') }}
           </label>
           <div class="editor-wrap">
-            <WootMessageEditor
+            <CannedMessageEditor
               v-model="content"
-              class="message-editor [&>div]:px-1"
-              :class="{ editor_warning: v$.content.$error }"
-              channel-type="Context::Default"
-              enable-variables
-              :enable-canned-responses="false"
+              :has-error="v$.content.$error"
               :placeholder="$t('CANNED_MGMT.EDIT.FORM.CONTENT.PLACEHOLDER')"
               @blur="v$.content.$touch"
             />
           </div>
         </div>
+
+        <div class="flex flex-col w-full gap-3">
+          <div class="flex items-center justify-between gap-4">
+            <span class="text-sm">
+              {{ $t('CANNED_MGMT.AVAILABILITY.ALL_INBOXES') }}
+            </span>
+            <NextSwitch v-model="availableForAllInboxes" />
+          </div>
+          <div v-if="!availableForAllInboxes" class="flex flex-col gap-2">
+            <span class="text-sm text-n-slate-11">
+              {{ $t('CANNED_MGMT.AVAILABILITY.SELECT_INBOXES') }}
+            </span>
+            <div
+              class="flex flex-col gap-2 p-3 overflow-y-auto border rounded-lg max-h-48 border-n-weak"
+            >
+              <label
+                v-for="inbox in inboxes"
+                :key="inbox.id"
+                class="flex items-center gap-2 text-sm"
+              >
+                <input v-model="inboxIds" type="checkbox" :value="inbox.id" />
+                {{ inbox.name }}
+              </label>
+            </div>
+          </div>
+        </div>
+
         <div class="flex flex-row justify-end w-full gap-2 px-0 py-2">
           <NextButton
             faded
@@ -142,6 +182,7 @@ export default {
             :disabled="
               v$.content.$invalid ||
               v$.shortCode.$invalid ||
+              !isAvailabilityValid ||
               editCanned.showLoading
             "
             :is-loading="editCanned.showLoading"
@@ -151,13 +192,3 @@ export default {
     </div>
   </Modal>
 </template>
-
-<style scoped lang="scss">
-:deep(.ProseMirror-menubar) {
-  @apply hidden;
-}
-
-:deep(.ProseMirror-woot-style) {
-  @apply min-h-[12.5rem];
-}
-</style>

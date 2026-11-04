@@ -70,7 +70,8 @@ RSpec.describe 'Canned Responses API', type: :request do
       end
     end
 
-    context 'when it is an authenticated user' do
+    context 'when it is an administrator' do
+      let(:administrator) { create(:user, account: account, role: :administrator) }
       let(:agent) { create(:user, account: account, role: :agent) }
 
       it 'creates a new canned response' do
@@ -78,7 +79,7 @@ RSpec.describe 'Canned Responses API', type: :request do
 
         post "/api/v1/accounts/#{account.id}/canned_responses",
              params: params,
-             headers: agent.create_new_auth_token,
+             headers: administrator.create_new_auth_token,
              as: :json
 
         expect(response).to have_http_status(:success)
@@ -86,16 +87,33 @@ RSpec.describe 'Canned Responses API', type: :request do
         expect(response.parsed_body['message_type']).to eq('quick')
       end
 
-      it 'creates a farewell canned response' do
-        params = { short_code: 'bye', content: 'Goodbye', message_type: 'farewell' }
+      it 'creates a farewell canned response for selected inboxes' do
+        inbox = create(:inbox, account: account)
+        params = {
+          short_code: 'bye',
+          content: 'Goodbye',
+          message_type: 'farewell',
+          available_for_all_inboxes: false,
+          inbox_ids: [inbox.id]
+        }
 
         post "/api/v1/accounts/#{account.id}/canned_responses",
              params: params,
-             headers: agent.create_new_auth_token,
+             headers: administrator.create_new_auth_token,
              as: :json
 
         expect(response).to have_http_status(:success)
         expect(response.parsed_body['message_type']).to eq('farewell')
+        expect(response.parsed_body['inbox_ids']).to contain_exactly(inbox.id)
+      end
+
+      it 'does not allow agents to create canned responses' do
+        post "/api/v1/accounts/#{account.id}/canned_responses",
+             params: { short_code: 'agent', content: 'content' },
+             headers: agent.create_new_auth_token,
+             as: :json
+
+        expect(response).to have_http_status(:forbidden)
       end
     end
   end
@@ -111,7 +129,8 @@ RSpec.describe 'Canned Responses API', type: :request do
       end
     end
 
-    context 'when it is an authenticated user' do
+    context 'when it is an administrator' do
+      let(:administrator) { create(:user, account: account, role: :administrator) }
       let(:agent) { create(:user, account: account, role: :agent) }
 
       it 'updates an existing canned response' do
@@ -119,11 +138,34 @@ RSpec.describe 'Canned Responses API', type: :request do
 
         put "/api/v1/accounts/#{account.id}/canned_responses/#{canned_response.id}",
             params: params,
-            headers: agent.create_new_auth_token,
+            headers: administrator.create_new_auth_token,
             as: :json
 
         expect(response).to have_http_status(:success)
         expect(canned_response.reload.short_code).to eq('B')
+      end
+
+      it 'clears selected inboxes when made available to all inboxes' do
+        inbox = create(:inbox, account: account)
+        canned_response.update!(available_for_all_inboxes: false)
+        canned_response.inbox_ids = [inbox.id]
+
+        put "/api/v1/accounts/#{account.id}/canned_responses/#{canned_response.id}",
+            params: { available_for_all_inboxes: true },
+            headers: administrator.create_new_auth_token,
+            as: :json
+
+        expect(response).to have_http_status(:success)
+        expect(canned_response.reload.inbox_ids).to be_empty
+      end
+
+      it 'does not allow agents to update canned responses' do
+        put "/api/v1/accounts/#{account.id}/canned_responses/#{canned_response.id}",
+            params: { short_code: 'B' },
+            headers: agent.create_new_auth_token,
+            as: :json
+
+        expect(response).to have_http_status(:forbidden)
       end
     end
   end
@@ -139,16 +181,25 @@ RSpec.describe 'Canned Responses API', type: :request do
       end
     end
 
-    context 'when it is an authenticated user' do
+    context 'when it is an administrator' do
+      let(:administrator) { create(:user, account: account, role: :administrator) }
       let(:agent) { create(:user, account: account, role: :agent) }
 
       it 'destroys the canned response' do
         delete "/api/v1/accounts/#{account.id}/canned_responses/#{canned_response.id}",
-               headers: agent.create_new_auth_token,
+               headers: administrator.create_new_auth_token,
                as: :json
 
         expect(response).to have_http_status(:success)
         expect(CannedResponse.count).to eq(0)
+      end
+
+      it 'does not allow agents to destroy canned responses' do
+        delete "/api/v1/accounts/#{account.id}/canned_responses/#{canned_response.id}",
+               headers: agent.create_new_auth_token,
+               as: :json
+
+        expect(response).to have_http_status(:forbidden)
       end
     end
   end

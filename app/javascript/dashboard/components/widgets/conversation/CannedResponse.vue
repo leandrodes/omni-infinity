@@ -72,9 +72,22 @@ const resolveContent = message =>
     props.schema
   );
 
+const conversationInboxId = computed(() =>
+  Number(props.variables?.['inbox.id'])
+);
+
+const isAvailableForInbox = message => {
+  if (message.available_for_all_inboxes !== false) return true;
+
+  return (message.inbox_ids || [])
+    .map(Number)
+    .includes(conversationInboxId.value);
+};
+
 const records = computed(() =>
   cannedResponses.value
     .filter(({ message_type: messageType }) => messageType !== 'farewell')
+    .filter(isAvailableForInbox)
     .map(({ id, short_code: shortCode, content }) => {
       const resolved = resolveContent(content);
       return {

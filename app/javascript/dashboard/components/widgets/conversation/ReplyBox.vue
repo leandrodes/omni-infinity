@@ -50,6 +50,7 @@ import {
   getEffectiveChannelType,
   getAgentVariables,
   getContactVariables,
+  getGreetingVariable,
 } from 'dashboard/helper/editorHelper';
 import { useCopilotReply } from 'dashboard/composables/useCopilotReply';
 import { useMacroExecution } from 'dashboard/composables/useMacroExecution';
@@ -491,6 +492,7 @@ export default {
         ...variables,
         ...getContactVariables(this.currentContact),
         ...getAgentVariables(this.currentUser),
+        greeting: getGreetingVariable(),
       };
     },
     connectedPortalSlug() {

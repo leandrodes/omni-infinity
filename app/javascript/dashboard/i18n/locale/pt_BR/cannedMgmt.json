@@ -83,6 +83,14 @@
         "NO": "Não, manter "
       }
     },
-    "HEADER_BTN_TXT_FAREWELL": "Adicionar mensagem de despedida"
+    "HEADER_BTN_TXT_FAREWELL": "Adicionar mensagem de despedida",
+    "EDITOR": {
+      "EMOJI": "Adicionar emoji",
+      "VARIABLES": "Inserir variável"
+    },
+    "AVAILABILITY": {
+      "ALL_INBOXES": "Disponível para todos Times",
+      "SELECT_INBOXES": "Selecione as filas em que esta mensagem ficará disponível."
+    }
   }
 }

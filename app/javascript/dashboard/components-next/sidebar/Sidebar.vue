@@ -953,12 +953,16 @@ const menuItems = computed(() => {
           icon: 'i-lucide-toy-brick',
           to: accountScopedRoute('macros_wrapper'),
         },
-        {
-          name: 'Settings Canned Responses',
-          label: t('SIDEBAR.CANNED_RESPONSES'),
-          icon: 'i-lucide-message-square-quote',
-          to: accountScopedRoute('canned_list'),
-        },
+        ...(isAdmin.value
+          ? [
+              {
+                name: 'Settings Canned Responses',
+                label: t('SIDEBAR.CANNED_RESPONSES'),
+                icon: 'i-lucide-message-square-quote',
+                to: accountScopedRoute('canned_list'),
+              },
+            ]
+          : []),
         {
           name: 'Settings Integrations',
           label: t('SIDEBAR.INTEGRATIONS'),
