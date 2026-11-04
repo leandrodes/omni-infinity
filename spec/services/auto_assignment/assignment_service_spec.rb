@@ -135,6 +135,22 @@ RSpec.describe AutoAssignment::AssignmentService do
       end
     end
 
+    context 'when the inbox is out of office' do
+      before do
+        allow(inbox).to receive(:out_of_office?).and_return(true)
+      end
+
+      it 'does not assign conversations' do
+        conv = create(:conversation, inbox: inbox, status: 'open')
+        conv.update!(assignee_id: nil)
+
+        assigned_count = service.perform_bulk_assignment(limit: 1)
+
+        expect(assigned_count).to eq(0)
+        expect(conv.reload.assignee_id).to be_nil
+      end
+    end
+
     context 'when auto assignment is disabled' do
       before { assignment_policy.update!(enabled: false) }
 

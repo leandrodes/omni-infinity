@@ -1495,7 +1495,7 @@
       "SECOND_PERIOD": "Add second time range",
       "OUT_OF_OFFICE_ACTION": "Outside business hours",
       "OUT_OF_OFFICE_ACTION_HELP": "Choose what happens to conversations that receive messages outside business hours.",
-      "OUT_OF_OFFICE_ACTION_NONE": "Keep conversation as is",
+      "OUT_OF_OFFICE_ACTION_NONE": "Leave unassigned",
       "OUT_OF_OFFICE_ACTION_RESOLVE": "Resolve conversation",
       "OUT_OF_OFFICE_ACTION_PENDING_TEAM": "Leave pending in a team queue",
       "OUT_OF_OFFICE_TEAM": "Out-of-hours team",

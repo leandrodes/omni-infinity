@@ -10,6 +10,8 @@ class Inboxes::OutOfOfficeActionService
       resolve_conversation
     when 'pending_team'
       move_to_pending_team
+    when 'none'
+      leave_unassigned
     end
   end
 
@@ -25,7 +27,23 @@ class Inboxes::OutOfOfficeActionService
   end
 
   def resolve_conversation
-    conversation.update!(status: :resolved) unless conversation.resolved?
+    conversation.update!(
+      status: :resolved,
+      assignee_id: nil,
+      assignee_agent_bot_id: nil,
+      ai_assignee_type: nil
+    )
+  end
+
+  def leave_unassigned
+    conversation.update!(
+      team_id: nil,
+      assignee_id: nil,
+      assignee_agent_bot_id: nil,
+      ai_assignee_type: nil,
+      status: :pending,
+      waiting_since: conversation.waiting_since || Time.current
+    )
   end
 
   def move_to_pending_team

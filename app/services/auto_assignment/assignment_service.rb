@@ -2,8 +2,7 @@ class AutoAssignment::AssignmentService
   pattr_initialize [:inbox!]
 
   def perform_bulk_assignment(limit: 100)
-    return 0 unless inbox.auto_assignment_v2_enabled?
-    return 0 unless inbox.enable_auto_assignment?
+    return 0 unless auto_assignment_allowed?
 
     conversations = unassigned_conversations(limit).to_a
     return 0 if conversations.empty?
@@ -17,6 +16,12 @@ class AutoAssignment::AssignmentService
   end
 
   private
+
+  def auto_assignment_allowed?
+    inbox.auto_assignment_v2_enabled? &&
+      inbox.enable_auto_assignment? &&
+      !inbox.out_of_office?
+  end
 
   def perform_for_conversation(conversation)
     return false unless assignable?(conversation)

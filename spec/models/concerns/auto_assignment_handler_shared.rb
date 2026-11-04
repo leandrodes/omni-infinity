@@ -26,6 +26,12 @@ shared_examples_for 'auto_assignment_handler' do
       expect(conversation.reload.assignee).to eq(agent)
     end
 
+    it 'will not auto assign agent when the inbox is out of office' do
+      allow(inbox).to receive(:out_of_office?).and_return(true)
+
+      expect(conversation.reload.assignee).to be_nil
+    end
+
     it 'will not auto assign agent if enable_auto_assignment is false' do
       inbox.update(enable_auto_assignment: false)
 

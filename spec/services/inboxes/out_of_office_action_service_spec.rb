@@ -14,12 +14,28 @@ RSpec.describe Inboxes::OutOfOfficeActionService do
     Time.zone = 'UTC'
   end
 
-  it 'resolves out-of-hours conversations when configured' do
+  it 'resolves out-of-hours conversations without an assignee when configured' do
+    agent = create(:user, account: account, role: :agent)
     inbox.update!(out_of_office_action: 'resolve')
+    conversation.update!(assignee: agent)
 
     described_class.new(conversation: conversation).perform
 
     expect(conversation.reload).to be_resolved
+    expect(conversation.assignee_id).to be_nil
+  end
+
+  it 'leaves out-of-hours conversations pending without team or assignee' do
+    agent = create(:user, account: account, role: :agent)
+    team = create(:team, account: account)
+    inbox.update!(out_of_office_action: 'none')
+    conversation.update!(assignee: agent, team: team, status: :open)
+
+    described_class.new(conversation: conversation).perform
+
+    expect(conversation.reload).to be_pending
+    expect(conversation.team_id).to be_nil
+    expect(conversation.assignee_id).to be_nil
   end
 
   it 'moves out-of-hours conversations to the configured pending team' do
