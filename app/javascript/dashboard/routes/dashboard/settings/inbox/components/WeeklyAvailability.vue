@@ -45,20 +45,22 @@ export default {
       timeZone: DEFAULT_TIMEZONE,
       outOfOfficeAction: 'none',
       outOfOfficeTeamId: '',
-      dayNames: {
-        0: 'Sunday',
-        1: 'Monday',
-        2: 'Tuesday',
-        3: 'Wednesday',
-        4: 'Thursday',
-        5: 'Friday',
-        6: 'Saturday',
-      },
       timeSlots: [...defaultTimeSlot],
     };
   },
   computed: {
     ...mapGetters({ uiFlags: 'inboxes/getUIFlags', teams: 'teams/getTeams' }),
+    dayNames() {
+      return {
+        0: this.$t('INBOX_MGMT.BUSINESS_HOURS.DAYS.SUNDAY'),
+        1: this.$t('INBOX_MGMT.BUSINESS_HOURS.DAYS.MONDAY'),
+        2: this.$t('INBOX_MGMT.BUSINESS_HOURS.DAYS.TUESDAY'),
+        3: this.$t('INBOX_MGMT.BUSINESS_HOURS.DAYS.WEDNESDAY'),
+        4: this.$t('INBOX_MGMT.BUSINESS_HOURS.DAYS.THURSDAY'),
+        5: this.$t('INBOX_MGMT.BUSINESS_HOURS.DAYS.FRIDAY'),
+        6: this.$t('INBOX_MGMT.BUSINESS_HOURS.DAYS.SATURDAY'),
+      };
+    },
     outOfOfficeActionOptions() {
       return [
         {

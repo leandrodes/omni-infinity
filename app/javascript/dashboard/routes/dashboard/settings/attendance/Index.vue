@@ -124,6 +124,7 @@ const saveSettings = async () => {
               'enable_resolved_conversations_filter',
               'enable_pending_conversations_filter',
               'enable_unassigned_conversations_filter',
+              'enable_contact_company_filter',
               'show_inbox_name_in_conversation_list',
               'show_conversation_id_in_conversation_list',
               'show_conversation_team_in_conversation_list',
@@ -150,7 +151,6 @@ const saveSettings = async () => {
             v-for="key in [
               'hide_conversations_assigned_to_others',
               'show_conversations_only_from_user_teams',
-              'enable_contact_company_filter',
             ]"
             :key="key"
             class="flex items-center justify-between gap-4"

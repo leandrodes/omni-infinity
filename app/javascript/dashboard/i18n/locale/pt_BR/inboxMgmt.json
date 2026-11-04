@@ -1389,7 +1389,16 @@
       "OUT_OF_OFFICE_ACTION_RESOLVE": "Resolver conversa",
       "OUT_OF_OFFICE_ACTION_PENDING_TEAM": "Deixar pendente em uma fila",
       "OUT_OF_OFFICE_TEAM": "Fila/equipe para fora do horário",
-      "OUT_OF_OFFICE_TEAM_PLACEHOLDER": "Selecionar equipe"
+      "OUT_OF_OFFICE_TEAM_PLACEHOLDER": "Selecionar equipe",
+      "DAYS": {
+        "SUNDAY": "Domingo",
+        "MONDAY": "Segunda-feira",
+        "TUESDAY": "Terça-feira",
+        "WEDNESDAY": "Quarta-feira",
+        "THURSDAY": "Quinta-feira",
+        "FRIDAY": "Sexta-feira",
+        "SATURDAY": "Sábado"
+      }
     },
     "IMAP": {
       "TITLE": "IMAP",

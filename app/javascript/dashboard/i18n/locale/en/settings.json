@@ -1145,7 +1145,8 @@
       "ROLE_ADMINISTRATOR": "Administrator",
       "ROLE_AGENT": "Agent",
       "ENABLE_PENDING_CONVERSATIONS_FILTER": "Enable pending conversations filter",
-      "ENABLE_UNASSIGNED_CONVERSATIONS_FILTER": "Enable unassigned conversations filter"
+      "ENABLE_UNASSIGNED_CONVERSATIONS_FILTER": "Enable unassigned conversations filter",
+      "ENABLE_CONTACT_COMPANY_FILTER": "Enable contact company filter"
     },
     "VISIBILITY": {
       "TITLE": "Visibility",

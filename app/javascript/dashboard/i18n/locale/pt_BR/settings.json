@@ -1111,7 +1111,8 @@
       "ROLE_ADMINISTRATOR": "Administrador",
       "ROLE_AGENT": "Agente",
       "ENABLE_PENDING_CONVERSATIONS_FILTER": "Habilitar filtro conversas pendentes",
-      "ENABLE_UNASSIGNED_CONVERSATIONS_FILTER": "Habilitar filtro conversas Não Atribuídas"
+      "ENABLE_UNASSIGNED_CONVERSATIONS_FILTER": "Habilitar filtro conversas Não Atribuídas",
+      "ENABLE_CONTACT_COMPANY_FILTER": "Habilitar filtro de contatos por Empresas"
     },
     "VISIBILITY": {
       "TITLE": "Visualização",
