@@ -55,7 +55,7 @@ class ConversationPolicy < ApplicationPolicy
   end
 
   def team_access_blocked?
-    team_only_visibility? && !team_access?
+    team_only_visibility? && !team_access? && !assigned_to_user?
   end
 
   def team_only_visibility?
