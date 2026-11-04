@@ -6,6 +6,7 @@ json.name resource.name
 json.phone_number resource.phone_number
 json.blocked resource.blocked
 json.csat_disabled resource.csat_disabled
+json.campaign_opt_out resource.campaign_opt_out
 json.identifier resource.identifier
 json.company_id resource.company_id if Current.account&.feature_enabled?('companies')
 json.thumbnail resource.avatar_url

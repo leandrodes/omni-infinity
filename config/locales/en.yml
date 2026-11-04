@@ -415,6 +415,12 @@ en:
       transcript_subject: 'Conversation Transcript'
     survey:
       response: 'Please rate this conversation, %{link}'
+  unofficial_campaign:
+    errors:
+      disabled: WhatsApp unofficial campaigns are not enabled for this account.
+      messages_required: Add at least one message.
+      three_variants_required: Each message must have exactly three variants.
+    opt_out_message: Contact opted out of campaigns.
   smart_reception:
     actions:
       transfer: Transfer to team

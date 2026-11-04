@@ -517,6 +517,13 @@
           "SUCCESS_MESSAGE": "Avatar excluído com sucesso",
           "ERROR_MESSAGE": "Não foi possível excluir o avatar. Por favor, tente novamente mais tarde."
         }
+      },
+      "CAMPAIGN_OPT_OUT": {
+        "TITLE": "Não receber campanhas",
+        "DESCRIPTION": "Este contato está marcado como não desejando receber campanhas de WhatsApp.",
+        "ENABLED": "O contato não receberá mais campanhas.",
+        "DISABLED": "O contato poderá receber campanhas novamente.",
+        "ERROR": "Não foi possível atualizar a preferência de campanhas."
       }
     },
     "SIDEBAR": {

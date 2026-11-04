@@ -8,6 +8,10 @@ class TriggerScheduledItemsJob < ApplicationJob
       Campaigns::TriggerOneoffCampaignJob.perform_later(campaign)
     end
 
+    UnofficialCampaign.where(status: :scheduled).where(scheduled_at: ..Time.current).find_each do |campaign|
+      UnofficialCampaigns::StartJob.perform_later(campaign.id)
+    end
+
     # Job to reopen snoozed conversations
     Conversations::ReopenSnoozedConversationsJob.perform_later
 

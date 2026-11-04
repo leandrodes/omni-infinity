@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_11_03_000004) do
+ActiveRecord::Schema[7.2].define(version: 2026_11_03_000005) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -345,6 +345,15 @@ ActiveRecord::Schema[7.2].define(version: 2026_11_03_000004) do
     t.index ["account_id", "created_at"], name: "index_calls_on_account_id_and_created_at"
     t.index ["message_id"], name: "index_calls_on_message_id"
     t.index ["provider", "provider_call_id"], name: "index_calls_on_provider_and_provider_call_id", unique: true
+  end
+
+  create_table "campaign_opt_out_keywords", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "word", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "word"], name: "index_campaign_opt_out_keywords_on_account_id_and_word", unique: true
+    t.index ["account_id"], name: "index_campaign_opt_out_keywords_on_account_id"
   end
 
   create_table "campaign_recipients", force: :cascade do |t|
@@ -833,6 +842,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_11_03_000004) do
     t.boolean "blocked", default: false, null: false
     t.bigint "company_id"
     t.boolean "csat_disabled", default: false, null: false
+    t.boolean "campaign_opt_out", default: false, null: false
     t.index "lower((email)::text), account_id", name: "index_contacts_on_lower_email_account_id"
     t.index ["account_id", "contact_type"], name: "index_contacts_on_account_id_and_contact_type"
     t.index ["account_id", "email", "phone_number", "identifier"], name: "index_contacts_on_nonempty_fields", where: "(((email)::text <> ''::text) OR ((phone_number)::text <> ''::text) OR ((identifier)::text <> ''::text))"
@@ -1698,6 +1708,78 @@ ActiveRecord::Schema[7.2].define(version: 2026_11_03_000004) do
     t.index ["typebot_id"], name: "index_typebot_inbox_configs_on_typebot_id"
   end
 
+  create_table "unofficial_campaign_contacts", force: :cascade do |t|
+    t.bigint "unofficial_campaign_id", null: false
+    t.bigint "contact_id"
+    t.string "name"
+    t.string "phone_number", null: false
+    t.integer "status", default: 0, null: false
+    t.string "source", default: "system", null: false
+    t.bigint "sender_inbox_id"
+    t.integer "current_position", default: 0, null: false
+    t.datetime "next_send_at"
+    t.datetime "sent_at"
+    t.integer "attempts", default: 0, null: false
+    t.text "last_error"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["contact_id"], name: "index_unofficial_campaign_contacts_on_contact_id"
+    t.index ["status"], name: "index_unofficial_campaign_contacts_on_status"
+    t.index ["unofficial_campaign_id", "phone_number"], name: "index_unofficial_campaign_contacts_on_campaign_phone", unique: true
+    t.index ["unofficial_campaign_id"], name: "index_unofficial_campaign_contacts_on_unofficial_campaign_id"
+  end
+
+  create_table "unofficial_campaign_messages", force: :cascade do |t|
+    t.bigint "unofficial_campaign_id", null: false
+    t.integer "position", default: 0, null: false
+    t.integer "wait_min_seconds", default: 3, null: false
+    t.integer "wait_max_seconds", default: 8, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["unofficial_campaign_id"], name: "index_unofficial_campaign_messages_on_unofficial_campaign_id"
+  end
+
+  create_table "unofficial_campaign_variants", force: :cascade do |t|
+    t.bigint "unofficial_campaign_message_id", null: false
+    t.integer "position", default: 0, null: false
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["unofficial_campaign_message_id"], name: "idx_on_unofficial_campaign_message_id_0f830f7090"
+  end
+
+  create_table "unofficial_campaigns", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "created_by_id"
+    t.string "title", null: false
+    t.integer "status", default: 0, null: false
+    t.string "start_mode", default: "immediate", null: false
+    t.datetime "scheduled_at"
+    t.datetime "started_at"
+    t.datetime "completed_at"
+    t.jsonb "sender_inbox_ids", default: [], null: false
+    t.integer "min_contact_interval_seconds", default: 30, null: false
+    t.integer "max_contact_interval_seconds", default: 90, null: false
+    t.boolean "pause_enabled", default: false, null: false
+    t.integer "pause_every_min_contacts", default: 10, null: false
+    t.integer "pause_every_max_contacts", default: 20, null: false
+    t.integer "pause_min_minutes", default: 10, null: false
+    t.integer "pause_max_minutes", default: 20, null: false
+    t.jsonb "allowed_days", default: [0, 1, 2, 3, 4, 5, 6], null: false
+    t.integer "allowed_start_minute", default: 480, null: false
+    t.integer "allowed_end_minute", default: 1080, null: false
+    t.string "post_action", default: "pending_team", null: false
+    t.bigint "post_team_id"
+    t.bigint "post_agent_id"
+    t.integer "next_sender_index", default: 0, null: false
+    t.integer "next_pause_count", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_unofficial_campaigns_on_account_id"
+    t.index ["created_by_id"], name: "index_unofficial_campaigns_on_created_by_id"
+    t.index ["status"], name: "index_unofficial_campaigns_on_status"
+  end
+
   create_table "user_sessions", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.string "client_id", null: false
@@ -1794,6 +1876,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_11_03_000004) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "campaign_opt_out_keywords", "accounts"
   add_foreign_key "campaign_recipients", "accounts", on_delete: :cascade
   add_foreign_key "campaign_recipients", "campaigns", on_delete: :cascade
   add_foreign_key "campaign_recipients", "contacts", on_delete: :cascade
@@ -1818,6 +1901,12 @@ ActiveRecord::Schema[7.2].define(version: 2026_11_03_000004) do
   add_foreign_key "typebot_conversations", "conversations", on_delete: :cascade
   add_foreign_key "typebot_inbox_configs", "accounts", on_delete: :cascade
   add_foreign_key "typebot_inbox_configs", "inboxes", on_delete: :cascade
+  add_foreign_key "unofficial_campaign_contacts", "contacts"
+  add_foreign_key "unofficial_campaign_contacts", "unofficial_campaigns"
+  add_foreign_key "unofficial_campaign_messages", "unofficial_campaigns"
+  add_foreign_key "unofficial_campaign_variants", "unofficial_campaign_messages"
+  add_foreign_key "unofficial_campaigns", "accounts"
+  add_foreign_key "unofficial_campaigns", "users", column: "created_by_id"
   add_foreign_key "user_sessions", "users"
   create_trigger("accounts_after_insert_row_tr", :generated => true, :compatibility => 1).
       on("accounts").

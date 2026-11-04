@@ -518,6 +518,13 @@
           "SUCCESS_MESSAGE": "Avatar deleted successfully",
           "ERROR_MESSAGE": "Could not delete avatar. Please try again later."
         }
+      },
+      "CAMPAIGN_OPT_OUT": {
+        "TITLE": "Campaign opt-out",
+        "DESCRIPTION": "This contact is marked as not wanting to receive WhatsApp campaigns.",
+        "ENABLED": "Contact will no longer receive campaigns.",
+        "DISABLED": "Contact can receive campaigns again.",
+        "ERROR": "Could not update the campaign opt-out setting."
       }
     },
     "SIDEBAR": {

@@ -17,3 +17,38 @@ FactoryBot.define do
     team
   end
 end
+
+
+FactoryBot.define do
+  factory :unofficial_campaign do
+    account
+    title { 'Campanha' }
+    sender_inbox_ids { [] }
+    start_mode { 'immediate' }
+    min_contact_interval_seconds { 10 }
+    max_contact_interval_seconds { 20 }
+    allowed_days { (0..6).to_a }
+    allowed_start_minute { 0 }
+    allowed_end_minute { 1439 }
+    post_action { 'resolve' }
+  end
+
+  factory :unofficial_campaign_message do
+    campaign factory: :unofficial_campaign
+    sequence(:position)
+    wait_min_seconds { 3 }
+    wait_max_seconds { 8 }
+  end
+
+  factory :unofficial_campaign_variant do
+    message factory: :unofficial_campaign_message
+    sequence(:position)
+    content { 'Mensagem' }
+  end
+
+  factory :unofficial_campaign_contact do
+    campaign factory: :unofficial_campaign
+    contact
+    phone_number { contact.phone_number }
+  end
+end

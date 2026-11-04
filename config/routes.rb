@@ -160,6 +160,11 @@ Rails.application.routes.draw do
               get 'analytics/contacts', to: 'campaigns/analytics#contacts'
             end
           end
+          resources :unofficial_campaigns, only: [:index, :show, :create, :destroy] do
+            get :template, on: :collection
+            post :start, on: :member
+          end
+          resource :campaign_opt_out_settings, only: [:show, :update], controller: 'campaign_opt_out_settings'
           resources :dashboard_apps, only: [:index, :show, :create, :update, :destroy]
           namespace :channels do
             resource :twilio_channel, only: [:create]

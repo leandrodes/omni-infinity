@@ -49,6 +49,13 @@ const isCsatDisabled = computed({
   },
 });
 
+const isCampaignOptOut = computed({
+  get: () => !!contactData.value?.campaignOptOut,
+  set: value => {
+    contactData.value.campaignOptOut = value;
+  },
+});
+
 const getInitialContactData = () => {
   if (!props.selectedContact) return {};
   return { ...props.selectedContact };
@@ -106,6 +113,23 @@ const toggleCsatDisabled = async value => {
   } catch {
     isCsatDisabled.value = !value;
     useAlert(t('CONTACTS_LAYOUT.DETAILS.CSAT_DISABLED.ERROR'));
+  }
+};
+
+const toggleCampaignOptOut = async value => {
+  try {
+    await store.dispatch('contacts/update', {
+      id: contactData.value.id,
+      campaignOptOut: value,
+    });
+    useAlert(
+      value
+        ? t('CONTACTS_LAYOUT.DETAILS.CAMPAIGN_OPT_OUT.ENABLED')
+        : t('CONTACTS_LAYOUT.DETAILS.CAMPAIGN_OPT_OUT.DISABLED')
+    );
+  } catch {
+    isCampaignOptOut.value = !value;
+    useAlert(t('CONTACTS_LAYOUT.DETAILS.CAMPAIGN_OPT_OUT.ERROR'));
   }
 };
 
@@ -218,6 +242,23 @@ const handleAvatarDelete = async () => {
         :disabled="isUpdating || isFormInvalid"
         @click="updateContact"
       />
+      <div
+        class="flex items-start justify-between w-full gap-4 pt-6 border-t border-n-strong"
+      >
+        <div class="flex flex-col gap-1">
+          <h6 class="text-sm font-medium text-n-slate-12">
+            {{ t('CONTACTS_LAYOUT.DETAILS.CAMPAIGN_OPT_OUT.TITLE') }}
+          </h6>
+          <span class="text-sm text-n-slate-11">
+            {{ t('CONTACTS_LAYOUT.DETAILS.CAMPAIGN_OPT_OUT.DESCRIPTION') }}
+          </span>
+        </div>
+        <Switch
+          v-model="isCampaignOptOut"
+          :class="{ 'pointer-events-none opacity-50': isUpdating }"
+          @change="toggleCampaignOptOut"
+        />
+      </div>
       <div
         class="flex items-start justify-between w-full gap-4 pt-6 border-t border-n-strong"
       >
