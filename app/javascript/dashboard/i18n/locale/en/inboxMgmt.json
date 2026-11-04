@@ -1488,7 +1488,8 @@
         "ENABLE": "Enable availability for this day",
         "UNAVAILABLE": "Unavailable",
         "VALIDATION_ERROR": "Starting time should be before closing time.",
-        "CHOOSE": "Choose"
+        "CHOOSE": "Choose",
+        "TIME_PLACEHOLDER": "HH:MM"
       },
       "ALL_DAY": "All-Day",
       "SECOND_PERIOD": "Add second time range",

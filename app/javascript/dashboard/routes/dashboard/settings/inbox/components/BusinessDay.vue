@@ -1,22 +1,32 @@
 <script>
 import differenceInMinutes from 'date-fns/differenceInMinutes';
-import { generateTimeSlots } from '../helpers/businessHour';
 import Icon from 'dashboard/components-next/icon/Icon.vue';
-import NextSelect from 'dashboard/components-next/select/Select.vue';
-
-const timeOptions = generateTimeSlots(30).map(value => ({
-  value,
-  label: value,
-}));
 
 const timeToDate = value => {
-  const [hour = 0, minute = 0] = value.split(':').map(Number);
+  const normalized = value?.toString().trim().replace('.', ':');
+  if (!normalized) return null;
+
+  const match = /^(\d{1,2}):?(\d{2})$/.exec(normalized);
+  if (!match) return null;
+
+  const hour = Number(match[1]);
+  const minute = Number(match[2]);
+  if (hour > 23 || minute > 59) return null;
+
   return new Date(1970, 0, 1, hour, minute);
 };
 
+const normalizeTime = value => {
+  const date = timeToDate(value);
+  if (!date) return value;
+  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+};
+
 const isValidRange = (from, to) => {
-  if (!from || !to) return false;
-  return differenceInMinutes(timeToDate(to), timeToDate(from)) > 0;
+  const fromDate = timeToDate(from);
+  const toDate = timeToDate(to);
+  if (!fromDate || !toDate) return false;
+  return differenceInMinutes(toDate, fromDate) > 0;
 };
 
 const rangeMinutes = (from, to) => {
@@ -27,7 +37,6 @@ const rangeMinutes = (from, to) => {
 export default {
   components: {
     Icon,
-    NextSelect,
   },
   props: {
     dayName: {
@@ -47,9 +56,6 @@ export default {
     },
   },
   emits: ['update'],
-  data() {
-    return { timeOptions };
-  },
   computed: {
     isDayEnabled: {
       get() {
@@ -192,6 +198,23 @@ export default {
       },
     },
   },
+  methods: {
+    normalizeField(field) {
+      const value = normalizeTime(this.timeSlot[field]);
+      const nextSlot = {
+        ...this.timeSlot,
+        [field]: value,
+      };
+
+      if (field === 'from' || field === 'to') {
+        nextSlot.valid = isValidRange(nextSlot.from, nextSlot.to);
+      } else {
+        nextSlot.valid2 = isValidRange(nextSlot.from2, nextSlot.to2);
+      }
+
+      this.$emit('update', nextSlot);
+    },
+  },
 };
 </script>
 
@@ -226,20 +249,28 @@ export default {
               {{ $t('INBOX_MGMT.BUSINESS_HOURS.ALL_DAY') }}
             </span>
           </div>
-          <NextSelect
+          <input
             v-model="fromTime"
-            :options="timeOptions"
-            :placeholder="$t('INBOX_MGMT.BUSINESS_HOURS.DAY.CHOOSE')"
+            type="text"
+            inputmode="numeric"
+            maxlength="5"
+            :placeholder="$t('INBOX_MGMT.BUSINESS_HOURS.DAY.TIME_PLACEHOLDER')"
+            class="w-20 px-2 py-1.5 text-sm text-center border rounded-lg reset-base border-n-weak bg-n-alpha-black2 text-n-slate-12"
             :disabled="isOpenAllDay"
+            @blur="normalizeField('from')"
           />
           <div class="flex items-center">
             <Icon icon="i-lucide-minus" class="size-4" />
           </div>
-          <NextSelect
+          <input
             v-model="toTime"
-            :options="timeOptions"
-            :placeholder="$t('INBOX_MGMT.BUSINESS_HOURS.DAY.CHOOSE')"
+            type="text"
+            inputmode="numeric"
+            maxlength="5"
+            :placeholder="$t('INBOX_MGMT.BUSINESS_HOURS.DAY.TIME_PLACEHOLDER')"
+            class="w-20 px-2 py-1.5 text-sm text-center border rounded-lg reset-base border-n-weak bg-n-alpha-black2 text-n-slate-12"
             :disabled="isOpenAllDay"
+            @blur="normalizeField('to')"
           />
         </div>
 
@@ -254,18 +285,26 @@ export default {
           v-if="secondPeriodEnabled"
           class="flex flex-wrap items-center gap-3"
         >
-          <NextSelect
+          <input
             v-model="fromTime2"
-            :options="timeOptions"
-            :placeholder="$t('INBOX_MGMT.BUSINESS_HOURS.DAY.CHOOSE')"
+            type="text"
+            inputmode="numeric"
+            maxlength="5"
+            :placeholder="$t('INBOX_MGMT.BUSINESS_HOURS.DAY.TIME_PLACEHOLDER')"
+            class="w-20 px-2 py-1.5 text-sm text-center border rounded-lg reset-base border-n-weak bg-n-alpha-black2 text-n-slate-12"
+            @blur="normalizeField('from2')"
           />
           <div class="flex items-center">
             <Icon icon="i-lucide-minus" class="size-4" />
           </div>
-          <NextSelect
+          <input
             v-model="toTime2"
-            :options="timeOptions"
-            :placeholder="$t('INBOX_MGMT.BUSINESS_HOURS.DAY.CHOOSE')"
+            type="text"
+            inputmode="numeric"
+            maxlength="5"
+            :placeholder="$t('INBOX_MGMT.BUSINESS_HOURS.DAY.TIME_PLACEHOLDER')"
+            class="w-20 px-2 py-1.5 text-sm text-center border rounded-lg reset-base border-n-weak bg-n-alpha-black2 text-n-slate-12"
+            @blur="normalizeField('to2')"
           />
         </div>
 
