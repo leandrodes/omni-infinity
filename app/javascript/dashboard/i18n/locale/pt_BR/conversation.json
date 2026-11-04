@@ -447,7 +447,11 @@
       "NEWER": "Próxima conversa com este contato"
     },
     "MESSAGE_CORRECTION": "Correção de mensagem",
-    "MESSAGE_DELETED": "Mensagem excluída"
+    "MESSAGE_DELETED": "Mensagem excluída",
+    "AI_HANDOFF_MESSAGE": "Esta conversa está sendo atendida pela Inteligência Artificial.",
+    "AI_HANDOFF_ACTION": "Assumir conversa",
+    "AI_HANDOFF_SUCCESS": "Conversa atribuída a você. A IA foi interrompida.",
+    "AI_HANDOFF_ERROR": "Não foi possível assumir a conversa."
   },
   "EMAIL_TRANSCRIPT": {
     "TITLE": "Enviar transcrição de conversa",

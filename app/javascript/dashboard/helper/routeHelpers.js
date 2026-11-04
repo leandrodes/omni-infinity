@@ -93,6 +93,7 @@ export const isAConversationRoute = (
     'conversation_unattended',
     'conversation_pending',
     'conversation_chatbot',
+    'conversation_ai',
     'conversation_resolved',
     'inbox_dashboard',
     'label_conversations',
@@ -108,6 +109,7 @@ export const isAConversationRoute = (
     'conversation_through_unattended',
     'conversation_through_pending',
     'conversation_through_chatbot',
+    'conversation_through_ai',
     'conversation_through_resolved',
     'conversation_through_inbox',
     'conversations_through_label',
@@ -138,6 +140,8 @@ export const getConversationDashboardRoute = routeName => {
       return 'conversation_pending';
     case 'conversation_through_chatbot':
       return 'conversation_chatbot';
+    case 'conversation_through_ai':
+      return 'conversation_ai';
     case 'conversation_through_resolved':
       return 'conversation_resolved';
     case 'conversations_through_label':

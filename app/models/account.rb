@@ -42,6 +42,8 @@ class Account < ApplicationRecord
   DEFAULT_ATTENDANCE_SETTINGS = {
     'enable_chatbot_conversations_filter' => true,
     'chatbot_conversations_filter_roles' => ['administrator'],
+    'enable_ai_conversations_filter' => false,
+    'ai_conversations_filter_roles' => %w[administrator agent],
     'enable_resolved_conversations_filter' => true,
     'enable_pending_conversations_filter' => true,
     'enable_unassigned_conversations_filter' => false,

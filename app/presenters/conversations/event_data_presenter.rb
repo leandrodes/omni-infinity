@@ -1,4 +1,5 @@
 class Conversations::EventDataPresenter < SimpleDelegator
+  # rubocop:disable Metrics/MethodLength
   def push_data
     {
       additional_attributes: additional_attributes,
@@ -11,6 +12,7 @@ class Conversations::EventDataPresenter < SimpleDelegator
       labels: label_list,
       meta: push_meta,
       status: status, visibility: visibility, private_owner_id: private_owner_id,
+      smart_reception_active: smart_reception_active,
       participant_ids: conversation_participant_user_ids,
       custom_attributes: custom_attributes,
       snoozed_until: snoozed_until, unread_count: unread_incoming_messages.count,
@@ -20,6 +22,8 @@ class Conversations::EventDataPresenter < SimpleDelegator
       **push_timestamps
     }
   end
+
+  # rubocop:enable Metrics/MethodLength
 
   # Like #push_data but with message text normalized for external integrations (webhooks).
   def webhook_data

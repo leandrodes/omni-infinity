@@ -17,6 +17,7 @@ class Conversations::UnreadBadges
       open_mine_count: count(open_conversations.where(assignee_id: user.id)),
       open_team_count: count(open_team_conversations),
       chatbot_count: count(chatbot_conversations),
+      ai_count: count(accessible_conversations.where(smart_reception_active: true).open),
       unassigned_count: count(open_conversations.unassigned)
     }
   end

@@ -13,6 +13,10 @@ class SmartReception::ConversationPolicy
       true
     end
 
+    def mark_active!(conversation)
+      conversation.update!(smart_reception_active: true) unless conversation.smart_reception_active?
+    end
+
     def mark_handoff!(conversation, team_id: nil, label_id: nil)
       attributes = (conversation.custom_attributes || {}).merge(
         HANDOFF_KEY => true,
@@ -20,7 +24,7 @@ class SmartReception::ConversationPolicy
         'smart_reception_handoff_team_id' => team_id,
         'smart_reception_handoff_label_id' => label_id
       ).compact
-      conversation.update!(custom_attributes: attributes)
+      conversation.update!(custom_attributes: attributes, smart_reception_active: false)
     end
 
     private

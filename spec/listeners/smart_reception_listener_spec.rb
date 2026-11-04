@@ -26,6 +26,26 @@ RSpec.describe SmartReceptionListener do
     end.to have_enqueued_job(SmartReception::ResponseJob)
   end
 
+  it 'stops Smart Reception when a human agent sends a message' do
+    conversation.update!(smart_reception_active: true)
+    agent = create(:user, account: account)
+    outgoing = create(
+      :message,
+      account: account,
+      inbox: inbox,
+      conversation: conversation,
+      message_type: :outgoing,
+      sender: agent,
+      content: 'Vou assumir o atendimento'
+    )
+    outgoing_event = Events::Base.new('message_created', Time.current, message: outgoing)
+
+    described_class.instance.message_created(outgoing_event)
+
+    expect(conversation.reload.smart_reception_active).to be(false)
+    expect(conversation.custom_attributes[SmartReception::ConversationPolicy::HANDOFF_KEY]).to be(true)
+  end
+
   it 'does not enqueue a response outside business hours' do
     inbox.update!(working_hours_enabled: true)
     inbox.working_hours.find_by(day_of_week: 1).update!(closed_all_day: true)

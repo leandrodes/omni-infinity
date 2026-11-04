@@ -68,6 +68,10 @@ const showBotHandoffBanner = computed(() => {
   return isPendingConversation.value && isAgentBotOwned.value;
 });
 
+const showAiHandoffBanner = computed(() => {
+  return !!currentChat.value?.smart_reception_active;
+});
+
 const botAssigneeName = computed(() => {
   if (isAgentBotOwned.value && assignedAgent.value?.name) {
     return assignedAgent.value.name;
@@ -109,6 +113,20 @@ const reopenConversation = async () => {
   }
 };
 
+const onClickAiHandoff = async () => {
+  try {
+    if (isPendingConversation.value) {
+      const reopened = await reopenConversation();
+      if (!reopened) return;
+    }
+
+    await selfAssignConversation();
+    useAlert(t('CONVERSATION.AI_HANDOFF_SUCCESS'));
+  } catch (error) {
+    useAlert(t('CONVERSATION.AI_HANDOFF_ERROR'));
+  }
+};
+
 const onClickBotHandoff = async () => {
   try {
     const shouldAssignToCurrentUser =
@@ -130,7 +148,7 @@ const onClickBotHandoff = async () => {
 
 <template>
   <Banner
-    v-if="showSelfAssignBanner && !showBotHandoffBanner"
+    v-if="showSelfAssignBanner && !showBotHandoffBanner && !showAiHandoffBanner"
     action-button-variant="ghost"
     color-scheme="secondary"
     class="mx-2 mb-2 rounded-lg !py-2"
@@ -138,6 +156,16 @@ const onClickBotHandoff = async () => {
     has-action-button
     :action-button-label="$t('CONVERSATION.ASSIGN_TO_ME')"
     @primary-action="onClickSelfAssign"
+  />
+  <Banner
+    v-if="showAiHandoffBanner"
+    action-button-variant="ghost"
+    color-scheme="secondary"
+    class="mx-2 mb-2 rounded-lg !py-2"
+    :banner-message="$t('CONVERSATION.AI_HANDOFF_MESSAGE')"
+    has-action-button
+    :action-button-label="$t('CONVERSATION.AI_HANDOFF_ACTION')"
+    @primary-action="onClickAiHandoff"
   />
   <Banner
     v-if="showBotHandoffBanner"

@@ -147,6 +147,7 @@ class Conversation < ApplicationRecord
   before_create :ensure_waiting_since
 
   after_update_commit :execute_after_update_commit_callbacks
+  after_update_commit :deactivate_smart_reception_on_human_handoff, if: :smart_reception_handoff_candidate?
   after_update_commit :notify_visibility_change, if: :visibility_owner_changed?
   after_create_commit :notify_conversation_creation
   after_create_commit :load_attributes_created_by_db_triggers
@@ -273,6 +274,20 @@ class Conversation < ApplicationRecord
   end
 
   private
+
+  def smart_reception_handoff_candidate?
+    smart_reception_active? && (
+      saved_change_to_assignee_id? ||
+      saved_change_to_team_id? ||
+      (saved_change_to_status? && (resolved? || snoozed?))
+    )
+  end
+
+  def deactivate_smart_reception_on_human_handoff
+    return if assignee_id.blank? && assignee_agent_bot_id.blank? && team_id.blank? && !resolved? && !snoozed?
+
+    SmartReception::ConversationPolicy.mark_handoff!(self)
+  end
 
   def execute_after_update_commit_callbacks
     handle_resolved_status_change

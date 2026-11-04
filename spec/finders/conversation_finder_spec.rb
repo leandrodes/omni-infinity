@@ -345,6 +345,19 @@ describe ConversationFinder do
       end
     end
 
+    context 'with AI conversation type' do
+      let(:params) { { status: 'open', assignee_type: 'all', conversation_type: 'ai' } }
+
+      it 'returns only conversations handled by Smart Reception' do
+        ai_conversation = create(:conversation, account: account, inbox: inbox, smart_reception_active: true)
+        create(:conversation, account: account, inbox: inbox, smart_reception_active: false)
+
+        result = conversation_finder.perform
+
+        expect(result[:conversations].map(&:id)).to contain_exactly(ai_conversation.id)
+      end
+    end
+
     context 'with unassigned conversation type' do
       let(:params) { { status: 'open', assignee_type: 'all', conversation_type: 'unassigned' } }
 

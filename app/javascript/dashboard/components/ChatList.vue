@@ -90,6 +90,9 @@ watch(
     } else if (value === 'chatbot') {
       activeStatus.value = wootConstants.STATUS_TYPE.PENDING;
       activeAssigneeTab.value = wootConstants.ASSIGNEE_TYPE.ALL;
+    } else if (value === 'ai') {
+      activeStatus.value = wootConstants.STATUS_TYPE.OPEN;
+      activeAssigneeTab.value = wootConstants.ASSIGNEE_TYPE.ALL;
     } else if (value === 'pending') {
       activeStatus.value = wootConstants.STATUS_TYPE.PENDING;
       activeAssigneeTab.value = isAdmin.value
@@ -232,9 +235,14 @@ const hideAssignedToOthers = computed(
 );
 
 const isFixedView = computed(() =>
-  ['open_mine', 'open_team', 'chatbot', 'unassigned', 'participating'].includes(
-    props.conversationType
-  )
+  [
+    'open_mine',
+    'open_team',
+    'chatbot',
+    'ai',
+    'unassigned',
+    'participating',
+  ].includes(props.conversationType)
 );
 
 const showAssigneeTabs = computed(
@@ -462,6 +470,12 @@ const conversationList = computed(() => {
     }
   } else {
     localConversationList = [...chatLists.value];
+  }
+
+  if (props.conversationType === 'ai') {
+    localConversationList = localConversationList.filter(
+      conversation => conversation.smart_reception_active
+    );
   }
 
   if (activeFolder.value) {

@@ -38,6 +38,11 @@ export const isOnChatbotView = ({ route: { name: routeName } }) => {
   return CHATBOT_ROUTES.includes(routeName);
 };
 
+export const isOnAIView = ({ route: { name: routeName } }) => {
+  const AI_ROUTES = ['conversation_ai', 'conversation_through_ai'];
+  return AI_ROUTES.includes(routeName);
+};
+
 export const isOnParticipatingView = ({ route: { name: routeName } }) => {
   const PARTICIPATING_ROUTES = [
     'conversation_participating',

@@ -42,6 +42,7 @@ RSpec.describe SmartReception::Responder do
       expect(result).to eq(:responded)
       expect(conversation.reload.messages.outgoing.last.content).to eq('Olá! Como posso ajudar?')
       expect(conversation.messages.outgoing.last.content_attributes['smart_reception']).to be(true)
+      expect(conversation.smart_reception_active).to be(true)
     end
   end
 end

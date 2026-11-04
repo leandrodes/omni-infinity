@@ -250,6 +250,7 @@ const participatingBadgeCount = useMapGetter(
   'conversationBadges/getParticipatingCount'
 );
 const chatbotBadgeCount = useMapGetter('conversationBadges/getChatbotCount');
+const aiBadgeCount = useMapGetter('conversationBadges/getAiCount');
 const unattendedBadgeCount = useMapGetter(
   'conversationBadges/getUnattendedCount'
 );
@@ -297,6 +298,16 @@ const showChatbotFilter = computed(() => {
 
   const roles = currentAccount.value?.settings
     ?.chatbot_conversations_filter_roles || ['administrator'];
+
+  return roles.includes(currentUserRole.value);
+});
+const showAiFilter = computed(() => {
+  if (currentAccount.value?.settings?.enable_ai_conversations_filter !== true) {
+    return false;
+  }
+
+  const roles = currentAccount.value?.settings
+    ?.ai_conversations_filter_roles || ['administrator', 'agent'];
 
   return roles.includes(currentUserRole.value);
 });
@@ -484,6 +495,18 @@ const menuItems = computed(() => {
                 badgeCount: chatbotBadgeCount.value,
                 activeOn: ['conversation_through_chatbot'],
                 to: accountScopedRoute('conversation_chatbot'),
+              },
+            ]
+          : []),
+        ...(showAiFilter.value
+          ? [
+              {
+                name: 'AI',
+                label: t('SIDEBAR.AI_CONVERSATIONS'),
+                icon: 'i-lucide-sparkles',
+                badgeCount: aiBadgeCount.value,
+                activeOn: ['conversation_through_ai'],
+                to: accountScopedRoute('conversation_ai'),
               },
             ]
           : []),

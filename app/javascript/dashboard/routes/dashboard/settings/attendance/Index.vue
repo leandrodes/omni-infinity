@@ -13,6 +13,8 @@ const { currentAccount, updateAccount } = useAccount();
 const defaultSettings = {
   enable_chatbot_conversations_filter: false,
   chatbot_conversations_filter_roles: ['administrator'],
+  enable_ai_conversations_filter: false,
+  ai_conversations_filter_roles: ['administrator', 'agent'],
   enable_resolved_conversations_filter: false,
   enable_pending_conversations_filter: false,
   enable_unassigned_conversations_filter: false,
@@ -45,6 +47,8 @@ const syncSettings = () => {
       settings.value[key] = accountSettings[key] || {};
     } else if (key === 'chatbot_conversations_filter_roles') {
       settings.value[key] = accountSettings[key] || ['administrator'];
+    } else if (key === 'ai_conversations_filter_roles') {
+      settings.value[key] = accountSettings[key] || ['administrator', 'agent'];
     } else {
       settings.value[key] = accountSettings[key] === true;
     }
@@ -60,6 +64,13 @@ const toggleChatbotRole = (role, checked) => {
   if (checked) roles.add(role);
   else roles.delete(role);
   settings.value.chatbot_conversations_filter_roles = [...roles];
+};
+
+const toggleAiRole = (role, checked) => {
+  const roles = new Set(settings.value.ai_conversations_filter_roles || []);
+  if (checked) roles.add(role);
+  else roles.delete(role);
+  settings.value.ai_conversations_filter_roles = [...roles];
 };
 
 const saveSettings = async () => {
@@ -114,6 +125,40 @@ const saveSettings = async () => {
                   settings.chatbot_conversations_filter_roles.includes('agent')
                 "
                 @change="toggleChatbotRole('agent', $event.target.checked)"
+              />
+              {{ t('ATTENDANCE_SETTINGS.DISPLAY.ROLE_AGENT') }}
+            </label>
+          </div>
+
+          <div class="flex items-center justify-between gap-4">
+            <span class="text-sm">{{
+              t('ATTENDANCE_SETTINGS.DISPLAY.ENABLE_AI_CONVERSATIONS_FILTER')
+            }}</span>
+            <Switch v-model="settings.enable_ai_conversations_filter" />
+          </div>
+          <div
+            v-if="settings.enable_ai_conversations_filter"
+            class="flex flex-col gap-2 pl-4"
+          >
+            <label class="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                :checked="
+                  settings.ai_conversations_filter_roles.includes(
+                    'administrator'
+                  )
+                "
+                @change="toggleAiRole('administrator', $event.target.checked)"
+              />
+              {{ t('ATTENDANCE_SETTINGS.DISPLAY.ROLE_ADMINISTRATOR') }}
+            </label>
+            <label class="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                :checked="
+                  settings.ai_conversations_filter_roles.includes('agent')
+                "
+                @change="toggleAiRole('agent', $event.target.checked)"
               />
               {{ t('ATTENDANCE_SETTINGS.DISPLAY.ROLE_AGENT') }}
             </label>

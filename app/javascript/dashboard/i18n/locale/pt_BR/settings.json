@@ -427,7 +427,8 @@
     "CHATBOT_AUTO_RESOLUTION": "Resolução Automática no Chatbot",
     "OPEN_MINE_CONVERSATIONS": "Abertas Minhas",
     "OPEN_TEAM_CONVERSATIONS": "Abertas Equipe",
-    "UNASSIGNED_CONVERSATIONS": "Não Atribuídas"
+    "UNASSIGNED_CONVERSATIONS": "Não Atribuídas",
+    "AI_CONVERSATIONS": "IA"
   },
   "DATA_IMPORTS": {
     "HEADER": "Dados",
@@ -1112,7 +1113,8 @@
       "ROLE_AGENT": "Agente",
       "ENABLE_PENDING_CONVERSATIONS_FILTER": "Habilitar filtro conversas pendentes",
       "ENABLE_UNASSIGNED_CONVERSATIONS_FILTER": "Habilitar filtro conversas Não Atribuídas",
-      "ENABLE_CONTACT_COMPANY_FILTER": "Habilitar filtro de contatos por Empresas"
+      "ENABLE_CONTACT_COMPANY_FILTER": "Habilitar filtro de contatos por Empresas",
+      "ENABLE_AI_CONVERSATIONS_FILTER": "Habilitar filtro de conversas na IA"
     },
     "VISIBILITY": {
       "TITLE": "Visualização",

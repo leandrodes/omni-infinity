@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_11_03_000005) do
+ActiveRecord::Schema[7.2].define(version: 2026_11_04_000000) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -931,9 +931,11 @@ ActiveRecord::Schema[7.2].define(version: 2026_11_03_000005) do
     t.datetime "status_changed_at"
     t.integer "visibility", default: 0, null: false
     t.bigint "private_owner_id"
+    t.boolean "smart_reception_active", default: false, null: false
     t.index ["account_id", "display_id"], name: "index_conversations_on_account_id_and_display_id", unique: true
     t.index ["account_id", "id"], name: "index_conversations_on_id_and_account_id"
     t.index ["account_id", "inbox_id", "status", "assignee_id"], name: "conv_acid_inbid_stat_asgnid_idx"
+    t.index ["account_id", "smart_reception_active"], name: "index_conversations_on_active_smart_reception", where: "(smart_reception_active = true)"
     t.index ["account_id", "status", "created_at"], name: "index_conversations_on_account_id_status_created_at"
     t.index ["account_id", "visibility"], name: "index_conversations_on_account_id_and_visibility"
     t.index ["account_id"], name: "index_conversations_on_account_id"

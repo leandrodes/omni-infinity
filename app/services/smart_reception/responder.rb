@@ -16,8 +16,7 @@ class SmartReception::Responder
 
     builder = SmartReception::ContextBuilder.new(setting: setting, conversation: conversation)
     content = SmartReception::AiClient.new(setting).perform(messages: builder.messages)
-    send_response!(content, builder.matched_attachments)
-    :responded
+    send_response!(content, builder.matched_attachments) == :cancelled ? :cancelled : :responded
   rescue SmartReception::AiClient::Error => e
     Rails.logger.error("[SmartReception] conversation #{conversation.id}: #{e.message}")
     :error
@@ -44,15 +43,29 @@ class SmartReception::Responder
     :rule_applied
   end
 
+  # rubocop:disable Metrics/AbcSize
   def send_response!(content, attachments)
-    params = {
-      content: content.truncate(150_000),
-      message_type: :outgoing,
-      content_attributes: { smart_reception: true }
-    }
-    params[:attachments] = attachments.map { |attachment| attachment.file.blob.signed_id } if attachments.any?
-    Messages::MessageBuilder.new(nil, conversation, params).perform
+    conversation.reload
+    conversation.with_lock do
+      conversation.reload
+      return :cancelled unless setting.reload.enabled?
+      return :cancelled unless SmartReception::ConversationPolicy.available?(conversation)
+      return :cancelled if conversation.messages.outgoing.where(sender_type: 'User')
+                                       .exists?(['created_at > ?', message.created_at])
+
+      params = {
+        content: content.truncate(150_000),
+        message_type: :outgoing,
+        content_attributes: { smart_reception: true }
+      }
+      params[:attachments] = attachments.map { |attachment| attachment.file.blob.signed_id } if attachments.any?
+      SmartReception::ConversationPolicy.mark_active!(conversation)
+      Messages::MessageBuilder.new(nil, conversation, params).perform
+    end
+    :sent
   end
+
+  # rubocop:enable Metrics/AbcSize
 
   def apply_label(label)
     return if label.blank?

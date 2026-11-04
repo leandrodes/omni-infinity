@@ -81,6 +81,15 @@ RSpec.describe Conversations::UnreadBadges do
     expect(counts[:unattended_mine_count]).to eq(1)
   end
 
+  it 'counts active Smart Reception conversations' do
+    create(:conversation, account: account, inbox: inbox, contact: contact, status: :open, smart_reception_active: true)
+    create(:conversation, account: account, inbox: inbox, contact: contact, status: :open, smart_reception_active: false)
+
+    counts = described_class.new(account: account, user: user).perform
+
+    expect(counts[:ai_count]).to eq(1)
+  end
+
   it 'counts unassigned conversations without bot assignments' do
     create(:conversation, account: account, inbox: inbox, contact: contact, status: :open)
     create(:conversation, account: account, inbox: inbox, contact: contact, status: :open,

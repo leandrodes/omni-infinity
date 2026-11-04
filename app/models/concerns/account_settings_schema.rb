@@ -19,6 +19,8 @@ module AccountSettingsSchema
 
         'enable_chatbot_conversations_filter': { 'type': %w[boolean null] },
         'chatbot_conversations_filter_roles': { 'type': %w[array null], 'items': { 'type': 'string' } },
+        'enable_ai_conversations_filter': { 'type': %w[boolean null] },
+        'ai_conversations_filter_roles': { 'type': %w[array null], 'items': { 'type': 'string' } },
         'enable_resolved_conversations_filter': { 'type': %w[boolean null] },
         'enable_pending_conversations_filter': { 'type': %w[boolean null] },
         'enable_unassigned_conversations_filter': { 'type': %w[boolean null] },

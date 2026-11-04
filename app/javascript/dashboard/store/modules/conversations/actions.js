@@ -11,6 +11,7 @@ import {
   isOnUnattendedView,
   isOnResolvedView,
   isOnChatbotView,
+  isOnAIView,
   isOnPendingView,
   isOnFoldersView,
 } from './helpers/actionHelpers';
@@ -581,6 +582,7 @@ const actions = {
       !isOnUnattendedView(rootState) &&
       !isOnResolvedView(rootState) &&
       !isOnChatbotView(rootState) &&
+      !isOnAIView(rootState) &&
       !isOnPendingView(rootState) &&
       isMatchingInboxFilter
     ) {

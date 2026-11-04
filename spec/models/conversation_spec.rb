@@ -90,6 +90,21 @@ RSpec.describe Conversation do
     end
   end
 
+  describe 'Smart Reception handoff' do
+    let(:account) { create(:account) }
+    let(:agent) { create(:user, account: account) }
+    let(:conversation) do
+      create(:conversation, account: account, assignee: nil, smart_reception_active: true)
+    end
+
+    it 'stops Smart Reception when a human agent is assigned' do
+      conversation.update!(assignee: agent)
+
+      expect(conversation.reload.smart_reception_active).to be(false)
+      expect(conversation.custom_attributes[SmartReception::ConversationPolicy::HANDOFF_KEY]).to be(true)
+    end
+  end
+
   describe '.validate jsonb attributes' do
     let(:account) { create(:account) }
     let(:agent) { create(:user, email: 'agent1@example.com', account: account) }
@@ -729,7 +744,9 @@ RSpec.describe Conversation do
         updated_at: conversation.updated_at.to_f,
         waiting_since: conversation.waiting_since.to_i,
         priority: nil,
-        unread_count: 0
+        unread_count: 0,
+        participant_ids: [],
+        smart_reception_active: false
       }
     end
 

@@ -11,6 +11,7 @@ import {
   isOnUnattendedView,
   isOnOpenTeamView,
   isOnUnassignedView,
+  isOnAIView,
   isOnFoldersView,
 } from 'dashboard/store/modules/conversations/helpers/actionHelpers';
 import wootConstants from 'dashboard/constants/globals';
@@ -39,6 +40,8 @@ export function useConversationRoutePath() {
       conversationType = 'open_team';
     } else if (isOnUnassignedView({ route: { name } })) {
       conversationType = 'unassigned';
+    } else if (isOnAIView({ route: { name } })) {
+      conversationType = 'ai';
     }
 
     const isOnFolder = isOnFoldersView({ route: { name } });
@@ -74,6 +77,8 @@ export function useConversationRoutePath() {
       conversationType = CONVERSATION_TYPE.OPEN_TEAM;
     } else if (isOnUnassignedView({ route: { name } })) {
       conversationType = CONVERSATION_TYPE.UNASSIGNED;
+    } else if (isOnAIView({ route: { name } })) {
+      conversationType = CONVERSATION_TYPE.AI;
     }
 
     const isOnFolder = isOnFoldersView({ route: { name } });

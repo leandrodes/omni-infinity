@@ -10,6 +10,7 @@ export const state = {
   openMineCount: 0,
   openTeamCount: 0,
   chatbotCount: 0,
+  aiCount: 0,
   unattendedCount: 0,
   unattendedMineCount: 0,
   unattendedParticipatingCount: 0,
@@ -24,6 +25,7 @@ export const getters = {
   getOpenMineCount: $state => $state.openMineCount,
   getOpenTeamCount: $state => $state.openTeamCount,
   getChatbotCount: $state => $state.chatbotCount,
+  getAiCount: $state => $state.aiCount,
   getUnattendedCount: $state => $state.unattendedCount,
   getUnattendedMineCount: $state => $state.unattendedMineCount,
   getUnattendedParticipatingCount: $state =>
@@ -51,6 +53,7 @@ export const mutations = {
     $state.openMineCount = normalizeCount(payload.open_mine_count);
     $state.openTeamCount = normalizeCount(payload.open_team_count);
     $state.chatbotCount = normalizeCount(payload.chatbot_count);
+    $state.aiCount = normalizeCount(payload.ai_count);
     $state.unattendedCount = normalizeCount(payload.unattended_count);
     $state.unattendedMineCount = normalizeCount(payload.unattended_mine_count);
     $state.unattendedParticipatingCount = normalizeCount(

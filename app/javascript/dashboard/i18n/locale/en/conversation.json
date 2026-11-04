@@ -456,7 +456,11 @@
       "UNPIN": "Unpin"
     },
     "MESSAGE_CORRECTION": "Message correction",
-    "MESSAGE_DELETED": "Deleted message"
+    "MESSAGE_DELETED": "Deleted message",
+    "AI_HANDOFF_MESSAGE": "This conversation is being handled by the AI assistant.",
+    "AI_HANDOFF_ACTION": "Take over conversation",
+    "AI_HANDOFF_SUCCESS": "Conversation assigned to you. AI has been stopped.",
+    "AI_HANDOFF_ERROR": "Could not take over the conversation."
   },
   "EMAIL_TRANSCRIPT": {
     "TITLE": "Send conversation transcript",
