@@ -12,7 +12,6 @@ import { useMessageFormatter } from 'shared/composables/useMessageFormatter';
 
 import Button from 'dashboard/components-next/button/Button.vue';
 import Icon from 'dashboard/components-next/icon/Icon.vue';
-import TabBar from 'dashboard/components-next/tabbar/TabBar.vue';
 import {
   BaseTable,
   BaseTableRow,
@@ -41,16 +40,12 @@ const searchQuery = ref('');
 const activeType = ref('quick');
 
 const tabs = computed(() => [
-  { key: 'quick', name: t('CANNED_MGMT.TABS.QUICK') },
-  { key: 'farewell', name: t('CANNED_MGMT.TABS.FAREWELL') },
+  { key: 'quick', label: t('CANNED_MGMT.TABS.QUICK') },
+  { key: 'farewell', label: t('CANNED_MGMT.TABS.FAREWELL') },
 ]);
 
-const activeTabIndex = computed(() =>
-  tabs.value.findIndex(tab => tab.key === activeType.value)
-);
-
-const onTabChanged = tab => {
-  activeType.value = tab.key;
+const setActiveType = type => {
+  activeType.value = type;
   searchQuery.value = '';
 };
 
@@ -179,11 +174,16 @@ const tableHeaders = computed(() => {
         feature-name="canned_responses"
       >
         <template #tabs>
-          <TabBar
-            :tabs="tabs"
-            :initial-active-tab="activeTabIndex"
-            @tab-changed="onTabChanged"
-          />
+          <div class="flex items-center gap-2">
+            <Button
+              v-for="tab in tabs"
+              :key="tab.key"
+              :label="tab.label"
+              :color="activeType === tab.key ? 'blue' : 'slate'"
+              size="sm"
+              @click="setActiveType(tab.key)"
+            />
+          </div>
         </template>
         <template v-if="records?.length" #count>
           <span class="text-body-main text-n-slate-11">
