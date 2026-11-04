@@ -92,8 +92,11 @@ export const getTime = (hour, minute) => {
 };
 
 const parseTime = value => {
-  const [hour = 0, minute = 0] = value.split(':').map(Number);
-  return { hour, minute };
+  const normalized = value?.toString().trim().replace('.', ':') || '';
+  const match = /^(\d{1,2}):?(\d{2})$/.exec(normalized);
+  if (!match) return { hour: 0, minute: 0 };
+
+  return { hour: Number(match[1]), minute: Number(match[2]) };
 };
 
 export const timeSlotParse = timeSlots => {
