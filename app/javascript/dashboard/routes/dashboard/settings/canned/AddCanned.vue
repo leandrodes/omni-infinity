@@ -19,6 +19,10 @@ export default {
       type: String,
       default: '',
     },
+    messageType: {
+      type: String,
+      default: 'quick',
+    },
     onClose: {
       type: Function,
       default: () => {},
@@ -37,6 +41,21 @@ export default {
       },
       show: true,
     };
+  },
+  computed: {
+    isFarewell() {
+      return this.messageType === 'farewell';
+    },
+    modalTitle() {
+      return this.isFarewell
+        ? this.$t('CANNED_MGMT.ADD.FAREWELL_TITLE')
+        : this.$t('CANNED_MGMT.ADD.TITLE');
+    },
+    modalDescription() {
+      return this.isFarewell
+        ? this.$t('CANNED_MGMT.ADD.FAREWELL_DESC')
+        : this.$t('CANNED_MGMT.ADD.DESC');
+    },
   },
   validations: {
     shortCode: {
@@ -62,6 +81,7 @@ export default {
         .dispatch('createCannedResponse', {
           short_code: this.shortCode,
           content: this.content,
+          message_type: this.messageType,
         })
         .then(() => {
           // Reset Form, Show success message
@@ -85,8 +105,8 @@ export default {
   <Modal v-model:show="show" :on-close="onClose">
     <div class="flex flex-col h-auto overflow-auto">
       <woot-modal-header
-        :header-title="$t('CANNED_MGMT.ADD.TITLE')"
-        :header-content="$t('CANNED_MGMT.ADD.DESC')"
+        :header-title="modalTitle"
+        :header-content="modalDescription"
       />
       <form class="flex flex-col w-full" @submit.prevent="addCannedResponse()">
         <div class="w-full">

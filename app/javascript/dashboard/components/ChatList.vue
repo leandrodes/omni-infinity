@@ -17,6 +17,7 @@ import DeleteCustomViews from 'dashboard/routes/dashboard/customviews/DeleteCust
 import ConversationBulkActions from './widgets/conversation/conversationBulkActions/Index.vue';
 import TeleportWithDirection from 'dashboard/components-next/TeleportWithDirection.vue';
 import ConversationResolveAttributesModal from 'dashboard/components-next/ConversationWorkflow/ConversationResolveAttributesModal.vue';
+import ConversationStatusConfirmationModal from 'dashboard/components-next/ConversationWorkflow/ConversationStatusConfirmationModal.vue';
 import AssignmentTeamConflictModal from 'dashboard/components-next/ConversationWorkflow/AssignmentTeamConflictModal.vue';
 import { assignmentTeamConflict } from 'dashboard/helper/assignmentTeamHelper';
 
@@ -74,6 +75,7 @@ const store = useStore();
 const { buildConversationListPath } = useConversationRoutePath();
 
 const resolveAttributesModalRef = ref(null);
+const statusConfirmationModalRef = ref(null);
 const assignmentConflictModalRef = ref(null);
 const pendingAssignment = ref(null);
 
@@ -128,7 +130,6 @@ const advancedFilterTypes = ref(
 );
 
 const currentUser = useMapGetter('getCurrentUser');
-const currentUserRole = useMapGetter('getCurrentRole');
 const chatLists = useMapGetter('getFilteredConversations');
 const mineChatsList = useMapGetter('getMineChats');
 const allChatList = useMapGetter('getAllStatusChats');
@@ -255,16 +256,12 @@ const showAssigneeTabs = computed(
 );
 
 const showPendingTeamTab = computed(() => {
-  const settings = currentAccount.value?.settings || {};
-  if (settings.enable_pending_team_conversations_filter === false) {
-    return false;
-  }
+  if (isAdmin.value) return false;
 
-  const roles = settings.pending_team_conversations_filter_roles || [
-    'administrator',
-    'agent',
-  ];
-  return roles.includes(currentUserRole.value);
+  return (
+    currentAccount.value?.settings?.enable_pending_team_conversations_filter !==
+    false
+  );
 });
 
 const assigneeTabItems = computed(() => {
@@ -917,11 +914,11 @@ async function onAssignTeam(team, conversationId = null) {
   }
 }
 
-function toggleConversationStatus(
+async function toggleConversationStatus(
   conversationId,
   status,
   snoozedUntil,
-  customAttributes = null
+  { customAttributes = null, farewellMessage = null } = {}
 ) {
   const payload = {
     conversationId,
@@ -933,50 +930,63 @@ function toggleConversationStatus(
     payload.customAttributes = customAttributes;
   }
 
-  store
-    .dispatch('toggleStatus', payload)
-    .then(() => {
-      useAlert(t('CONVERSATION.CHANGE_STATUS'));
-      if (status === wootConstants.STATUS_TYPE.RESOLVED) {
-        store.dispatch('clearSelectedState');
-        router.replace(buildConversationListPath());
-      }
-    })
-    .catch(error => {
-      if (error?.response?.status === 403) {
-        useAlert(t('CONVERSATION.NO_PERMISSION_REOPEN'));
-      }
-    });
+  try {
+    if (farewellMessage?.content) {
+      await store.dispatch('createPendingMessageAndSend', {
+        conversationId,
+        message: farewellMessage.content,
+        private: false,
+      });
+    }
+
+    await store.dispatch('toggleStatus', payload);
+    useAlert(t('CONVERSATION.CHANGE_STATUS'));
+
+    if (status === wootConstants.STATUS_TYPE.RESOLVED) {
+      store.dispatch('clearSelectedState');
+      router.replace(buildConversationListPath());
+    }
+  } catch (error) {
+    if (error?.response?.status === 403) {
+      useAlert(t('CONVERSATION.NO_PERMISSION_REOPEN'));
+    } else if (farewellMessage) {
+      useAlert(t('CONVERSATION.MESSAGE_ERROR'));
+    }
+  }
 }
 
 function handleResolveConversation(conversationId, status, snoozedUntil) {
-  if (status !== wootConstants.STATUS_TYPE.RESOLVED) {
-    toggleConversationStatus(conversationId, status, snoozedUntil);
-    return;
-  }
-
-  // Check for required attributes before resolving
   const conversation = getConversationById.value(conversationId);
-  const currentCustomAttributes = conversation?.custom_attributes || {};
-  const { hasMissing, missing } = checkMissingAttributes(
-    currentCustomAttributes,
-    conversation?.meta?.team?.id
-  );
+  statusConfirmationModalRef.value?.open({
+    conversation,
+    status,
+    snoozedUntil,
+  });
+}
 
-  if (hasMissing) {
-    // Pass conversation context through the modal's API
-    const conversationContext = {
-      id: conversationId,
-      snoozedUntil,
-    };
-    resolveAttributesModalRef.value?.open(
-      missing,
+function handleStatusConfirmed(payload) {
+  const conversation = getConversationById.value(payload.id);
+  const currentCustomAttributes = conversation?.custom_attributes || {};
+
+  if (payload.status === wootConstants.STATUS_TYPE.RESOLVED) {
+    const { hasMissing, missing } = checkMissingAttributes(
       currentCustomAttributes,
-      conversationContext
+      conversation?.meta?.team?.id
     );
-  } else {
-    toggleConversationStatus(conversationId, status, snoozedUntil);
+
+    if (hasMissing) {
+      resolveAttributesModalRef.value?.open(missing, currentCustomAttributes, {
+        id: payload.id,
+        snoozedUntil: payload.snoozedUntil,
+        farewellMessage: payload.farewellMessage,
+      });
+      return;
+    }
   }
+
+  toggleConversationStatus(payload.id, payload.status, payload.snoozedUntil, {
+    farewellMessage: payload.farewellMessage,
+  });
 }
 
 function handleResolveWithAttributes({ attributes, context }) {
@@ -990,7 +1000,10 @@ function handleResolveWithAttributes({ attributes, context }) {
       context.id,
       wootConstants.STATUS_TYPE.RESOLVED,
       context.snoozedUntil,
-      mergedAttributes
+      {
+        customAttributes: mergedAttributes,
+        farewellMessage: context.farewellMessage,
+      }
     );
   }
 }
@@ -1244,6 +1257,10 @@ watch(appliedFilters, () => resetBulkActions());
       "
       @confirm="onConfirmAssignmentTeam"
       @close="onCloseAssignmentConflict"
+    />
+    <ConversationStatusConfirmationModal
+      ref="statusConfirmationModalRef"
+      @confirm="handleStatusConfirmed"
     />
     <ConversationResolveAttributesModal
       ref="resolveAttributesModalRef"

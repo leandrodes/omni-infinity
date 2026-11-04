@@ -83,6 +83,19 @@ RSpec.describe 'Canned Responses API', type: :request do
 
         expect(response).to have_http_status(:success)
         expect(account.canned_responses.count).to eq(2)
+        expect(response.parsed_body['message_type']).to eq('quick')
+      end
+
+      it 'creates a farewell canned response' do
+        params = { short_code: 'bye', content: 'Goodbye', message_type: 'farewell' }
+
+        post "/api/v1/accounts/#{account.id}/canned_responses",
+             params: params,
+             headers: agent.create_new_auth_token,
+             as: :json
+
+        expect(response).to have_http_status(:success)
+        expect(response.parsed_body['message_type']).to eq('farewell')
       end
     end
   end

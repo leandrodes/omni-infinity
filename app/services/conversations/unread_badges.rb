@@ -74,7 +74,11 @@ class Conversations::UnreadBadges
   def pending_visible_conversations
     return pending_base if administrator? || !hide_assigned_to_others?
 
-    pending_base.where(assignee_id: user.id)
+    pending_base.where(
+      '(assignee_id = :user_id) OR (assignee_id IS NULL AND team_id IN (:team_ids))',
+      user_id: user.id,
+      team_ids: current_user_team_ids
+    )
   end
 
   def participating_open_conversations

@@ -1,5 +1,9 @@
 {
   "CANNED_MGMT": {
+    "TABS": {
+      "QUICK": "Mensagens Rápidas",
+      "FAREWELL": "Mensagens de Despedida"
+    },
     "HEADER": "Respostas Prontas",
     "LEARN_MORE": "Saiba mais sobre respostas prontas",
     "DESCRIPTION": "Respostas prontas são modelos de resposta pré-escritas que te ajudam a responder rapidamente a uma conversa. Os agentes podem digitar o caractere ' /' seguido pelo atalho para inserir uma resposta pronta durante uma conversa. ",
@@ -39,7 +43,9 @@
       "API": {
         "SUCCESS_MESSAGE": "Resposta pronta adicionada com sucesso.",
         "ERROR_MESSAGE": "Não foi possível conectar ao servidor Woot. Por favor, tente novamente."
-      }
+      },
+      "FAREWELL_TITLE": "Adicionar mensagem de despedida",
+      "FAREWELL_DESC": "Cadastre mensagens para serem oferecidas ao resolver uma conversa."
     },
     "EDIT": {
       "TITLE": "Editar resposta pronta",
@@ -61,7 +67,8 @@
       "API": {
         "SUCCESS_MESSAGE": "Resposta pronta atualizada com sucesso.",
         "ERROR_MESSAGE": "Não foi possível conectar ao servidor Woot. Por favor, tente novamente."
-      }
+      },
+      "FAREWELL_TITLE": "Editar mensagem de despedida"
     },
     "DELETE": {
       "BUTTON_TEXT": "Excluir",
@@ -75,6 +82,7 @@
         "YES": "Sim, excluir ",
         "NO": "Não, manter "
       }
-    }
+    },
+    "HEADER_BTN_TXT_FAREWELL": "Adicionar mensagem de despedida"
   }
 }

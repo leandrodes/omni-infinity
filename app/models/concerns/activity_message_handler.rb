@@ -1,3 +1,4 @@
+# rubocop:disable Metrics/ModuleLength
 module ActivityMessageHandler
   extend ActiveSupport::Concern
 
@@ -82,13 +83,25 @@ module ActivityMessageHandler
 
   def user_status_change_activity_content(user_name)
     if user_name
-      I18n.t("conversations.activity.status.#{status}", user_name: user_name)
+      old_status, new_status = saved_change_to_status
+      I18n.t(
+        'conversations.activity.status.changed',
+        old_status: activity_status_label(old_status),
+        new_status: activity_status_label(new_status),
+        user_name: user_name
+      )
     elsif Current.contact.present? && resolved?
       I18n.t('conversations.activity.status.contact_resolved', contact_name: Current.contact.name.capitalize)
     elsif resolved?
       message_data = auto_resolve_message_key(auto_resolve_after || 0)
       I18n.t("conversations.activity.status.#{message_data[:key]}", count: message_data[:count])
     end
+  end
+
+  def activity_status_label(status)
+    return if status.blank?
+
+    I18n.t("conversations.activity.status_labels.#{status}", default: status)
   end
 
   def automation_status_change_activity_content
@@ -123,3 +136,4 @@ module ActivityMessageHandler
 end
 
 ActivityMessageHandler.prepend_mod_with('ActivityMessageHandler')
+# rubocop:enable Metrics/ModuleLength

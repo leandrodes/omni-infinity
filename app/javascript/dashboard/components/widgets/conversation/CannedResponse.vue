@@ -73,16 +73,18 @@ const resolveContent = message =>
   );
 
 const records = computed(() =>
-  cannedResponses.value.map(({ id, short_code: shortCode, content }) => {
-    const resolved = resolveContent(content);
-    return {
-      id,
-      content,
-      resolved,
-      shortCode,
-      plainText: getPlainText(resolved).replace(/\s+/g, ' ').trim(),
-    };
-  })
+  cannedResponses.value
+    .filter(({ message_type: messageType }) => messageType !== 'farewell')
+    .map(({ id, short_code: shortCode, content }) => {
+      const resolved = resolveContent(content);
+      return {
+        id,
+        content,
+        resolved,
+        shortCode,
+        plainText: getPlainText(resolved).replace(/\s+/g, ' ').trim(),
+      };
+    })
 );
 
 const filteredRecords = computed(() => {

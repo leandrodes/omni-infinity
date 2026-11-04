@@ -307,7 +307,7 @@ RSpec.describe Conversation do
       expect(Conversations::ActivityMessageJob)
         .to(have_been_enqueued.at_least(:once)
         .with(conversation, { account_id: conversation.account_id, inbox_id: conversation.inbox_id, message_type: :activity,
-                              content: "Conversation was marked resolved by #{old_assignee.name}",
+                              content: "Conversation status changed from Open to Resolved by #{old_assignee.name}",
                               content_attributes: { activity: { type: 'conversation_status_changed', status: 'resolved' } } }))
       expect(Conversations::ActivityMessageJob)
         .to(have_been_enqueued.at_least(:once)
@@ -1190,7 +1190,7 @@ RSpec.describe Conversation do
       expect(conversation.waiting_since).to be_within(1.second).of(conversation_start_time)
 
       # Agent replies - this should create first response event
-      agent_reply1_time = 4.hours.ago
+      agent_reply1_time = conversation_start_time + 1.hour
       create_agent_message(conversation, created_at: agent_reply1_time)
 
       first_response_events = account.reporting_events.where(name: 'first_response', conversation_id: conversation.id)

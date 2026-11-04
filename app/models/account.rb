@@ -47,7 +47,6 @@ class Account < ApplicationRecord
     'enable_resolved_conversations_filter' => true,
     'enable_pending_conversations_filter' => true,
     'enable_pending_team_conversations_filter' => true,
-    'pending_team_conversations_filter_roles' => %w[administrator agent],
     'enable_unassigned_conversations_filter' => false,
     'show_inbox_name_in_conversation_list' => true,
     'show_conversation_id_in_conversation_list' => true,

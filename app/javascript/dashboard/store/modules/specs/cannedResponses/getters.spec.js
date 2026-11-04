@@ -15,6 +15,19 @@ describe('#getCannedResponses', () => {
   });
 });
 
+describe('#getFarewellMessages', () => {
+  it('returns only farewell messages', () => {
+    const state = {
+      records: [
+        { short_code: 'hello', content: 'Hi', message_type: 'quick' },
+        { short_code: 'bye', content: 'Goodbye', message_type: 'farewell' },
+      ],
+    };
+
+    expect(getters.getFarewellMessages(state)).toEqual([state.records[1]]);
+  });
+});
+
 describe('#getSortedCannedResponses', () => {
   it('returns sort canned responses in ascending order', () => {
     const state = { records: CANNED_RESPONSES };

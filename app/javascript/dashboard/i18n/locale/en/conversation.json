@@ -460,7 +460,29 @@
     "AI_HANDOFF_MESSAGE": "This conversation is being handled by the AI assistant.",
     "AI_HANDOFF_ACTION": "Take over conversation",
     "AI_HANDOFF_SUCCESS": "Conversation assigned to you. AI has been stopped.",
-    "AI_HANDOFF_ERROR": "Could not take over the conversation."
+    "AI_HANDOFF_ERROR": "Could not take over the conversation.",
+    "STATUS_CONFIRMATION": {
+      "TITLE": "Confirm changing the conversation status from {from} to {to}?",
+      "REOPEN_TITLE": "Confirm changing the status to Reopened for this conversation?",
+      "DESCRIPTION": "The change will be recorded in the conversation with your name.",
+      "RESOLVE_DESCRIPTION": "The conversation will be resolved and the change will be recorded with your name.",
+      "CONFIRM": "Yes",
+      "CANCEL": "No",
+      "STATUS": {
+        "open": "Open",
+        "pending": "Pending",
+        "resolved": "Resolved",
+        "snoozed": "Snoozed",
+        "unknown": "Current"
+      },
+      "FAREWELL": {
+        "TITLE": "Farewell message",
+        "DESCRIPTION": "Optional. Select a message to send to the contact before resolving the conversation.",
+        "NONE": "Do not send a farewell message",
+        "EMPTY": "No farewell messages configured.",
+        "LOADING": "Loading farewell messages..."
+      }
+    }
   },
   "EMAIL_TRANSCRIPT": {
     "TITLE": "Send conversation transcript",

@@ -21,6 +21,7 @@ import {
 import ButtonGroup from 'dashboard/components-next/buttonGroup/ButtonGroup.vue';
 import Button from 'dashboard/components-next/button/Button.vue';
 import ConversationResolveAttributesModal from 'dashboard/components-next/ConversationWorkflow/ConversationResolveAttributesModal.vue';
+import ConversationStatusConfirmationModal from 'dashboard/components-next/ConversationWorkflow/ConversationStatusConfirmationModal.vue';
 
 const store = useStore();
 const getters = useStoreGetters();
@@ -34,6 +35,7 @@ const { buildConversationListPath, buildConversationPath } =
 const arrowDownButtonRef = ref(null);
 const isLoading = ref(false);
 const resolveAttributesModalRef = ref(null);
+const statusConfirmationModalRef = ref(null);
 
 const [showActionsDropdown, toggleDropdown] = useToggle();
 const closeDropdown = () => toggleDropdown(false);
@@ -90,12 +92,16 @@ const openSnoozeModal = () => {
   ninja.open({ parent: 'snooze_conversation' });
 };
 
-const toggleStatus = (status, snoozedUntil, customAttributes = null) => {
-  closeDropdown();
+const executeStatusChange = async (
+  conversationId,
+  status,
+  snoozedUntil,
+  { customAttributes = null, farewellMessage = null } = {}
+) => {
   isLoading.value = true;
 
   const payload = {
-    conversationId: currentChat.value.id,
+    conversationId,
     status,
     snoozedUntil,
   };
@@ -104,67 +110,95 @@ const toggleStatus = (status, snoozedUntil, customAttributes = null) => {
     payload.customAttributes = customAttributes;
   }
 
-  store
-    .dispatch('toggleStatus', payload)
-    .then(() => {
-      useAlert(t('CONVERSATION.CHANGE_STATUS'));
-      isLoading.value = false;
+  try {
+    if (farewellMessage?.content) {
+      await store.dispatch('createPendingMessageAndSend', {
+        conversationId,
+        message: farewellMessage.content,
+        private: false,
+      });
+    }
 
-      if (status === wootConstants.STATUS_TYPE.RESOLVED) {
-        store.dispatch('clearSelectedState');
-        router.replace(buildConversationListPath());
-      } else if (
-        status === wootConstants.STATUS_TYPE.OPEN &&
-        isOnInboxView.value
-      ) {
-        router.push(buildConversationPath(currentChat.value.id));
-      }
-    })
-    .catch(error => {
-      if (error?.response?.status === 403) {
-        useAlert(t('CONVERSATION.NO_PERMISSION_REOPEN'));
-      }
-      isLoading.value = false;
-    });
+    await store.dispatch('toggleStatus', payload);
+    useAlert(t('CONVERSATION.CHANGE_STATUS'));
+
+    if (status === wootConstants.STATUS_TYPE.RESOLVED) {
+      store.dispatch('clearSelectedState');
+      router.replace(buildConversationListPath());
+    } else if (
+      status === wootConstants.STATUS_TYPE.OPEN &&
+      isOnInboxView.value
+    ) {
+      router.push(buildConversationPath(conversationId));
+    }
+  } catch (error) {
+    if (error?.response?.status === 403) {
+      useAlert(t('CONVERSATION.NO_PERMISSION_REOPEN'));
+    } else if (farewellMessage) {
+      useAlert(t('CONVERSATION.MESSAGE_ERROR'));
+    }
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const requestStatusChange = status => {
+  closeDropdown();
+  statusConfirmationModalRef.value?.open({
+    conversation: currentChat.value,
+    status,
+    snoozedUntil: null,
+  });
+};
+
+const handleStatusConfirmed = payload => {
+  const conversation = getters.getConversationById.value(payload.id);
+  const currentCustomAttributes = conversation?.custom_attributes || {};
+
+  if (payload.status === wootConstants.STATUS_TYPE.RESOLVED) {
+    const { hasMissing, missing } = checkMissingAttributes(
+      currentCustomAttributes,
+      conversation?.meta?.team?.id
+    );
+
+    if (hasMissing) {
+      resolveAttributesModalRef.value?.open(missing, currentCustomAttributes, {
+        id: payload.id,
+        snoozedUntil: payload.snoozedUntil,
+        farewellMessage: payload.farewellMessage,
+      });
+      return;
+    }
+  }
+
+  executeStatusChange(payload.id, payload.status, payload.snoozedUntil, {
+    farewellMessage: payload.farewellMessage,
+  });
 };
 
 const handleResolveWithAttributes = ({ attributes, context }) => {
   if (context) {
-    const currentCustomAttributes = currentChat.value.custom_attributes || {};
+    const conversation = getters.getConversationById.value(context.id);
+    const currentCustomAttributes = conversation?.custom_attributes || {};
     const mergedAttributes = { ...currentCustomAttributes, ...attributes };
-    toggleStatus(
+    executeStatusChange(
+      context.id,
       wootConstants.STATUS_TYPE.RESOLVED,
       context.snoozedUntil,
-      mergedAttributes
+      {
+        customAttributes: mergedAttributes,
+        farewellMessage: context.farewellMessage,
+      }
     );
   }
 };
 
 const onCmdOpenConversation = () => {
-  toggleStatus(wootConstants.STATUS_TYPE.OPEN);
+  requestStatusChange(wootConstants.STATUS_TYPE.OPEN);
 };
 
 const onCmdResolveConversation = () => {
-  const currentCustomAttributes = currentChat.value.custom_attributes || {};
-  const teamId = currentChat.value?.meta?.team?.id;
-  const { hasMissing, missing } = checkMissingAttributes(
-    currentCustomAttributes,
-    teamId
-  );
-
-  if (hasMissing) {
-    const conversationContext = {
-      id: currentChat.value.id,
-      snoozedUntil: null,
-    };
-    resolveAttributesModalRef.value?.open(
-      missing,
-      currentCustomAttributes,
-      conversationContext
-    );
-  } else {
-    toggleStatus(wootConstants.STATUS_TYPE.RESOLVED);
-  }
+  requestStatusChange(wootConstants.STATUS_TYPE.RESOLVED);
 };
 
 const keyboardEvents = {
@@ -283,11 +317,17 @@ useEmitter(CMD_RESOLVE_CONVERSATION, onCmdResolveConversation);
             start
             icon="i-lucide-circle-dot-dashed"
             class="w-full"
-            @click="() => toggleStatus(wootConstants.STATUS_TYPE.PENDING)"
+            @click="
+              () => requestStatusChange(wootConstants.STATUS_TYPE.PENDING)
+            "
           />
         </WootDropdownItem>
       </WootDropdownMenu>
     </div>
+    <ConversationStatusConfirmationModal
+      ref="statusConfirmationModalRef"
+      @confirm="handleStatusConfirmed"
+    />
     <ConversationResolveAttributesModal
       ref="resolveAttributesModalRef"
       @submit="handleResolveWithAttributes"

@@ -130,6 +130,7 @@ RSpec.describe Conversations::UnreadBadges do
     counts = described_class.new(account: account, user: agent).perform
 
     expect(counts[:pending_team_count]).to eq(2)
+    expect(counts[:pending_count]).to eq(2)
   end
 
   it 'separates chatbot pending from human pending conversations' do

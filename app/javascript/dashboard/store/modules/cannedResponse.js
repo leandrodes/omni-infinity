@@ -18,6 +18,9 @@ const getters = {
   getCannedResponses(_state) {
     return _state.records;
   },
+  getFarewellMessages(_state) {
+    return _state.records.filter(record => record.message_type === 'farewell');
+  },
   getSortedCannedResponses(_state) {
     return sortOrder =>
       [..._state.records].sort((a, b) => {

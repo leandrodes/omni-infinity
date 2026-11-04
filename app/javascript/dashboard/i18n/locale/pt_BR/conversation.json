@@ -451,7 +451,29 @@
     "AI_HANDOFF_MESSAGE": "Esta conversa está sendo atendida pela Inteligência Artificial.",
     "AI_HANDOFF_ACTION": "Assumir conversa",
     "AI_HANDOFF_SUCCESS": "Conversa atribuída a você. A IA foi interrompida.",
-    "AI_HANDOFF_ERROR": "Não foi possível assumir a conversa."
+    "AI_HANDOFF_ERROR": "Não foi possível assumir a conversa.",
+    "STATUS_CONFIRMATION": {
+      "TITLE": "Confirmar a mudança de status da conversa de {from} para {to}?",
+      "REOPEN_TITLE": "Confirma mudar o status para Reaberto a conversa?",
+      "DESCRIPTION": "A alteração será registrada na conversa com o seu nome.",
+      "RESOLVE_DESCRIPTION": "A conversa será resolvida e a alteração ficará registrada com o seu nome.",
+      "CONFIRM": "Sim",
+      "CANCEL": "Não",
+      "STATUS": {
+        "open": "Aberto",
+        "pending": "Pendente",
+        "resolved": "Resolvido",
+        "snoozed": "Adiado",
+        "unknown": "Atual"
+      },
+      "FAREWELL": {
+        "TITLE": "Mensagem de despedida",
+        "DESCRIPTION": "Opcional. Selecione uma mensagem para enviar ao contato antes de resolver a conversa.",
+        "NONE": "Não enviar mensagem de despedida",
+        "EMPTY": "Nenhuma mensagem de despedida cadastrada.",
+        "LOADING": "Carregando mensagens de despedida..."
+      }
+    }
   },
   "EMAIL_TRANSCRIPT": {
     "TITLE": "Enviar transcrição de conversa",

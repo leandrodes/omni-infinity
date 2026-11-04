@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_11_04_000000) do
+ActiveRecord::Schema[7.2].define(version: 2026_11_04_010000) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -416,6 +416,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_11_04_000000) do
     t.text "content"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
+    t.string "message_type", default: "quick", null: false
+    t.index ["account_id", "message_type"], name: "index_canned_responses_on_account_id_and_message_type"
   end
 
   create_table "captain_assistant_responses", force: :cascade do |t|

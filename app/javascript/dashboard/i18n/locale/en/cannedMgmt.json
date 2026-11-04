@@ -1,5 +1,9 @@
 {
   "CANNED_MGMT": {
+    "TABS": {
+      "QUICK": "Quick Messages",
+      "FAREWELL": "Farewell Messages"
+    },
     "HEADER": "Canned Responses",
     "LEARN_MORE": "Learn more about canned responses",
     "DESCRIPTION": "Canned Responses are pre-written reply templates that help you quickly respond to a conversation. Agents can type the '/' character followed by the shortcode to insert a canned response during a conversation. ",
@@ -39,7 +43,9 @@
       "API": {
         "SUCCESS_MESSAGE": "Canned response added successfully.",
         "ERROR_MESSAGE": "Could not connect to Woot server. Please try again."
-      }
+      },
+      "FAREWELL_TITLE": "Add farewell message",
+      "FAREWELL_DESC": "Create messages to be offered when resolving a conversation."
     },
     "EDIT": {
       "TITLE": "Edit canned response",
@@ -61,7 +67,8 @@
       "API": {
         "SUCCESS_MESSAGE": "Canned response is updated successfully.",
         "ERROR_MESSAGE": "Could not connect to Woot server. Please try again."
-      }
+      },
+      "FAREWELL_TITLE": "Edit farewell message"
     },
     "DELETE": {
       "BUTTON_TEXT": "Delete",
@@ -75,6 +82,7 @@
         "YES": "Yes, delete ",
         "NO": "No, keep "
       }
-    }
+    },
+    "HEADER_BTN_TXT_FAREWELL": "Add farewell message"
   }
 }

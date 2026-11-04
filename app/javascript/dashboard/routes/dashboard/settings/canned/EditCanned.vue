@@ -17,6 +17,7 @@ export default {
     id: { type: Number, default: null },
     edcontent: { type: String, default: '' },
     edshortCode: { type: String, default: '' },
+    messageType: { type: String, default: 'quick' },
     onClose: { type: Function, default: () => {} },
   },
   setup() {
@@ -44,7 +45,11 @@ export default {
   },
   computed: {
     pageTitle() {
-      return `${this.$t('CANNED_MGMT.EDIT.TITLE')} - ${this.edshortCode}`;
+      const title =
+        this.messageType === 'farewell'
+          ? this.$t('CANNED_MGMT.EDIT.FAREWELL_TITLE')
+          : this.$t('CANNED_MGMT.EDIT.TITLE');
+      return `${title} - ${this.edshortCode}`;
     },
   },
   methods: {
@@ -67,6 +72,7 @@ export default {
           id: this.id,
           short_code: this.shortCode,
           content: this.content,
+          message_type: this.messageType,
         })
         .then(() => {
           // Reset Form, Show success message

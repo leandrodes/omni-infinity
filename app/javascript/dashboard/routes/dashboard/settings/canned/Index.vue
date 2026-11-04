@@ -12,6 +12,7 @@ import { useMessageFormatter } from 'shared/composables/useMessageFormatter';
 
 import Button from 'dashboard/components-next/button/Button.vue';
 import Icon from 'dashboard/components-next/icon/Icon.vue';
+import TabBar from 'dashboard/components-next/tabbar/TabBar.vue';
 import {
   BaseTable,
   BaseTableRow,
@@ -37,9 +38,32 @@ const cannedResponseAPI = ref({ message: '' });
 
 const sortOrder = ref('asc');
 const searchQuery = ref('');
+const activeType = ref('quick');
+
+const tabs = computed(() => [
+  { key: 'quick', name: t('CANNED_MGMT.TABS.QUICK') },
+  { key: 'farewell', name: t('CANNED_MGMT.TABS.FAREWELL') },
+]);
+
+const activeTabIndex = computed(() =>
+  tabs.value.findIndex(tab => tab.key === activeType.value)
+);
+
+const onTabChanged = tab => {
+  activeType.value = tab.key;
+  searchQuery.value = '';
+};
+
+const addButtonLabel = computed(() =>
+  activeType.value === 'farewell'
+    ? t('CANNED_MGMT.HEADER_BTN_TXT_FAREWELL')
+    : t('CANNED_MGMT.HEADER_BTN_TXT')
+);
 
 const records = computed(() =>
-  getters.getSortedCannedResponses.value(sortOrder.value)
+  getters.getSortedCannedResponses
+    .value(sortOrder.value)
+    .filter(item => (item.message_type || 'quick') === activeType.value)
 );
 
 const filteredRecords = computed(() => {
@@ -154,17 +178,20 @@ const tableHeaders = computed(() => {
         :search-placeholder="$t('CANNED_MGMT.SEARCH_PLACEHOLDER')"
         feature-name="canned_responses"
       >
+        <template #tabs>
+          <TabBar
+            :tabs="tabs"
+            :initial-active-tab="activeTabIndex"
+            @tab-changed="onTabChanged"
+          />
+        </template>
         <template v-if="records?.length" #count>
           <span class="text-body-main text-n-slate-11">
             {{ $t('CANNED_MGMT.COUNT', { n: records.length }) }}
           </span>
         </template>
         <template #actions>
-          <Button
-            :label="$t('CANNED_MGMT.HEADER_BTN_TXT')"
-            size="sm"
-            @click="openAddPopup"
-          />
+          <Button :label="addButtonLabel" size="sm" @click="openAddPopup" />
         </template>
       </BaseSettingsHeader>
     </template>
@@ -247,7 +274,7 @@ const tableHeaders = computed(() => {
       </BaseTable>
     </template>
     <woot-modal v-model:show="showAddPopup" :on-close="hideAddPopup">
-      <AddCanned :on-close="hideAddPopup" />
+      <AddCanned :message-type="activeType" :on-close="hideAddPopup" />
     </woot-modal>
 
     <woot-modal v-model:show="showEditPopup" :on-close="hideEditPopup">
@@ -256,6 +283,7 @@ const tableHeaders = computed(() => {
         :id="activeResponse.id"
         :edshort-code="activeResponse.short_code"
         :edcontent="activeResponse.content"
+        :message-type="activeResponse.message_type || 'quick'"
         :on-close="hideEditPopup"
       />
     </woot-modal>
