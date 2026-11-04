@@ -104,6 +104,19 @@ RSpec.describe Conversations::PermissionFilterService do
       end
     end
 
+    context 'when team visibility is enabled and conversation is assigned without a team' do
+      before do
+        account.update!(settings: { show_conversations_only_from_user_teams: true })
+        conversation.update!(assignee: agent, team: nil)
+      end
+
+      it 'returns conversations assigned to the current user even without a team' do
+        result = described_class.new(account.conversations, agent, account).perform
+
+        expect(result).to include(conversation)
+      end
+    end
+
     context 'when plan_hint_selective_filter is enabled' do
       let!(:other_inbox) { create(:inbox, account: account) }
       let!(:inaccessible_conversation) { create(:conversation, account: account, inbox: other_inbox) }

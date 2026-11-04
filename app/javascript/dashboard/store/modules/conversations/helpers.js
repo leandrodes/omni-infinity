@@ -102,6 +102,11 @@ export const applyAccountVisibilityFilter = (
   }
 
   if (settings.show_conversations_only_from_user_teams) {
+    const assigneeId = conversation.meta?.assignee?.id;
+    const isAssignedToCurrentUser =
+      assigneeId && Number(assigneeId) === Number(currentUserId);
+    if (isAssignedToCurrentUser) return true;
+
     const teamId = conversation.meta?.team?.id;
     if (!teamId || !teamIds.includes(teamId)) return false;
   }

@@ -76,7 +76,7 @@ class AutoAssignment::AssignmentService
   end
 
   def selector_for(conversation)
-    algorithm = conversation&.team&.auto_assignment_algorithm || 'round_robin'
+    algorithm = inbox.assignment_policy&.assignment_order || 'balanced'
 
     case algorithm
     when 'balanced'

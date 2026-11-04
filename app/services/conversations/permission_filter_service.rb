@@ -58,25 +58,39 @@ class Conversations::PermissionFilterService
     )
   end
 
+  # rubocop:disable Metrics/MethodLength
   def apply_team_visibility(scope)
     return scope unless (account.settings || {})['show_conversations_only_from_user_teams']
 
     team_ids = user.teams.where(account_id: account.id).pluck(:id)
     if team_ids.blank?
       return scope.where(
-        'conversations.visibility = :restricted OR conversations.id IN (:participant_conversation_ids)',
+        [
+          'conversations.visibility = :restricted',
+          'conversations.id IN (:participant_conversation_ids)',
+          'conversations.assignee_id = :user_id'
+        ].join(' OR '),
         restricted: Conversation.visibilities[:restricted],
-        participant_conversation_ids: participant_conversation_ids
+        participant_conversation_ids: participant_conversation_ids,
+        user_id: user.id
       )
     end
 
     scope.where(
-      'conversations.visibility = :restricted OR conversations.team_id IN (:team_ids) OR conversations.id IN (:participant_conversation_ids)',
+      [
+        'conversations.visibility = :restricted',
+        'conversations.team_id IN (:team_ids)',
+        'conversations.id IN (:participant_conversation_ids)',
+        'conversations.assignee_id = :user_id'
+      ].join(' OR '),
       restricted: Conversation.visibilities[:restricted],
       team_ids: team_ids,
-      participant_conversation_ids: participant_conversation_ids
+      participant_conversation_ids: participant_conversation_ids,
+      user_id: user.id
     )
   end
+
+  # rubocop:enable Metrics/MethodLength
 
   def participant_conversations
     conversations.where(id: ConversationParticipant.where(user_id: user.id).select(:conversation_id))

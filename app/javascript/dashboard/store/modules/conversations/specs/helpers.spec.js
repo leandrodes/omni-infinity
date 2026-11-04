@@ -316,6 +316,23 @@ describe('Conversation Helpers', () => {
       ).toBe(true);
     });
 
+    it('keeps conversations assigned to the current user without a team', () => {
+      const conversation = {
+        status: 'open',
+        visibility: 'shared',
+        meta: { assignee: { id: 1 }, team: null },
+      };
+
+      expect(
+        applyAccountVisibilityFilter(conversation, {
+          role: 'agent',
+          settings,
+          teamIds: [10],
+          currentUserId: 1,
+        })
+      ).toBe(true);
+    });
+
     it('keeps conversations for participants even outside their teams', () => {
       const conversation = {
         status: 'open',

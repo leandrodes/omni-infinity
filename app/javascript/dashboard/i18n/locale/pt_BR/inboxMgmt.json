@@ -1216,7 +1216,7 @@
     },
     "ASSIGNMENT": {
       "TITLE": "Atribuição de conversa",
-      "DESCRIPTION": "Atribua automaticamente as conversas recebidas aos agentes disponíveis com base nas políticas de atribuição",
+      "DESCRIPTION": "Atribua automaticamente as conversas recebidas aos agentes disponíveis, mantendo a distribuição equilibrada.",
       "ENABLE_AUTO_ASSIGNMENT": "Ativar atribuição automática de conversas",
       "DEFAULT_RULES_TITLE": "Regras de atribuição padrão",
       "DEFAULT_RULES_DESCRIPTION": "Utilizando o comportamento de atribuição padrão para todas as conversas",

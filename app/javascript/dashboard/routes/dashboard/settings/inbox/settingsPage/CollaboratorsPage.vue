@@ -310,14 +310,6 @@ const navigateToAssignmentPolicyEdit = () => {
   });
 };
 
-const navigateToBilling = () => {
-  const accountId = route.params.accountId;
-  router.push({
-    name: 'billing_settings_index',
-    params: { accountId },
-  });
-};
-
 const confirmDeletePolicy = () => {
   showDeleteConfirmModal.value = true;
 };
@@ -573,63 +565,6 @@ onMounted(() => {
                         </span>
                       </li>
                     </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Default Rules Card - Feature not enabled (no advanced_assignment) -->
-            <div
-              v-else-if="!showAdvancedAssignmentUI"
-              class="ltr:pr-0 rtl:pl-0 ltr:pl-4 rtl:pr-4 py-4"
-            >
-              <div class="flex items-start gap-4">
-                <div
-                  class="flex-shrink-0 size-10 rounded-xl bg-n-slate-3 dark:bg-n-slate-4 flex items-center justify-center"
-                >
-                  <Icon icon="i-lucide-zap" class="text-xl text-n-slate-11" />
-                </div>
-                <div class="flex-grow">
-                  <h4 class="text-heading-3 text-n-slate-12 mb-0.5">
-                    {{ $t('INBOX_MGMT.ASSIGNMENT.DEFAULT_RULES_TITLE') }}
-                  </h4>
-                  <p class="text-body-main text-n-slate-11 mb-4">
-                    {{ $t('INBOX_MGMT.ASSIGNMENT.DEFAULT_RULES_DESCRIPTION') }}
-                  </p>
-
-                  <ul class="space-y-2 mb-6">
-                    <li class="flex items-center gap-2">
-                      <span
-                        class="w-1.5 h-1.5 rounded-full bg-n-slate-11 flex-shrink-0"
-                      />
-                      <span class="text-body-main text-n-slate-12">
-                        {{ $t('INBOX_MGMT.ASSIGNMENT.DEFAULT_RULE_1') }}
-                      </span>
-                    </li>
-                    <li class="flex items-center gap-2">
-                      <span
-                        class="w-1.5 h-1.5 rounded-full bg-n-slate-11 flex-shrink-0"
-                      />
-                      <span class="text-body-main text-n-slate-12">
-                        {{ $t('INBOX_MGMT.ASSIGNMENT.DEFAULT_RULE_2') }}
-                      </span>
-                    </li>
-                  </ul>
-
-                  <div class="w-full h-px bg-n-weak my-4" />
-
-                  <!-- Upgrade prompt when advanced_assignment is not enabled -->
-                  <div v-if="!hasAdvancedAssignment">
-                    <p class="text-body-main text-n-slate-11 mb-1">
-                      {{ $t('INBOX_MGMT.ASSIGNMENT.UPGRADE_PROMPT') }}
-                    </p>
-                    <NextButton
-                      :label="$t('INBOX_MGMT.ASSIGNMENT.UPGRADE_TO_BUSINESS')"
-                      icon="i-lucide-arrow-right"
-                      trailing-icon
-                      link
-                      @click="navigateToBilling"
-                    />
                   </div>
                 </div>
               </div>

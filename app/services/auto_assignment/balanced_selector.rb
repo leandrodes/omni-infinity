@@ -4,12 +4,24 @@ class AutoAssignment::BalancedSelector
   def select_agent(available_agents)
     return nil if available_agents.blank?
 
-    available_agents.min_by { |agent_member| active_conversation_count(agent_member) }
+    selected_member = available_agents.min_by do |agent_member|
+      [active_conversation_count(agent_member), last_active_assignment_at(agent_member)]
+    end
+    selected_member&.user
   end
 
   private
 
   def active_conversation_count(agent_member)
-    agent_member.user.assigned_conversations.where(inbox: inbox, status: :open).count
+    active_conversations(agent_member).count
+  end
+
+  def last_active_assignment_at(agent_member)
+    active_conversations(agent_member).maximum(:created_at) || Time.zone.at(0)
+  end
+
+  def active_conversations(agent_member)
+    agent_member.user.assigned_conversations
+                .where(inbox: inbox, status: [:open, :pending])
   end
 end
