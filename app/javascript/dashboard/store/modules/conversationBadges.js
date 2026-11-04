@@ -18,6 +18,7 @@ export const state = {
   participatingCount: 0,
   pendingCount: 0,
   pendingMineCount: 0,
+  pendingTeamCount: 0,
   pendingParticipatingCount: 0,
 };
 
@@ -34,6 +35,7 @@ export const getters = {
   getParticipatingCount: $state => $state.participatingCount,
   getPendingCount: $state => $state.pendingCount,
   getPendingMineCount: $state => $state.pendingMineCount,
+  getPendingTeamCount: $state => $state.pendingTeamCount,
   getPendingParticipatingCount: $state => $state.pendingParticipatingCount,
 };
 
@@ -63,6 +65,7 @@ export const mutations = {
     $state.participatingCount = normalizeCount(payload.participating_count);
     $state.pendingCount = normalizeCount(payload.pending_count);
     $state.pendingMineCount = normalizeCount(payload.pending_mine_count);
+    $state.pendingTeamCount = normalizeCount(payload.pending_team_count);
     $state.pendingParticipatingCount = normalizeCount(
       payload.pending_participating_count
     );

@@ -23,6 +23,8 @@ module AccountSettingsSchema
         'ai_conversations_filter_roles': { 'type': %w[array null], 'items': { 'type': 'string' } },
         'enable_resolved_conversations_filter': { 'type': %w[boolean null] },
         'enable_pending_conversations_filter': { 'type': %w[boolean null] },
+        'enable_pending_team_conversations_filter': { 'type': %w[boolean null] },
+        'pending_team_conversations_filter_roles': { 'type': %w[array null], 'items': { 'type': 'string' } },
         'enable_unassigned_conversations_filter': { 'type': %w[boolean null] },
         'show_inbox_name_in_conversation_list': { 'type': %w[boolean null] },
         'show_conversation_id_in_conversation_list': { 'type': %w[boolean null] },

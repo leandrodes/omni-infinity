@@ -128,10 +128,12 @@ const advancedFilterTypes = ref(
 );
 
 const currentUser = useMapGetter('getCurrentUser');
+const currentUserRole = useMapGetter('getCurrentRole');
 const chatLists = useMapGetter('getFilteredConversations');
 const mineChatsList = useMapGetter('getMineChats');
 const allChatList = useMapGetter('getAllStatusChats');
 const unAssignedChatsList = useMapGetter('getUnAssignedChats');
+const teamChatsList = useMapGetter('getTeamChats');
 const chatListLoading = useMapGetter('getChatListLoadingStatus');
 const activeInbox = useMapGetter('getSelectedInbox');
 const conversationStats = useMapGetter('conversationStats/getStats');
@@ -147,6 +149,9 @@ const unattendedParticipatingBadgeCount = useMapGetter(
 const pendingBadgeCount = useMapGetter('conversationBadges/getPendingCount');
 const pendingMineBadgeCount = useMapGetter(
   'conversationBadges/getPendingMineCount'
+);
+const pendingTeamBadgeCount = useMapGetter(
+  'conversationBadges/getPendingTeamCount'
 );
 const pendingParticipatingBadgeCount = useMapGetter(
   'conversationBadges/getPendingParticipatingCount'
@@ -249,6 +254,19 @@ const showAssigneeTabs = computed(
   () => !isFixedView.value && !hasAppliedFiltersOrActiveFolders.value
 );
 
+const showPendingTeamTab = computed(() => {
+  const settings = currentAccount.value?.settings || {};
+  if (settings.enable_pending_team_conversations_filter === false) {
+    return false;
+  }
+
+  const roles = settings.pending_team_conversations_filter_roles || [
+    'administrator',
+    'agent',
+  ];
+  return roles.includes(currentUserRole.value);
+});
+
 const assigneeTabItems = computed(() => {
   const isUnattendedView = props.conversationType === 'unattended';
   const isPendingView = props.conversationType === 'pending';
@@ -273,6 +291,15 @@ const assigneeTabItems = computed(() => {
         badgeCount: meCount,
       },
     ];
+
+    if (isPendingView && showPendingTeamTab.value) {
+      items.push({
+        key: wootConstants.ASSIGNEE_TYPE.TEAM,
+        name: t('CHAT_LIST.ASSIGNEE_TYPE_TABS.team'),
+        count: pendingTeamBadgeCount.value,
+        badgeCount: pendingTeamBadgeCount.value,
+      });
+    }
 
     if (!isPendingView || !hideAssignedToOthers.value || isAdmin.value) {
       items.push({
@@ -465,6 +492,8 @@ const conversationList = computed(() => {
       localConversationList = [...mineChatsList.value(filters)];
     } else if (activeAssigneeTab.value === 'unassigned') {
       localConversationList = [...unAssignedChatsList.value(filters)];
+    } else if (activeAssigneeTab.value === 'team') {
+      localConversationList = [...teamChatsList.value(filters)];
     } else {
       localConversationList = [...allChatList.value(filters)];
     }

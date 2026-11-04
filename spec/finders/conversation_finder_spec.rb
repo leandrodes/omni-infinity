@@ -78,6 +78,25 @@ describe ConversationFinder do
       end
     end
 
+    context 'with assignee_type team' do
+      let(:params) { { status: 'pending', assignee_type: 'team', conversation_type: 'pending' } }
+
+      it 'returns pending conversations from the user teams' do
+        team = create(:team, account: account)
+        other_team = create(:team, account: account)
+        create(:team_member, user: user_1, team: team)
+        team_conversation = create(:conversation, account: account, inbox: inbox, team: team, status: :pending)
+        other_team_conversation = create(:conversation, account: account, inbox: inbox, team: other_team, status: :pending)
+        no_team_conversation = create(:conversation, account: account, inbox: inbox, status: :pending)
+
+        result = conversation_finder.perform
+
+        conversation_ids = result[:conversations].map(&:id)
+        expect(conversation_ids).to include(team_conversation.id)
+        expect(conversation_ids).not_to include(other_team_conversation.id, no_team_conversation.id)
+      end
+    end
+
     context 'with assignee_type unassigned' do
       let(:params) { { assignee_type: 'unassigned' } }
       let!(:agent_bot_conversation) do

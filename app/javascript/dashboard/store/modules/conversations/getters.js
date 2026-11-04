@@ -132,6 +132,39 @@ const getters = {
       return isUnAssigned && shouldFilter;
     });
   },
+  getTeamChats: (_state, _, __, rootGetters) => activeFilters => {
+    const currentUser = rootGetters.getCurrentUser;
+    const currentAccountId = rootGetters.getCurrentAccountId;
+    const userRole = getUserRole(currentUser, currentAccountId);
+    const account = rootGetters['accounts/getAccount']?.(currentAccountId);
+    const permissions = getUserPermissions(currentUser, currentAccountId);
+    const currentUserId = currentUser?.id;
+    const teamIds = new Set(
+      (rootGetters['teams/getMyTeams'] || []).map(team => Number(team.id))
+    );
+
+    return _state.allConversations.filter(conversation => {
+      const teamId = Number(conversation.meta?.team?.id);
+      if (!teamId) return false;
+      if (userRole !== 'administrator' && !teamIds.has(teamId)) return false;
+
+      const shouldFilter = applyPageFilters(conversation, activeFilters);
+      const allowedForRole = applyRoleFilter(
+        conversation,
+        userRole,
+        permissions,
+        currentUserId
+      );
+      const allowedForAccount = applyAccountVisibilityFilter(conversation, {
+        role: userRole,
+        settings: account?.settings || {},
+        teamIds: [...teamIds],
+        currentUserId,
+      });
+
+      return shouldFilter && allowedForRole && allowedForAccount;
+    });
+  },
   getParticipatingChats: (_state, _, __, rootGetters) => activeFilters => {
     const currentUserId = rootGetters.getCurrentUser?.id;
     const participantIds = conversation =>

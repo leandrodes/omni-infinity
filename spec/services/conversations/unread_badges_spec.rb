@@ -111,6 +111,27 @@ RSpec.describe Conversations::UnreadBadges do
     expect(counts[:pending_count]).to eq(1)
   end
 
+  it 'counts pending conversations in the agent teams, including unassigned ones' do
+    agent = create(:user, account: account, role: :agent)
+    other_agent = create(:user, account: account, role: :agent)
+    create(:inbox_member, inbox: inbox, user: agent)
+    team = create(:team, account: account)
+    other_team = create(:team, account: account)
+    create(:team_member, user: agent, team: team)
+    create(:team_member, user: other_agent, team: team)
+    account.update!(settings: account.settings.merge('hide_conversations_assigned_to_others' => true))
+
+    create(:conversation, account: account, inbox: inbox, contact: contact, team: team, status: :pending)
+    create(:conversation, account: account, inbox: inbox, contact: contact, team: team, status: :pending, assignee: agent)
+    create(:conversation, account: account, inbox: inbox, contact: contact, team: team, status: :pending, assignee: other_agent)
+    create(:conversation, account: account, inbox: inbox, contact: contact, team: other_team, status: :pending)
+    create(:conversation, account: account, inbox: inbox, contact: contact, status: :pending)
+
+    counts = described_class.new(account: account, user: agent).perform
+
+    expect(counts[:pending_team_count]).to eq(2)
+  end
+
   it 'separates chatbot pending from human pending conversations' do
     agent_bot = create(:agent_bot, account: account)
     bot_conversation = create(

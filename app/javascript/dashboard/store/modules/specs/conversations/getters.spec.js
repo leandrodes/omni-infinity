@@ -272,6 +272,65 @@ describe('#getters', () => {
     });
   });
 
+  describe('#getTeamChats', () => {
+    const conversationList = [
+      {
+        id: 1,
+        inbox_id: 2,
+        status: 'pending',
+        meta: { team: { id: 10 } },
+      },
+      {
+        id: 2,
+        inbox_id: 2,
+        status: 'pending',
+        meta: { team: { id: 20 } },
+      },
+      {
+        id: 3,
+        inbox_id: 2,
+        status: 'pending',
+        meta: {},
+      },
+    ];
+
+    it('returns only conversations from the current user teams', () => {
+      const rootGetters = {
+        getCurrentUser: { id: 1, accounts: [{ id: 1, role: 'agent' }] },
+        getCurrentAccountId: 1,
+        'teams/getMyTeams': [{ id: 10 }],
+        'accounts/getAccount': () => ({ settings: {} }),
+      };
+
+      const result = getters.getTeamChats(
+        { allConversations: conversationList },
+        {},
+        {},
+        rootGetters
+      )({ status: 'pending' });
+
+      expect(result).toEqual([conversationList[0]]);
+    });
+
+    it('returns conversations from all teams for administrators', () => {
+      const rootGetters = {
+        getCurrentUser: { id: 1, accounts: [{ id: 1, role: 'administrator' }] },
+        getCurrentAccountId: 1,
+        'teams/getMyTeams': [{ id: 10 }],
+        'accounts/getAccount': () => ({ settings: {} }),
+      };
+
+      const result = getters.getTeamChats(
+        { allConversations: conversationList },
+        {},
+        {},
+        rootGetters
+      )({ status: 'pending' });
+
+      expect(result).toEqual([conversationList[0], conversationList[1]]);
+    });
+  });
+
   describe('#getConversationById', () => {
     it('get conversations based on id', () => {
       const state = {

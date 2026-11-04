@@ -64,6 +64,8 @@ RSpec.describe AccountBuilder do
         expect(account.settings).to include(
           'enable_chatbot_conversations_filter' => true,
           'chatbot_conversations_filter_roles' => ['administrator'],
+          'enable_pending_team_conversations_filter' => true,
+          'pending_team_conversations_filter_roles' => %w[administrator agent],
           'show_conversations_only_from_user_teams' => true,
           'reactions_appear_as_response' => true,
           'enable_contact_company_filter' => false

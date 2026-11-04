@@ -120,6 +120,7 @@ class Api::V1::AccountsController < Api::BaseController
       *permitted_settings_attributes,
       chatbot_conversations_filter_roles: [],
       ai_conversations_filter_roles: [],
+      pending_team_conversations_filter_roles: [],
       conversation_required_attributes: [],
       conversation_required_attribute_teams: {}
     )

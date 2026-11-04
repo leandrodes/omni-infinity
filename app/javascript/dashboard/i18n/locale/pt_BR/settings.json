@@ -1113,6 +1113,7 @@
       "ROLE_AGENT": "Agente",
       "ENABLE_PENDING_CONVERSATIONS_FILTER": "Habilitar filtro conversas pendentes",
       "ENABLE_UNASSIGNED_CONVERSATIONS_FILTER": "Habilitar filtro conversas Não Atribuídas",
+      "ENABLE_PENDING_TEAM_CONVERSATIONS_FILTER": "Habilitar filtro conversas pendentes nos Times",
       "ENABLE_CONTACT_COMPANY_FILTER": "Habilitar filtro de contatos por Empresas",
       "ENABLE_AI_CONVERSATIONS_FILTER": "Habilitar filtro de conversas na IA"
     },

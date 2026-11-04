@@ -17,6 +17,8 @@ const defaultSettings = {
   ai_conversations_filter_roles: ['administrator', 'agent'],
   enable_resolved_conversations_filter: false,
   enable_pending_conversations_filter: false,
+  enable_pending_team_conversations_filter: true,
+  pending_team_conversations_filter_roles: ['administrator', 'agent'],
   enable_unassigned_conversations_filter: false,
   show_inbox_name_in_conversation_list: false,
   show_conversation_id_in_conversation_list: false,
@@ -49,6 +51,10 @@ const syncSettings = () => {
       settings.value[key] = accountSettings[key] || ['administrator'];
     } else if (key === 'ai_conversations_filter_roles') {
       settings.value[key] = accountSettings[key] || ['administrator', 'agent'];
+    } else if (key === 'pending_team_conversations_filter_roles') {
+      settings.value[key] = accountSettings[key] || ['administrator', 'agent'];
+    } else if (key === 'enable_pending_team_conversations_filter') {
+      settings.value[key] = accountSettings[key] !== false;
     } else {
       settings.value[key] = accountSettings[key] === true;
     }
@@ -71,6 +77,15 @@ const toggleAiRole = (role, checked) => {
   if (checked) roles.add(role);
   else roles.delete(role);
   settings.value.ai_conversations_filter_roles = [...roles];
+};
+
+const togglePendingTeamRole = (role, checked) => {
+  const roles = new Set(
+    settings.value.pending_team_conversations_filter_roles || []
+  );
+  if (checked) roles.add(role);
+  else roles.delete(role);
+  settings.value.pending_team_conversations_filter_roles = [...roles];
 };
 
 const saveSettings = async () => {
@@ -159,6 +174,48 @@ const saveSettings = async () => {
                   settings.ai_conversations_filter_roles.includes('agent')
                 "
                 @change="toggleAiRole('agent', $event.target.checked)"
+              />
+              {{ t('ATTENDANCE_SETTINGS.DISPLAY.ROLE_AGENT') }}
+            </label>
+          </div>
+
+          <div class="flex items-center justify-between gap-4">
+            <span class="text-sm">{{
+              t(
+                'ATTENDANCE_SETTINGS.DISPLAY.ENABLE_PENDING_TEAM_CONVERSATIONS_FILTER'
+              )
+            }}</span>
+            <Switch
+              v-model="settings.enable_pending_team_conversations_filter"
+            />
+          </div>
+          <div
+            v-if="settings.enable_pending_team_conversations_filter"
+            class="flex flex-col gap-2 pl-4"
+          >
+            <label class="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                :checked="
+                  settings.pending_team_conversations_filter_roles.includes(
+                    'administrator'
+                  )
+                "
+                @change="
+                  togglePendingTeamRole('administrator', $event.target.checked)
+                "
+              />
+              {{ t('ATTENDANCE_SETTINGS.DISPLAY.ROLE_ADMINISTRATOR') }}
+            </label>
+            <label class="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                :checked="
+                  settings.pending_team_conversations_filter_roles.includes(
+                    'agent'
+                  )
+                "
+                @change="togglePendingTeamRole('agent', $event.target.checked)"
               />
               {{ t('ATTENDANCE_SETTINGS.DISPLAY.ROLE_AGENT') }}
             </label>

@@ -17,6 +17,7 @@
     "FILTER_ALL": "All",
     "ASSIGNEE_TYPE_TABS": {
       "me": "Mine",
+      "team": "Teams",
       "unassigned": "Unassigned",
       "all": "All",
       "participating": "Participating"

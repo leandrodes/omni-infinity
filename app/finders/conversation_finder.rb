@@ -115,6 +115,8 @@ class ConversationFinder
       @conversations = @conversations.unassigned
     when 'assigned'
       @conversations = @conversations.assigned
+    when 'team'
+      @conversations = filter_by_user_teams(@conversations)
     when 'participating'
       participant_conversation_ids = ConversationParticipant.where(account_id: current_account.id,
                                                                    user_id: current_user.id).select(:conversation_id)
@@ -150,6 +152,13 @@ class ConversationFinder
     @conversations
   end
   # rubocop:enable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength
+
+  def filter_by_user_teams(scope)
+    scope = scope.where.not(team_id: nil)
+    return scope if @is_admin
+
+    scope.where(team_id: current_user.teams.where(account_id: current_account.id).select(:id))
+  end
 
   def participant_not_assignee_condition
     'conversations.assignee_id IS NULL OR conversations.assignee_id != :user_id'

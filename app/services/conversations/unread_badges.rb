@@ -40,6 +40,7 @@ class Conversations::UnreadBadges
     {
       pending_count: count(pending_visible_conversations),
       pending_mine_count: count(pending_base.where(assignee_id: user.id)),
+      pending_team_count: count(pending_team_conversations),
       pending_participating_count: count(participating_pending_conversations)
     }
   end
@@ -81,6 +82,14 @@ class Conversations::UnreadBadges
                       .where(conversation_participants: { user_id: user.id })
                       .where(participant_not_assignee_condition, user_id: user.id)
                       .distinct
+  end
+
+  def pending_team_conversations
+    relation = pending_base.where.not(team_id: nil)
+    relation = relation.where('assignee_id IS NULL OR assignee_id = :user_id', user_id: user.id) if !administrator? && hide_assigned_to_others?
+    return relation if administrator?
+
+    relation.where(team_id: current_user_team_ids)
   end
 
   def participating_pending_conversations
