@@ -89,8 +89,8 @@
       "VARIABLES": "Inserir variável"
     },
     "AVAILABILITY": {
-      "ALL_INBOXES": "Disponível para todos Times",
-      "SELECT_INBOXES": "Selecione as filas em que esta mensagem ficará disponível."
+      "ALL_TEAMS": "Disponível para todos Times",
+      "SELECT_TEAMS": "Selecione os times em que esta mensagem ficará disponível."
     }
   }
 }

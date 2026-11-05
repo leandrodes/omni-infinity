@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_11_04_020000) do
+ActiveRecord::Schema[7.2].define(version: 2026_11_04_030000) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -410,14 +410,14 @@ ActiveRecord::Schema[7.2].define(version: 2026_11_04_020000) do
     t.index ["scheduled_at"], name: "index_campaigns_on_scheduled_at"
   end
 
-  create_table "canned_response_inboxes", force: :cascade do |t|
+  create_table "canned_response_teams", force: :cascade do |t|
     t.bigint "canned_response_id", null: false
-    t.bigint "inbox_id", null: false
+    t.bigint "team_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["canned_response_id", "inbox_id"], name: "idx_canned_response_inboxes_unique", unique: true
-    t.index ["canned_response_id"], name: "index_canned_response_inboxes_on_canned_response_id"
-    t.index ["inbox_id"], name: "index_canned_response_inboxes_on_inbox_id"
+    t.index ["canned_response_id", "team_id"], name: "idx_canned_response_teams_unique", unique: true
+    t.index ["canned_response_id"], name: "index_canned_response_teams_on_canned_response_id"
+    t.index ["team_id"], name: "index_canned_response_teams_on_team_id"
   end
 
   create_table "canned_responses", id: :serial, force: :cascade do |t|
@@ -427,7 +427,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_11_04_020000) do
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.string "message_type", default: "quick", null: false
-    t.boolean "available_for_all_inboxes", default: true, null: false
+    t.boolean "available_for_all_teams", default: true, null: false
     t.index ["account_id", "message_type"], name: "index_canned_responses_on_account_id_and_message_type"
   end
 
@@ -1896,8 +1896,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_11_04_020000) do
   add_foreign_key "campaign_recipients", "campaigns", on_delete: :cascade
   add_foreign_key "campaign_recipients", "contacts", on_delete: :cascade
   add_foreign_key "campaign_recipients", "inboxes", on_delete: :cascade
-  add_foreign_key "canned_response_inboxes", "canned_responses"
-  add_foreign_key "canned_response_inboxes", "inboxes"
+  add_foreign_key "canned_response_teams", "canned_responses"
+  add_foreign_key "canned_response_teams", "teams"
   add_foreign_key "contact_attachments", "accounts"
   add_foreign_key "contact_attachments", "contacts"
   add_foreign_key "conversations", "users", column: "private_owner_id", on_delete: :nullify

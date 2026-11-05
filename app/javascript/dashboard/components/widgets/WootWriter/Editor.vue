@@ -95,6 +95,7 @@ const props = defineProps({
   allowSignature: { type: Boolean, default: false },
   channelType: { type: String, default: '' },
   conversationId: { type: Number, default: null },
+  teamId: { type: [Number, String], default: null },
   medium: { type: String, default: '' },
   focusOnMount: { type: Boolean, default: true },
   // Global INSERT_INTO_RICH_EDITOR bus events (Copilot "Use this", article
@@ -1006,6 +1007,7 @@ useEmitter(BUS_EVENTS.INSERT_INTO_RICH_EDITOR, content => {
       :search-key="cannedSearchKey"
       :variables="variables"
       :schema="editorSchema"
+      :team-id="teamId"
       @close="dismissCannedResponses"
       @remove-trigger="removeSuggestionTrigger"
       @replace="content => insertSpecialContent('cannedResponse', content)"

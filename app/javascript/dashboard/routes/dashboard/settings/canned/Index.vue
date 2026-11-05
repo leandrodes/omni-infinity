@@ -284,10 +284,10 @@ const tableHeaders = computed(() => {
         :edshort-code="activeResponse.short_code"
         :edcontent="activeResponse.content"
         :message-type="activeResponse.message_type || 'quick'"
-        :initial-available-for-all-inboxes="
-          activeResponse.available_for_all_inboxes !== false
+        :initial-available-for-all-teams="
+          activeResponse.available_for_all_teams !== false
         "
-        :initial-inbox-ids="activeResponse.inbox_ids || []"
+        :initial-team-ids="activeResponse.team_ids || []"
         :on-close="hideEditPopup"
       />
     </woot-modal>

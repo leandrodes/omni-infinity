@@ -27,6 +27,10 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+  teamId: {
+    type: [Number, String],
+    default: null,
+  },
 });
 
 const emit = defineEmits(['replace', 'close', 'removeTrigger']);
@@ -72,22 +76,21 @@ const resolveContent = message =>
     props.schema
   );
 
-const conversationInboxId = computed(() =>
-  Number(props.variables?.['inbox.id'])
-);
+const conversationTeamId = computed(() => Number(props.teamId));
 
-const isAvailableForInbox = message => {
-  if (message.available_for_all_inboxes !== false) return true;
+const isAvailableForTeam = message => {
+  if (message.available_for_all_teams !== false) return true;
+  if (!conversationTeamId.value) return false;
 
-  return (message.inbox_ids || [])
+  return (message.team_ids || [])
     .map(Number)
-    .includes(conversationInboxId.value);
+    .includes(conversationTeamId.value);
 };
 
 const records = computed(() =>
   cannedResponses.value
     .filter(({ message_type: messageType }) => messageType !== 'farewell')
-    .filter(isAvailableForInbox)
+    .filter(isAvailableForTeam)
     .map(({ id, short_code: shortCode, content }) => {
       const resolved = resolveContent(content);
       return {

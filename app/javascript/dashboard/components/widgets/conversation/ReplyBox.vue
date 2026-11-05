@@ -1482,6 +1482,7 @@ export default {
           ref="messageEditor"
           v-model="message"
           :conversation-id="conversationId"
+          :team-id="currentChat.meta?.team?.id"
           :editor-id="editorStateId"
           class="input popover-prosemirror-menu"
           :is-private="isOnPrivateNote"

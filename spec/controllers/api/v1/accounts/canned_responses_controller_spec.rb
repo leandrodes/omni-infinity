@@ -87,14 +87,14 @@ RSpec.describe 'Canned Responses API', type: :request do
         expect(response.parsed_body['message_type']).to eq('quick')
       end
 
-      it 'creates a farewell canned response for selected inboxes' do
-        inbox = create(:inbox, account: account)
+      it 'creates a farewell canned response for selected teams' do
+        team = create(:team, account: account)
         params = {
           short_code: 'bye',
           content: 'Goodbye',
           message_type: 'farewell',
-          available_for_all_inboxes: false,
-          inbox_ids: [inbox.id]
+          available_for_all_teams: false,
+          team_ids: [team.id]
         }
 
         post "/api/v1/accounts/#{account.id}/canned_responses",
@@ -104,7 +104,7 @@ RSpec.describe 'Canned Responses API', type: :request do
 
         expect(response).to have_http_status(:success)
         expect(response.parsed_body['message_type']).to eq('farewell')
-        expect(response.parsed_body['inbox_ids']).to contain_exactly(inbox.id)
+        expect(response.parsed_body['team_ids']).to contain_exactly(team.id)
       end
 
       it 'does not allow agents to create canned responses' do
@@ -145,18 +145,18 @@ RSpec.describe 'Canned Responses API', type: :request do
         expect(canned_response.reload.short_code).to eq('B')
       end
 
-      it 'clears selected inboxes when made available to all inboxes' do
-        inbox = create(:inbox, account: account)
-        canned_response.update!(available_for_all_inboxes: false)
-        canned_response.inbox_ids = [inbox.id]
+      it 'clears selected teams when made available to all teams' do
+        team = create(:team, account: account)
+        canned_response.update!(available_for_all_teams: false)
+        canned_response.team_ids = [team.id]
 
         put "/api/v1/accounts/#{account.id}/canned_responses/#{canned_response.id}",
-            params: { available_for_all_inboxes: true },
+            params: { available_for_all_teams: true },
             headers: administrator.create_new_auth_token,
             as: :json
 
         expect(response).to have_http_status(:success)
-        expect(canned_response.reload.inbox_ids).to be_empty
+        expect(canned_response.reload.team_ids).to be_empty
       end
 
       it 'does not allow agents to update canned responses' do

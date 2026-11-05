@@ -37,8 +37,8 @@ export default {
     return {
       shortCode: '',
       content: this.responseContent || '',
-      availableForAllInboxes: true,
-      inboxIds: [],
+      availableForAllTeams: true,
+      teamIds: [],
       addCanned: {
         showLoading: false,
         message: '',
@@ -47,11 +47,11 @@ export default {
     };
   },
   computed: {
-    inboxes() {
-      return this.$store.getters['inboxes/getInboxes'];
+    teams() {
+      return this.$store.getters['teams/getTeams'];
     },
     isAvailabilityValid() {
-      return this.availableForAllInboxes || this.inboxIds.length > 0;
+      return this.availableForAllTeams || this.teamIds.length > 0;
     },
     isFarewell() {
       return this.messageType === 'farewell';
@@ -77,7 +77,7 @@ export default {
     },
   },
   mounted() {
-    this.$store.dispatch('inboxes/get');
+    this.$store.dispatch('teams/get');
   },
   methods: {
     resetForm() {
@@ -95,8 +95,8 @@ export default {
           short_code: this.shortCode,
           content: this.content,
           message_type: this.messageType,
-          available_for_all_inboxes: this.availableForAllInboxes,
-          inbox_ids: this.inboxIds,
+          available_for_all_teams: this.availableForAllTeams,
+          team_ids: this.teamIds,
         })
         .then(() => {
           // Reset Form, Show success message
@@ -153,24 +153,24 @@ export default {
         <div class="flex flex-col w-full gap-3">
           <div class="flex items-center justify-between gap-4">
             <span class="text-sm">
-              {{ $t('CANNED_MGMT.AVAILABILITY.ALL_INBOXES') }}
+              {{ $t('CANNED_MGMT.AVAILABILITY.ALL_TEAMS') }}
             </span>
-            <NextSwitch v-model="availableForAllInboxes" />
+            <NextSwitch v-model="availableForAllTeams" />
           </div>
-          <div v-if="!availableForAllInboxes" class="flex flex-col gap-2">
+          <div v-if="!availableForAllTeams" class="flex flex-col gap-2">
             <span class="text-sm text-n-slate-11">
-              {{ $t('CANNED_MGMT.AVAILABILITY.SELECT_INBOXES') }}
+              {{ $t('CANNED_MGMT.AVAILABILITY.SELECT_TEAMS') }}
             </span>
             <div
               class="flex flex-col gap-2 p-3 overflow-y-auto border rounded-lg max-h-48 border-n-weak"
             >
               <label
-                v-for="inbox in inboxes"
-                :key="inbox.id"
+                v-for="team in teams"
+                :key="team.id"
                 class="flex items-center gap-2 text-sm"
               >
-                <input v-model="inboxIds" type="checkbox" :value="inbox.id" />
-                {{ inbox.name }}
+                <input v-model="teamIds" type="checkbox" :value="team.id" />
+                {{ team.name }}
               </label>
             </div>
           </div>

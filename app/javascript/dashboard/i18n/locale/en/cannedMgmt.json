@@ -89,8 +89,8 @@
       "VARIABLES": "Insert variable"
     },
     "AVAILABILITY": {
-      "ALL_INBOXES": "Available to all teams",
-      "SELECT_INBOXES": "Select the inboxes where this message will be available."
+      "ALL_TEAMS": "Available to all teams",
+      "SELECT_TEAMS": "Select the teams where this message will be available."
     }
   }
 }

@@ -22,14 +22,14 @@ class CannedResponse < ApplicationRecord
   validates :message_type, inclusion: { in: MESSAGE_TYPES }
 
   belongs_to :account
-  has_many :canned_response_inboxes, dependent: :destroy
-  has_many :inboxes, through: :canned_response_inboxes
+  has_many :canned_response_teams, dependent: :destroy
+  has_many :teams, through: :canned_response_teams
 
   scope :quick, -> { where(message_type: 'quick') }
   scope :farewell, -> { where(message_type: 'farewell') }
 
   def as_json(options = nil)
-    super(options).merge('inbox_ids' => inbox_ids)
+    super(options).merge('team_ids' => team_ids)
   end
 
   scope :order_by_search, lambda { |search|

@@ -24,17 +24,17 @@ const dialogRef = ref(null);
 const currentStatus = ref('');
 const targetStatus = ref('');
 const conversationContext = ref(null);
-const conversationInboxId = ref(null);
+const conversationTeamId = ref(null);
 const selectedFarewellId = ref(null);
 const isLoadingFarewells = ref(false);
 
 const availableFarewellMessages = computed(() =>
   farewellMessages.value.filter(message => {
-    if (message.available_for_all_inboxes !== false) return true;
+    if (message.available_for_all_teams !== false) return true;
 
-    return (message.inbox_ids || [])
+    return (message.team_ids || [])
       .map(Number)
-      .includes(conversationInboxId.value);
+      .includes(conversationTeamId.value);
   })
 );
 
@@ -108,7 +108,9 @@ const open = async ({ conversation, status, snoozedUntil, ...context }) => {
     snoozedUntil,
     ...context,
   };
-  conversationInboxId.value = Number(conversation?.inbox_id);
+  conversationTeamId.value = Number(
+    conversation?.meta?.team?.id || conversation?.team_id
+  );
   selectedFarewellId.value = null;
   dialogRef.value?.open();
 
@@ -123,7 +125,7 @@ const handleClose = () => {
   currentStatus.value = '';
   targetStatus.value = '';
   conversationContext.value = null;
-  conversationInboxId.value = null;
+  conversationTeamId.value = null;
   selectedFarewellId.value = null;
   emit('close');
 };
