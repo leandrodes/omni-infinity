@@ -221,6 +221,14 @@ module Typebot
         conversation.reload
         AutoAssignment::AssignmentService.new(inbox: conversation.inbox).assign_conversation_now(conversation)
         conversation.reload
+        online_ids = OnlineStatusTracker.get_available_users(conversation.account_id).select do |_id, status|
+          status == 'online'
+        end.keys
+        Rails.logger.info(
+          "[Typebot] conversation #{conversation.id} auto-assign agent=#{conversation.assignee_id || '-'} " \
+          "team_algo=#{team.auto_assignment_algorithm} levels=#{team.team_members.pluck(:user_id, :priority_level).to_h.inspect} " \
+          "online=#{online_ids.inspect}"
+        )
       end
       return unless team || agent
 
