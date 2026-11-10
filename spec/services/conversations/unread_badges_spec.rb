@@ -143,6 +143,14 @@ RSpec.describe Conversations::UnreadBadges do
       status: :pending,
       ai_assignee: agent_bot
     )
+    open_bot_conversation = create(
+      :conversation,
+      account: account,
+      inbox: inbox,
+      contact: contact,
+      status: :open,
+      ai_assignee: agent_bot
+    )
     human_conversation = create(
       :conversation,
       account: account,
@@ -152,11 +160,12 @@ RSpec.describe Conversations::UnreadBadges do
       assignee: user
     )
     create(:message, account: account, conversation: bot_conversation, message_type: :incoming)
+    create(:message, account: account, conversation: open_bot_conversation, message_type: :incoming)
     create(:message, account: account, conversation: human_conversation, message_type: :incoming)
 
     counts = described_class.new(account: account, user: user).perform
 
-    expect(counts[:chatbot_count]).to eq(1)
+    expect(counts[:chatbot_count]).to eq(2)
     expect(counts[:pending_count]).to eq(1)
     expect(counts[:pending_mine_count]).to eq(1)
   end

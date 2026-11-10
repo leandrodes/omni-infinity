@@ -45,7 +45,8 @@ class Conversations::PermissionFilterService
     user_id = user.id
     conditions = ['conversations.assignee_id IS NULL', 'conversations.assignee_id = :user_id',
                   'conversations.visibility = :restricted',
-                  'conversations.id IN (:participant_conversation_ids)']
+                  'conversations.id IN (:participant_conversation_ids)',
+                  'conversations.assignee_agent_bot_id IS NOT NULL']
 
     conditions << 'conversations.status = :resolved_status' unless (account.settings || {})['hide_resolved_conversations_assigned_to_others']
 
@@ -68,7 +69,8 @@ class Conversations::PermissionFilterService
         [
           'conversations.visibility = :restricted',
           'conversations.id IN (:participant_conversation_ids)',
-          'conversations.assignee_id = :user_id'
+          'conversations.assignee_id = :user_id',
+          'conversations.assignee_agent_bot_id IS NOT NULL'
         ].join(' OR '),
         restricted: Conversation.visibilities[:restricted],
         participant_conversation_ids: participant_conversation_ids,
@@ -81,7 +83,8 @@ class Conversations::PermissionFilterService
         'conversations.visibility = :restricted',
         'conversations.team_id IN (:team_ids)',
         'conversations.id IN (:participant_conversation_ids)',
-        'conversations.assignee_id = :user_id'
+        'conversations.assignee_id = :user_id',
+        'conversations.assignee_agent_bot_id IS NOT NULL'
       ].join(' OR '),
       restricted: Conversation.visibilities[:restricted],
       team_ids: team_ids,

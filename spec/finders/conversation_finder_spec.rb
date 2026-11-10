@@ -364,6 +364,22 @@ describe ConversationFinder do
       end
     end
 
+    context 'with chatbot conversation type' do
+      let(:params) { { status: 'all', assignee_type: 'all', conversation_type: 'chatbot' } }
+      let(:agent_bot) { create(:agent_bot, account: account) }
+
+      it 'returns open and pending conversations assigned to a bot' do
+        open_bot_conversation = create(:conversation, account: account, inbox: inbox, status: :open, ai_assignee: agent_bot)
+        pending_bot_conversation = create(:conversation, account: account, inbox: inbox, status: :pending, ai_assignee: agent_bot)
+        create(:conversation, account: account, inbox: inbox, status: :open)
+        create(:conversation, account: account, inbox: inbox, status: :pending)
+
+        result = conversation_finder.perform
+
+        expect(result[:conversations].map(&:id)).to contain_exactly(open_bot_conversation.id, pending_bot_conversation.id)
+      end
+    end
+
     context 'with AI conversation type' do
       let(:params) { { status: 'open', assignee_type: 'all', conversation_type: 'ai' } }
 

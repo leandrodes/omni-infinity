@@ -212,14 +212,18 @@ module Typebot
       end
 
       handoff = { assignee_agent_bot_id: nil, ai_assignee_type: nil }
-      conversation.update!(handoff.merge(team_id: team.id, assignee_id: nil)) if team
-      if agent
+      if team && agent
         conversation.update!(
-          handoff.merge(assignee_id: agent.id, status: :open, waiting_since: conversation.waiting_since || Time.current)
+          handoff.merge(team_id: team.id, assignee_id: agent.id, status: :open,
+                        waiting_since: conversation.waiting_since || Time.current)
         )
       elsif team
         conversation.reload
-        AutoAssignment::AssignmentService.new(inbox: conversation.inbox).assign_conversation_now(conversation)
+        conversation.with_lock do
+          conversation.update!(handoff.merge(team_id: team.id, assignee_id: nil))
+          conversation.reload
+          AutoAssignment::AssignmentService.new(inbox: conversation.inbox).assign_conversation_now(conversation)
+        end
         conversation.reload
         online_ids = OnlineStatusTracker.get_available_users(conversation.account_id).select do |_id, status|
           status == 'online'
@@ -228,6 +232,10 @@ module Typebot
           "[Typebot] conversation #{conversation.id} auto-assign agent=#{conversation.assignee_id || '-'} " \
           "team_algo=#{team.auto_assignment_algorithm} levels=#{team.team_members.pluck(:user_id, :priority_level).to_h.inspect} " \
           "online=#{online_ids.inspect}"
+        )
+      elsif agent
+        conversation.update!(
+          handoff.merge(assignee_id: agent.id, status: :open, waiting_since: conversation.waiting_since || Time.current)
         )
       end
       return unless team || agent

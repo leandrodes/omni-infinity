@@ -143,7 +143,7 @@ class ConversationFinder
     when 'unattended'
       @conversations = @conversations.unattended
     when 'chatbot'
-      @conversations = @conversations.where(status: :pending).where.not(assignee_agent_bot_id: nil)
+      @conversations = @conversations.where(status: [:open, :pending]).where.not(assignee_agent_bot_id: nil)
     when 'ai'
       @conversations = @conversations.where(smart_reception_active: true)
     when 'pending'

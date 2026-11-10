@@ -90,7 +90,7 @@ watch(
       activeStatus.value = wootConstants.STATUS_TYPE.RESOLVED;
       activeAssigneeTab.value = wootConstants.ASSIGNEE_TYPE.ALL;
     } else if (value === 'chatbot') {
-      activeStatus.value = wootConstants.STATUS_TYPE.PENDING;
+      activeStatus.value = wootConstants.STATUS_TYPE.ALL;
       activeAssigneeTab.value = wootConstants.ASSIGNEE_TYPE.ALL;
     } else if (value === 'ai') {
       activeStatus.value = wootConstants.STATUS_TYPE.OPEN;

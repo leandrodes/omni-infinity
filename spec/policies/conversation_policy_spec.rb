@@ -107,6 +107,23 @@ RSpec.describe ConversationPolicy, type: :policy do
       end
     end
 
+    context 'when team-only visibility is enabled and the conversation belongs to a bot without a team' do
+      let(:inbox) { create(:inbox, account: account) }
+      let(:conversation) do
+        create(:conversation, account: account, inbox: inbox, team: nil,
+                              ai_assignee: create(:agent_bot, account: account))
+      end
+
+      before do
+        account.update!(settings: { show_conversations_only_from_user_teams: true })
+        create(:inbox_member, user: agent, inbox: inbox)
+      end
+
+      it 'allows access to the agent' do
+        expect(subject).to permit(agent_context, conversation)
+      end
+    end
+
     context 'when conversation is private' do
       let(:owner) { create(:user, account: account, role: :agent) }
       let(:owner_context) { { user: owner, account: account, account_user: owner.account_users.find_by(account: account) } }

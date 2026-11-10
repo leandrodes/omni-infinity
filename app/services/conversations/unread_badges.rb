@@ -53,7 +53,7 @@ class Conversations::UnreadBadges
   end
 
   def chatbot_conversations
-    accessible_conversations.where(status: :pending).where.not(assignee_agent_bot_id: nil)
+    accessible_conversations.where(status: [:open, :pending]).where.not(assignee_agent_bot_id: nil)
   end
 
   def open_team_conversations

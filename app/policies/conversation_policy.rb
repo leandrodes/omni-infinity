@@ -55,6 +55,8 @@ class ConversationPolicy < ApplicationPolicy
   end
 
   def team_access_blocked?
+    return false if record.assignee_agent_bot_id.present?
+
     team_only_visibility? && !team_access? && !assigned_to_user?
   end
 
