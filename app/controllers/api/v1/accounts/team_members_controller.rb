@@ -9,7 +9,9 @@ class Api::V1::Accounts::TeamMembersController < Api::V1::Accounts::BaseControll
 
   def create
     ActiveRecord::Base.transaction do
-      @team_members = @team.team_members.includes(:user).where(user_id: members_to_be_added_ids)
+      new_member_ids = members_to_be_added_ids
+      @team.add_members(new_member_ids)
+      @team_members = @team.team_members.includes(:user).where(user_id: new_member_ids)
     end
   end
 
@@ -20,7 +22,7 @@ class Api::V1::Accounts::TeamMembersController < Api::V1::Accounts::BaseControll
 
       update_priority_levels if params[:priorities].present?
     end
-    @team_members = @team.members
+    @team_members = @team.team_members.includes(:user)
     render action: 'create'
   end
 

@@ -1166,7 +1166,9 @@
       "NOTE": "Permission options",
       "SIGNATURE_AGENTS_CAN_DISABLE": "Agents can disable signature",
       "AGENTS_CAN_REOPEN_CONVERSATIONS": "Agents can reopen conversations",
-      "AGENTS_CAN_JOIN_CONVERSATIONS_AS_PARTICIPANT": "Agents can join as participant"
+      "AGENTS_CAN_JOIN_CONVERSATIONS_AS_PARTICIPANT": "Agents can join as participant",
+      "HIDE_CONVERSATIONS_ASSIGNED_TO_OTHERS": "Agents cannot view conversations assigned to other users",
+      "SHOW_CONVERSATIONS_ONLY_FROM_USER_TEAMS": "Agents can view conversations from teams they belong to"
     },
     "GROUPS": {
       "TITLE": "WhatsApp Groups",

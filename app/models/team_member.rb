@@ -18,7 +18,7 @@ class TeamMember < ApplicationRecord
   belongs_to :user
   belongs_to :team
   validates :user_id, uniqueness: { scope: :team_id }
-  validates :priority_level, numericality: { only_integer: true, greater_than: 0, less_than_or_equal_to: 10 }
+  validates :priority_level, numericality: { only_integer: true, greater_than: 0 }
 
   after_commit :invalidate_filtered_unread_count_visibility, on: [:create, :destroy]
 

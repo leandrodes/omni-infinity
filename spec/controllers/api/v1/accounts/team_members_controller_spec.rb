@@ -134,9 +134,10 @@ RSpec.describe 'Team Members API', type: :request do
         expect(response).to have_http_status(:unauthorized)
       end
 
-      it 'updates the team members when its administrator' do
+      it 'updates the team members and their priority levels when administrator' do
         user_ids = (1..5).map { create(:user, account: account, role: :agent).id }
-        params = { user_ids: user_ids }
+        priorities = user_ids.index_with.with_index(1) { |_id, index| index }
+        params = { user_ids: user_ids, priorities: priorities }
 
         patch "/api/v1/accounts/#{account.id}/teams/#{team.id}/team_members",
               params: params,
@@ -146,6 +147,7 @@ RSpec.describe 'Team Members API', type: :request do
         expect(response).to have_http_status(:success)
         json_response = response.parsed_body
         expect(json_response.count).to eq(user_ids.count)
+        expect(json_response.first['priority_level']).to eq(1)
       end
 
       it 'ignores the user ids when its not a valid account user id' do

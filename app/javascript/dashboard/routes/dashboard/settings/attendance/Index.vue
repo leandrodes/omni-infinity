@@ -216,28 +216,6 @@ const saveSettings = async () => {
       </SectionLayout>
 
       <SectionLayout
-        :title="t('ATTENDANCE_SETTINGS.VISIBILITY.TITLE')"
-        :description="t('ATTENDANCE_SETTINGS.VISIBILITY.NOTE')"
-        with-border
-      >
-        <div class="flex flex-col gap-4">
-          <div
-            v-for="key in [
-              'hide_conversations_assigned_to_others',
-              'show_conversations_only_from_user_teams',
-            ]"
-            :key="key"
-            class="flex items-center justify-between gap-4"
-          >
-            <span class="text-sm">{{
-              t(`ATTENDANCE_SETTINGS.VISIBILITY.${key.toUpperCase()}`)
-            }}</span>
-            <Switch v-model="settings[key]" />
-          </div>
-        </div>
-      </SectionLayout>
-
-      <SectionLayout
         :title="t('ATTENDANCE_SETTINGS.PERMISSIONS.TITLE')"
         :description="t('ATTENDANCE_SETTINGS.PERMISSIONS.NOTE')"
         with-border
@@ -245,6 +223,8 @@ const saveSettings = async () => {
         <div class="flex flex-col gap-4">
           <div
             v-for="key in [
+              'hide_conversations_assigned_to_others',
+              'show_conversations_only_from_user_teams',
               'signature_agents_can_disable',
               'agents_can_reopen_conversations',
               'agents_can_join_conversations_as_participant',

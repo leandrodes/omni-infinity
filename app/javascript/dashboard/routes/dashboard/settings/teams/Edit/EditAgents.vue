@@ -57,7 +57,10 @@ export default {
       return id && !this.uiFlags.isFetching;
     },
     showPriorityLevels() {
-      return this.currentTeam.auto_assignment_algorithm !== 'balanced';
+      return (
+        this.currentTeam.allow_auto_assign &&
+        this.currentTeam.auto_assignment_algorithm !== 'balanced'
+      );
     },
     isSequentialAssignment() {
       return this.currentTeam.auto_assignment_algorithm === 'sequential';
