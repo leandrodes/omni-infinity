@@ -615,6 +615,20 @@ RSpec.describe 'Conversations API', type: :request do
         expect(conversation.reload.assignee_id).to eq(agent.id)
       end
 
+      it 'does not reassign a pending conversation that already belongs to another agent' do
+        other_agent = create(:user, account: account, role: :agent)
+        create(:inbox_member, user: other_agent, inbox: conversation.inbox)
+        conversation.update!(status: :pending, assignee: other_agent)
+
+        post "/api/v1/accounts/#{account.id}/conversations/#{conversation.display_id}/toggle_status",
+             headers: agent.create_new_auth_token,
+             params: { status: 'open' },
+             as: :json
+
+        expect(response).to have_http_status(:success)
+        expect(conversation.reload.assignee).to eq(other_agent)
+      end
+
       it 'clears queue notifications when the agent opens a pending conversation' do
         other_agent = create(:user, account: account, role: :agent)
         create(:inbox_member, user: other_agent, inbox: conversation.inbox)
