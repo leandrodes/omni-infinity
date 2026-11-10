@@ -1349,8 +1349,7 @@
       "METHOD": {
         "ROUND_ROBIN": "Round robin",
         "BALANCED": "Balanced",
-        "PRIORITY": "Priority",
-        "SEQUENTIAL": "Sequential"
+        "PRIORITY": "Priority"
       },
       "UPGRADE_PROMPT": "Custom assignment policies are available on the Business plan",
       "UPGRADE_TO_BUSINESS": "Upgrade to Business",
@@ -1365,7 +1364,6 @@
       "LINK_ERROR": "Failed to link assignment policy",
       "AGENT_LEVELS": "Agent levels",
       "PRIORITY_LEVELS_HELP": "Set a level from 1 to 10 for each agent. Lower levels are prioritized.",
-      "SEQUENTIAL_LEVELS_HELP": "Set a unique level for each agent. Level 1 receives first; if busy, level 2, and so on.",
       "INVALID_AGENT_LEVELS": "Set valid and unique levels for all agents."
     },
     "ASSIGNMENT_POLICY": {

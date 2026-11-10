@@ -122,8 +122,7 @@
         "ALGORITHM": {
           "LABEL": "Algoritmo de distribuição",
           "BALANCED": "Balanceado (padrão)",
-          "PRIORITY": "Prioridade",
-          "SEQUENTIAL": "Sequencial"
+          "PRIORITY": "Prioridade"
         }
       },
       "SUBMIT_CREATE": "Criar novo time"

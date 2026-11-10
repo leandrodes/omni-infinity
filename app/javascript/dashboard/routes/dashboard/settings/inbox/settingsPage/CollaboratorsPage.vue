@@ -103,42 +103,21 @@ const showAgentPriorityLevels = computed(
   () =>
     enableAutoAssignment.value &&
     hasAssignmentV2.value &&
-    ['priority', 'sequential'].includes(assignmentOrder.value)
+    assignmentOrder.value === 'priority'
 );
 
-const isSequentialAssignment = computed(
-  () => assignmentOrder.value === 'sequential'
+const agentLevelsValid = computed(() =>
+  selectedAgentIds.value.every(agentId => {
+    const level = Number(agentPriorityLevels.value[agentId]);
+    return Number.isInteger(level) && level >= 1 && level <= 10;
+  })
 );
-
-const maxPriorityLevel = computed(() =>
-  isSequentialAssignment.value ? selectedAgentIds.value.length : 10
-);
-
-const agentLevelsValid = computed(() => {
-  const levels = selectedAgentIds.value.map(agentId =>
-    Number(agentPriorityLevels.value[agentId])
-  );
-  const inRange = levels.every(
-    level =>
-      Number.isInteger(level) &&
-      level >= 1 &&
-      level <= Math.max(maxPriorityLevel.value, 1)
-  );
-  if (!inRange) return false;
-  if (!isSequentialAssignment.value) return true;
-  return new Set(levels).size === levels.length;
-});
 
 const handleAgentAdd = ({ value }) => {
   if (!selectedAgentIds.value.includes(value)) {
     selectedAgentIds.value.push(value);
     if (agentPriorityLevels.value[value] === undefined) {
-      const levels = Object.values(agentPriorityLevels.value)
-        .map(Number)
-        .filter(level => level > 0);
-      agentPriorityLevels.value[value] = isSequentialAssignment.value
-        ? Math.max(...levels, 0) + 1
-        : 1;
+      agentPriorityLevels.value[value] = 1;
     }
   }
 };
@@ -156,9 +135,6 @@ const assignmentMethodLabel = computed(() => {
   }
   if (order === 'priority') {
     return t('INBOX_MGMT.ASSIGNMENT.METHOD.PRIORITY');
-  }
-  if (order === 'sequential') {
-    return t('INBOX_MGMT.ASSIGNMENT.METHOD.SEQUENTIAL');
   }
   return order;
 });
@@ -436,11 +412,7 @@ onMounted(() => {
           {{ $t('INBOX_MGMT.ASSIGNMENT.AGENT_LEVELS') }}
         </span>
         <p class="mb-0 text-sm text-n-slate-11">
-          {{
-            isSequentialAssignment
-              ? $t('INBOX_MGMT.ASSIGNMENT.SEQUENTIAL_LEVELS_HELP')
-              : $t('INBOX_MGMT.ASSIGNMENT.PRIORITY_LEVELS_HELP')
-          }}
+          {{ $t('INBOX_MGMT.ASSIGNMENT.PRIORITY_LEVELS_HELP') }}
         </p>
         <div class="flex flex-col gap-2">
           <div
@@ -455,7 +427,7 @@ onMounted(() => {
               v-model.number="agentPriorityLevels[agentId]"
               type="number"
               min="1"
-              :max="maxPriorityLevel"
+              max="10"
               class="w-20 px-2 py-1 text-right border rounded border-n-weak bg-n-solid-2"
             />
           </div>

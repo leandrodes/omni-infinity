@@ -421,7 +421,7 @@
     "SECURITY": "Segurança",
     "CAPTAIN_AI": "Capitão",
     "CONVERSATION_WORKFLOW": "Resolução Automática",
-    "CHATBOT_CONVERSATIONS": "Chatbot",
+    "CHATBOT_CONVERSATIONS": "Robôs",
     "PENDING_CONVERSATIONS": "Pendentes",
     "RESOLUTION_REASONS": "Motivos de Resolução",
     "CHATBOT_AUTO_RESOLUTION": "Resolução Automática no Chatbot",
@@ -929,10 +929,6 @@
           "PRIORITY": {
             "LABEL": "Prioridade",
             "DESCRIPTION": "Sempre tenta o agente online de menor nível disponível. Níveis superiores só recebem quando os inferiores estiverem ocupados."
-          },
-          "SEQUENTIAL": {
-            "LABEL": "Sequencial",
-            "DESCRIPTION": "Segue a ordem única de níveis: nível 1 primeiro; se estiver ocupado, nível 2, e assim por diante."
           }
         },
         "ASSIGNMENT_PRIORITY": {
@@ -1104,7 +1100,7 @@
     "DISPLAY": {
       "TITLE": "Exibição",
       "NOTE": "Opções de exibição",
-      "ENABLE_CHATBOT_CONVERSATIONS_FILTER": "Habilitar filtro conversas no chatbot",
+      "ENABLE_CHATBOT_CONVERSATIONS_FILTER": "Habilitar filtro de conversas nos Robôs",
       "ENABLE_RESOLVED_CONVERSATIONS_FILTER": "Habilitar filtro conversas resolvidas",
       "SHOW_INBOX_NAME_IN_CONVERSATION_LIST": "Habilitar nome da caixa de entrada na lista de conversas",
       "LIST_ONLY_LAST_RESOLVED_CONVERSATION_PER_CONTACT": "Listar somente última conversa resolvida do contato",

@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useMapGetter, useStore } from 'dashboard/composables/store';
+import { useRoute } from 'vue-router';
 import { useAlert } from 'dashboard/composables';
 import { useI18n } from 'vue-i18n';
 import { picoSearch } from '@chatwoot/pico-search';
@@ -23,6 +24,7 @@ const MODAL_TYPES = {
 };
 
 const store = useStore();
+const route = useRoute();
 const { t } = useI18n();
 
 const agentBots = useMapGetter('agentBots/getBots');
@@ -50,6 +52,15 @@ const filteredAgentBots = computed(() => {
   if (!query) return agentBots.value;
   return picoSearch(agentBots.value, query, ['name', 'description']);
 });
+
+const openBotBuilder = () => {
+  const accountId = route.params.accountId;
+  window.open(
+    `/bot-builder?account_id=${accountId}`,
+    '_blank',
+    'noopener,noreferrer'
+  );
+};
 
 const openAddModal = () => {
   modalType.value = MODAL_TYPES.CREATE;
@@ -113,6 +124,14 @@ onMounted(() => {
           </span>
         </template>
         <template #actions>
+          <Button
+            :label="$t('AGENT_BOTS.BOT_BUILDER')"
+            icon="i-lucide-square-pen"
+            color="slate"
+            variant="faded"
+            size="sm"
+            @click="openBotBuilder"
+          />
           <Button
             :label="$t('AGENT_BOTS.ADD.TITLE')"
             size="sm"

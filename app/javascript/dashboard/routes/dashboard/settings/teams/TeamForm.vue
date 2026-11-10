@@ -180,9 +180,6 @@ export default {
           <option value="priority">
             {{ $t('TEAMS_SETTINGS.FORM.AUTO_ASSIGN.ALGORITHM.PRIORITY') }}
           </option>
-          <option value="sequential">
-            {{ $t('TEAMS_SETTINGS.FORM.AUTO_ASSIGN.ALGORITHM.SEQUENTIAL') }}
-          </option>
         </select>
       </div>
       <div class="flex flex-row justify-end gap-2 py-2 px-0 w-full">

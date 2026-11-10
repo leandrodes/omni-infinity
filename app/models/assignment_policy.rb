@@ -35,7 +35,7 @@ class AssignmentPolicy < ApplicationRecord
 
   enum conversation_priority: { earliest_created: 0, longest_waiting: 1 }
 
-  enum :assignment_order, { balanced: 0, priority: 1, sequential: 2 }
+  enum :assignment_order, { balanced: 0, priority: 1 }
 end
 
 AssignmentPolicy.include_mod_with('Concerns::AssignmentPolicy')

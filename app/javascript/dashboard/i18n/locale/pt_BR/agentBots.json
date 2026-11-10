@@ -112,6 +112,7 @@
     },
     "TYPES": {
       "WEBHOOK": "Webhook robô"
-    }
+    },
+    "BOT_BUILDER": "Construtor/Editor de Robôs"
   }
 }

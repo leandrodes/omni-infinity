@@ -112,6 +112,7 @@
     },
     "TYPES": {
       "WEBHOOK": "Webhook bot"
-    }
+    },
+    "BOT_BUILDER": "Bot Builder"
   }
 }

@@ -59,30 +59,14 @@ export default {
     showPriorityLevels() {
       return (
         this.currentTeam.allow_auto_assign &&
-        this.currentTeam.auto_assignment_algorithm !== 'balanced'
+        this.currentTeam.auto_assignment_algorithm === 'priority'
       );
-    },
-    isSequentialAssignment() {
-      return this.currentTeam.auto_assignment_algorithm === 'sequential';
-    },
-    maxPriorityLevel() {
-      return this.isSequentialAssignment
-        ? Math.max(this.selectedAgents.length, 1)
-        : 10;
     },
     priorityLevelsValid() {
-      const levels = this.selectedAgents.map(agentId =>
-        Number(this.priorityLevels[agentId])
-      );
-      const inRange = levels.every(
-        level =>
-          Number.isInteger(level) &&
-          level >= 1 &&
-          level <= this.maxPriorityLevel
-      );
-      if (!inRange) return false;
-      if (!this.isSequentialAssignment) return true;
-      return new Set(levels).size === levels.length;
+      return this.selectedAgents.every(agentId => {
+        const level = Number(this.priorityLevels[agentId]);
+        return Number.isInteger(level) && level >= 1 && level <= 10;
+      });
     },
   },
 
@@ -109,12 +93,7 @@ export default {
       this.selectedAgents = [...newAgentList];
       newAgentList.forEach(agentId => {
         if (this.priorityLevels[agentId] === undefined) {
-          const levels = Object.values(this.priorityLevels)
-            .map(Number)
-            .filter(level => level > 0);
-          this.priorityLevels[agentId] = this.isSequentialAssignment
-            ? Math.max(...levels, 0) + 1
-            : 1;
+          this.priorityLevels[agentId] = 1;
         }
       });
     },
@@ -175,7 +154,7 @@ export default {
           :priority-levels="priorityLevels"
           :update-priority-level="updatePriorityLevel"
           :show-priority-levels="showPriorityLevels"
-          :max-priority-level="maxPriorityLevel"
+          max-priority-level="10"
           :is-working="isCreating"
           :submit-button-text="
             $t('TEAMS_SETTINGS.EDIT_FLOW.AGENTS.BUTTON_TEXT')

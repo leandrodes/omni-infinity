@@ -138,18 +138,6 @@ RSpec.describe 'Assignment Policies API', type: :request do
         expect(response.parsed_body['assignment_order']).to eq('priority')
       end
 
-      it 'creates a sequential policy' do
-        params = valid_params.deep_merge(assignment_policy: { assignment_order: 'sequential' })
-
-        post "/api/v1/accounts/#{account.id}/assignment_policies",
-             headers: admin.create_new_auth_token,
-             params: params,
-             as: :json
-
-        expect(response).to have_http_status(:success)
-        expect(response.parsed_body['assignment_order']).to eq('sequential')
-      end
-
       it 'creates policy with minimal required params' do
         minimal_params = { assignment_policy: { name: 'Minimal Policy' } }
 

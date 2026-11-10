@@ -422,7 +422,7 @@
     "SECURITY": "Security",
     "CAPTAIN_AI": "Captain",
     "CONVERSATION_WORKFLOW": "Auto Resolution",
-    "CHATBOT_CONVERSATIONS": "Chatbot",
+    "CHATBOT_CONVERSATIONS": "Bots",
     "PENDING_CONVERSATIONS": "Pending",
     "RESOLUTION_REASONS": "Resolution Reasons",
     "CHATBOT_AUTO_RESOLUTION": "Chatbot Auto Resolution",
@@ -963,10 +963,6 @@
           "PRIORITY": {
             "LABEL": "Priority",
             "DESCRIPTION": "Always tries the online agent with the lowest available level. Higher levels only receive when lower levels are busy."
-          },
-          "SEQUENTIAL": {
-            "LABEL": "Sequential",
-            "DESCRIPTION": "Follows the unique level order: level 1 first; if busy, level 2, and so on."
           }
         },
         "ASSIGNMENT_PRIORITY": {
@@ -1138,7 +1134,7 @@
     "DISPLAY": {
       "TITLE": "Display",
       "NOTE": "Display options",
-      "ENABLE_CHATBOT_CONVERSATIONS_FILTER": "Enable chatbot conversations filter",
+      "ENABLE_CHATBOT_CONVERSATIONS_FILTER": "Enable bot conversations filter",
       "ENABLE_RESOLVED_CONVERSATIONS_FILTER": "Enable resolved conversations filter",
       "SHOW_INBOX_NAME_IN_CONVERSATION_LIST": "Enable inbox name in conversation list",
       "LIST_ONLY_LAST_RESOLVED_CONVERSATION_PER_CONTACT": "List only last resolved conversation per contact",

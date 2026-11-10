@@ -969,16 +969,6 @@ const menuItems = computed(() => {
           icon: 'i-lucide-blocks',
           to: accountScopedRoute('settings_applications'),
         },
-        ...(isAdmin.value
-          ? [
-              {
-                name: 'Settings Bot Builder',
-                label: 'Chatbot',
-                icon: 'i-lucide-bot-message-square',
-                href: `/bot-builder?account_id=${accountId.value}`,
-              },
-            ]
-          : []),
         ...(hasDataImport.value
           ? [
               {

@@ -122,8 +122,7 @@
         "ALGORITHM": {
           "LABEL": "Assignment algorithm",
           "BALANCED": "Balanced (default)",
-          "PRIORITY": "Priority",
-          "SEQUENTIAL": "Sequential"
+          "PRIORITY": "Priority"
         }
       },
       "SUBMIT_CREATE": "Create team"

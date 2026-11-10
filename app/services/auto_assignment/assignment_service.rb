@@ -96,8 +96,6 @@ class AutoAssignment::AssignmentService
     case algorithm || 'balanced'
     when 'priority'
       AutoAssignment::PrioritySelector.new(inbox: inbox, priority_levels: priority_levels)
-    when 'sequential'
-      AutoAssignment::SequentialSelector.new(inbox: inbox, priority_levels: priority_levels)
     else
       AutoAssignment::BalancedSelector.new(inbox: inbox)
     end

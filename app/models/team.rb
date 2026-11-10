@@ -22,7 +22,7 @@ class Team < ApplicationRecord
 
   belongs_to :account
 
-  enum :auto_assignment_algorithm, { balanced: 0, priority: 1, sequential: 2 }
+  enum :auto_assignment_algorithm, { balanced: 0, priority: 1 }
   has_many :team_members, dependent: :destroy_async
   has_many :members, through: :team_members, source: :user
   has_many :conversations, dependent: :nullify
