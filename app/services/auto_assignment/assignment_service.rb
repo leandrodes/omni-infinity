@@ -1,6 +1,15 @@
 class AutoAssignment::AssignmentService
   pattr_initialize [:inbox!]
 
+  def assign_conversation_now(conversation)
+    return false unless assignable?(conversation, include_pending: true)
+
+    agent = find_available_agent(conversation)
+    return false unless agent
+
+    assign_conversation(conversation, agent)
+  end
+
   def perform_bulk_assignment(limit: 100)
     return 0 unless auto_assignment_allowed?
 
@@ -32,9 +41,9 @@ class AutoAssignment::AssignmentService
     assign_conversation(conversation, agent)
   end
 
-  def assignable?(conversation)
-    conversation.status == 'open' &&
-      conversation.assignee_id.nil?
+  def assignable?(conversation, include_pending: false)
+    valid_status = conversation.status == 'open' || (include_pending && conversation.status == 'pending')
+    valid_status && conversation.assignee_id.nil?
   end
 
   def unassigned_conversations(limit)

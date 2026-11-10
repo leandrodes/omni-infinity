@@ -212,11 +212,15 @@ module Typebot
       end
 
       handoff = { assignee_agent_bot_id: nil, ai_assignee_type: nil }
-      conversation.update!(handoff.merge(team_id: team.id)) if team
+      conversation.update!(handoff.merge(team_id: team.id, assignee_id: nil)) if team
       if agent
         conversation.update!(
           handoff.merge(assignee_id: agent.id, status: :open, waiting_since: conversation.waiting_since || Time.current)
         )
+      elsif team
+        conversation.reload
+        AutoAssignment::AssignmentService.new(inbox: conversation.inbox).assign_conversation_now(conversation)
+        conversation.reload
       end
       return unless team || agent
 
