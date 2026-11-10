@@ -225,6 +225,8 @@ module Typebot
           AutoAssignment::AssignmentService.new(inbox: conversation.inbox).assign_conversation_now(conversation)
         end
         conversation.reload
+        enforce_team_priority!(conversation, team) if team.priority?
+        conversation.reload
         online_ids = OnlineStatusTracker.get_available_users(conversation.account_id).select do |_id, status|
           status == 'online'
         end.keys
@@ -248,6 +250,25 @@ module Typebot
       )
     rescue StandardError => e
       Rails.logger.error("[Typebot] assignment for conversation #{conversation.id} failed: #{e.class}: #{e.message}")
+    end
+
+    def enforce_team_priority!(conversation, team)
+      available_ids = conversation.inbox.available_agents.pluck(:user_id)
+      preferred = team.team_members.includes(:user).sort_by { |member| [member.priority_level, member.user_id] }.find do |member|
+        next false unless available_ids.include?(member.user_id)
+
+        !member.user.assigned_conversations
+               .where(inbox: conversation.inbox, status: [:open, :pending])
+               .where.not(id: conversation.id)
+               .exists?
+      end&.user
+
+      return if preferred.blank? || conversation.assignee_id == preferred.id
+
+      conversation.update!(assignee: preferred)
+      Rails.logger.info(
+        "[Typebot] conversation #{conversation.id} priority-correction agent=#{preferred.id}"
+      )
     end
 
     def route_team_and_keep_bot(conversation, team)

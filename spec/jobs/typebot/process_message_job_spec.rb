@@ -54,6 +54,25 @@ RSpec.describe Typebot::ProcessMessageJob do
       expect(conversation.assignee).to eq(agent_one)
     end
 
+    it 'corrects a priority assignment when the lower level agent is free' do
+      agent_one = create(:user, account: account, role: :agent, availability: :online)
+      agent_two = create(:user, account: account, role: :agent, availability: :online)
+      create(:inbox_member, inbox: conversation.inbox, user: agent_one)
+      create(:inbox_member, inbox: conversation.inbox, user: agent_two)
+      create(:team_member, team: team, user: agent_one, priority_level: 1)
+      create(:team_member, team: team, user: agent_two, priority_level: 2)
+      team.update!(allow_auto_assign: true, auto_assignment_algorithm: :priority)
+      allow(OnlineStatusTracker).to receive(:get_available_users).and_return(
+        { agent_one.id.to_s => 'online', agent_two.id.to_s => 'online' }
+      )
+
+      job.send(:apply_assignments, conversation, "[[fila:#{team.id}]]")
+      conversation.update!(assignee: agent_two)
+      job.send(:enforce_team_priority!, conversation, team)
+
+      expect(conversation.reload.assignee).to eq(agent_one)
+    end
+
     it 'notifies the agent assigned by the bot' do
       agent = create(:user, account: account, role: :agent)
       create(:inbox_member, inbox: conversation.inbox, user: agent)
