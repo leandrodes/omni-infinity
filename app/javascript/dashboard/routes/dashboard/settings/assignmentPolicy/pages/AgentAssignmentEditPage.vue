@@ -6,7 +6,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useAlert } from 'dashboard/composables';
 import { getInboxIconByType } from 'dashboard/helper/inbox';
 import {
-  ROUND_ROBIN,
+  BALANCED,
   EARLIEST_CREATED,
 } from 'dashboard/routes/dashboard/settings/assignmentPolicy/constants';
 
@@ -103,7 +103,7 @@ const formData = computed(() => ({
   name: selectedPolicy.value?.name || '',
   description: selectedPolicy.value?.description || '',
   enabled: true,
-  assignmentOrder: selectedPolicy.value?.assignmentOrder || ROUND_ROBIN,
+  assignmentOrder: selectedPolicy.value?.assignmentOrder || BALANCED,
   conversationPriority:
     selectedPolicy.value?.conversationPriority || EARLIEST_CREATED,
   fairDistributionLimit: selectedPolicy.value?.fairDistributionLimit || 100,

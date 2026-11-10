@@ -74,7 +74,8 @@
       "SELECT": "select",
       "SELECT_ALL": "select all agents",
       "SELECTED_COUNT": "{selected} out of {total} agents selected.",
-      "PRIORITY_LEVEL": "Priority level"
+      "PRIORITY_LEVEL": "Priority level",
+      "INVALID_PRIORITY_LEVELS": "Set valid and unique levels for all agents."
     },
     "ADD": {
       "TITLE": "Add agents to team - {teamName}",
@@ -120,9 +121,9 @@
         "LABEL": "Auto assignment",
         "ALGORITHM": {
           "LABEL": "Assignment algorithm",
-          "ROUND_ROBIN": "Sequential (Round Robin)",
-          "BALANCED": "Balanced",
-          "PRIORITY": "Priority"
+          "BALANCED": "Balanced (default)",
+          "PRIORITY": "Priority",
+          "SEQUENTIAL": "Sequential"
         }
       },
       "SUBMIT_CREATE": "Create team"

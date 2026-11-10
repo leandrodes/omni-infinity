@@ -20,11 +20,10 @@ module Enterprise::AutoAssignment::AssignmentService
 
     agents = filter_agents_by_rate_limit(agents)
     agents = filter_agents_by_capacity(agents) if capacity_filtering_enabled?
+    agents = eligible_agents_for_capacity(agents, conversation)
     return nil if agents.empty?
 
-    # Use balanced selector only if advanced_assignment feature is enabled
-    selector = policy&.balanced? && account.feature_enabled?('advanced_assignment') ? balanced_selector : round_robin_selector
-    selector.select_agent(agents)
+    selector_for(conversation).select_agent(agents)
   end
 
   def filter_agents_by_capacity(agents)

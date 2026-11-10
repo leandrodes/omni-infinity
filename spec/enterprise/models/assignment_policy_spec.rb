@@ -7,11 +7,15 @@ RSpec.describe AssignmentPolicy do
     let(:assignment_policy) { create(:assignment_policy, account: account) }
 
     describe 'assignment_order' do
-      it 'can be set to balanced' do
+      it 'can be set to balanced, priority and sequential' do
         assignment_policy.update!(assignment_order: :balanced)
-        expect(assignment_policy.assignment_order).to eq('balanced')
-        expect(assignment_policy.round_robin?).to be false
         expect(assignment_policy.balanced?).to be true
+
+        assignment_policy.update!(assignment_order: :priority)
+        expect(assignment_policy.priority?).to be true
+
+        assignment_policy.update!(assignment_order: :sequential)
+        expect(assignment_policy.sequential?).to be true
       end
     end
   end

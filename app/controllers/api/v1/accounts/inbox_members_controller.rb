@@ -11,6 +11,7 @@ class Api::V1::Accounts::InboxMembersController < Api::V1::Accounts::BaseControl
     authorize @inbox, :create?
     ActiveRecord::Base.transaction do
       @inbox.add_members(agents_to_be_added_ids)
+      update_priority_levels
     end
     fetch_updated_agents
   end
@@ -43,6 +44,16 @@ class Api::V1::Accounts::InboxMembersController < Api::V1::Accounts::BaseControl
     ActiveRecord::Base.transaction do
       @inbox.add_members(agents_to_be_added_ids)
       @inbox.remove_members(agents_to_be_removed_ids)
+      update_priority_levels
+    end
+  end
+
+  def update_priority_levels
+    priorities = params[:priority_levels]
+    return if priorities.blank?
+
+    priorities.each do |user_id, priority_level|
+      @inbox.inbox_members.find_by(user_id: user_id)&.update!(priority_level: priority_level)
     end
   end
 

@@ -31,6 +31,7 @@ const { t } = useI18n();
 const { isEnterprise } = useConfig();
 
 const selectedAgentIds = ref([]);
+const agentPriorityLevels = ref({});
 const isAgentListUpdating = ref(false);
 const enableAutoAssignment = ref(false);
 const maxAssignmentLimit = ref(null);
@@ -61,16 +62,6 @@ const agentMenuItems = computed(() =>
       thumbnail: { name, src: thumbnail || avatar_url || '' },
     }))
 );
-
-const handleAgentAdd = ({ value }) => {
-  if (!selectedAgentIds.value.includes(value)) {
-    selectedAgentIds.value.push(value);
-  }
-};
-
-const handleAgentRemove = index => {
-  selectedAgentIds.value.splice(index, 1);
-};
 
 const isFeatureEnabled = feature => {
   const accountId = Number(route.params.accountId);
@@ -104,14 +95,70 @@ const assignmentOrderLabel = computed(() => {
   return priority;
 });
 
+const assignmentOrder = computed(
+  () => assignmentPolicy.value?.assignment_order || 'balanced'
+);
+
+const showAgentPriorityLevels = computed(
+  () =>
+    enableAutoAssignment.value &&
+    hasAssignmentV2.value &&
+    ['priority', 'sequential'].includes(assignmentOrder.value)
+);
+
+const isSequentialAssignment = computed(
+  () => assignmentOrder.value === 'sequential'
+);
+
+const maxPriorityLevel = computed(() =>
+  isSequentialAssignment.value ? selectedAgentIds.value.length : 10
+);
+
+const agentLevelsValid = computed(() => {
+  const levels = selectedAgentIds.value.map(agentId =>
+    Number(agentPriorityLevels.value[agentId])
+  );
+  const inRange = levels.every(
+    level =>
+      Number.isInteger(level) &&
+      level >= 1 &&
+      level <= Math.max(maxPriorityLevel.value, 1)
+  );
+  if (!inRange) return false;
+  if (!isSequentialAssignment.value) return true;
+  return new Set(levels).size === levels.length;
+});
+
+const handleAgentAdd = ({ value }) => {
+  if (!selectedAgentIds.value.includes(value)) {
+    selectedAgentIds.value.push(value);
+    if (agentPriorityLevels.value[value] === undefined) {
+      const levels = Object.values(agentPriorityLevels.value)
+        .map(Number)
+        .filter(level => level > 0);
+      agentPriorityLevels.value[value] = isSequentialAssignment.value
+        ? Math.max(...levels, 0) + 1
+        : 1;
+    }
+  }
+};
+
+const handleAgentRemove = index => {
+  const [removedId] = selectedAgentIds.value.splice(index, 1);
+  delete agentPriorityLevels.value[removedId];
+};
+
 const assignmentMethodLabel = computed(() => {
   if (!assignmentPolicy.value) return '';
   const order = assignmentPolicy.value.assignment_order;
-  if (order === 'round_robin') {
-    return t('INBOX_MGMT.ASSIGNMENT.METHOD.ROUND_ROBIN');
-  }
   if (order === 'balanced') {
     return t('INBOX_MGMT.ASSIGNMENT.METHOD.BALANCED');
+  }
+  if (order === 'priority') {
+    return t('INBOX_MGMT.ASSIGNMENT.METHOD.PRIORITY');
+  }
+  if (order === 'sequential') {
+    return t('INBOX_MGMT.ASSIGNMENT.METHOD.SEQUENTIAL');
   }
   return order;
 });
@@ -153,6 +200,10 @@ const fetchAttachedAgents = async () => {
       data: { payload: inboxMembers },
     } = response;
     selectedAgentIds.value = inboxMembers.map(m => m.id);
+    agentPriorityLevels.value = inboxMembers.reduce((levels, member) => {
+      levels[member.id] = member.priority_level || 1;
+      return levels;
+    }, {});
   } catch (error) {
     //  Handle error
   }
@@ -262,11 +313,17 @@ const handleToggleAutoAssignment = async val => {
 };
 
 const updateAgents = async () => {
+  if (showAgentPriorityLevels.value && !agentLevelsValid.value) {
+    useAlert(t('INBOX_MGMT.ASSIGNMENT.INVALID_AGENT_LEVELS'));
+    return;
+  }
+
   isAgentListUpdating.value = true;
   try {
     await store.dispatch('inboxMembers/create', {
       inboxId: props.inbox.id,
       agentList: selectedAgentIds.value,
+      priorityLevels: agentPriorityLevels.value,
     });
     useAlert(t('AGENT_MGMT.EDIT.API.SUCCESS_MESSAGE'));
   } catch (error) {
@@ -372,6 +429,37 @@ onMounted(() => {
           @add="handleAgentAdd"
           @remove="handleAgentRemove"
         />
+      </div>
+
+      <div v-if="showAgentPriorityLevels" class="flex flex-col gap-2 mt-4">
+        <span class="text-sm font-medium text-n-slate-12">
+          {{ $t('INBOX_MGMT.ASSIGNMENT.AGENT_LEVELS') }}
+        </span>
+        <p class="mb-0 text-sm text-n-slate-11">
+          {{
+            isSequentialAssignment
+              ? $t('INBOX_MGMT.ASSIGNMENT.SEQUENTIAL_LEVELS_HELP')
+              : $t('INBOX_MGMT.ASSIGNMENT.PRIORITY_LEVELS_HELP')
+          }}
+        </p>
+        <div class="flex flex-col gap-2">
+          <div
+            v-for="agentId in selectedAgentIds"
+            :key="agentId"
+            class="flex items-center justify-between gap-3"
+          >
+            <span class="text-sm text-n-slate-12">
+              {{ agentList.find(agent => agent.id === agentId)?.name }}
+            </span>
+            <input
+              v-model.number="agentPriorityLevels[agentId]"
+              type="number"
+              min="1"
+              :max="maxPriorityLevel"
+              class="w-20 px-2 py-1 text-right border rounded border-n-weak bg-n-solid-2"
+            />
+          </div>
+        </div>
       </div>
 
       <template #extra>

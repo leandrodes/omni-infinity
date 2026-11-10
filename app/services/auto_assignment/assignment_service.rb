@@ -75,22 +75,50 @@ class AutoAssignment::AssignmentService
     return nil if agents.nil?
 
     agents = filter_agents_by_rate_limit(agents)
+    agents = eligible_agents_for_capacity(agents, conversation)
     return nil if agents.empty?
 
     selector_for(conversation).select_agent(agents)
   end
 
   def selector_for(conversation)
-    algorithm = inbox.assignment_policy&.assignment_order || 'balanced'
+    algorithm, priority_levels = assignment_strategy(conversation&.team)
 
-    case algorithm
-    when 'balanced'
-      AutoAssignment::BalancedSelector.new(inbox: inbox)
+    case algorithm || 'balanced'
     when 'priority'
-      AutoAssignment::PrioritySelector.new(inbox: inbox, team: conversation&.team)
+      AutoAssignment::PrioritySelector.new(inbox: inbox, priority_levels: priority_levels)
+    when 'sequential'
+      AutoAssignment::SequentialSelector.new(inbox: inbox, priority_levels: priority_levels)
     else
-      round_robin_selector
+      AutoAssignment::BalancedSelector.new(inbox: inbox)
     end
+  end
+
+  def assignment_strategy(team)
+    if team.present?
+      [team.auto_assignment_algorithm, team.team_members.pluck(:user_id, :priority_level).to_h]
+    else
+      [inbox.assignment_policy&.assignment_order, inbox.inbox_members.pluck(:user_id, :priority_level).to_h]
+    end
+  end
+
+  def eligible_agents_for_capacity(agents, conversation = nil)
+    free_agents = agents.select { |agent_member| active_conversation_count(agent_member).zero? }
+    return free_agents if free_agents.any?
+
+    active_queue_count = active_queue_scope(conversation).count
+    return [] if active_queue_count <= agents.count
+
+    agents
+  end
+
+  def active_queue_scope(conversation)
+    scope = conversation&.team.present? ? conversation.team.conversations : inbox.conversations
+    scope.where(status: [:open, :pending])
+  end
+
+  def active_conversation_count(agent_member)
+    agent_member.user.assigned_conversations.where(inbox: inbox, status: [:open, :pending]).count
   end
 
   def filter_agents_by_team(agents, conversation)
@@ -152,10 +180,6 @@ class AutoAssignment::AssignmentService
 
   def build_rate_limiter(agent)
     AutoAssignment::RateLimiter.new(inbox: inbox, agent: agent)
-  end
-
-  def round_robin_selector
-    @round_robin_selector ||= AutoAssignment::RoundRobinSelector.new(inbox: inbox)
   end
 end
 

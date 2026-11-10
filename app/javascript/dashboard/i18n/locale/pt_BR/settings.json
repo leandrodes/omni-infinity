@@ -922,15 +922,17 @@
         },
         "ASSIGNMENT_ORDER": {
           "LABEL": "Ordem de atribuição",
-          "ROUND_ROBIN": {
-            "LABEL": "Rodízio",
-            "DESCRIPTION": "Distribuir as conversas de forma uniforme entre os agentes."
-          },
           "BALANCED": {
-            "LABEL": "Equilibrado",
-            "DESCRIPTION": "Atribuir conversas com base na capacidade disponível.",
-            "PREMIUM_MESSAGE": "Atualize o plano para acessar a atribuição equilibrada e o gerenciamento de capacidade dos agentes.",
-            "PREMIUM_BADGE": "Premium"
+            "LABEL": "Balanceado (padrão)",
+            "DESCRIPTION": "Direciona para o agente online com mais tempo ocioso no dia, garantindo oportunidades iguais."
+          },
+          "PRIORITY": {
+            "LABEL": "Prioridade",
+            "DESCRIPTION": "Sempre tenta o agente online de menor nível disponível. Níveis superiores só recebem quando os inferiores estiverem ocupados."
+          },
+          "SEQUENTIAL": {
+            "LABEL": "Sequencial",
+            "DESCRIPTION": "Segue a ordem única de níveis: nível 1 primeiro; se estiver ocupado, nível 2, e assim por diante."
           }
         },
         "ASSIGNMENT_PRIORITY": {

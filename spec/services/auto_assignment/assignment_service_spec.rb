@@ -151,6 +151,42 @@ RSpec.describe AutoAssignment::AssignmentService do
       end
     end
 
+    context 'with global concurrency capacity' do
+      let(:rate_limiter) { instance_double(AutoAssignment::RateLimiter) }
+
+      before do
+        create(:inbox_member, inbox: inbox, user: agent2)
+        allow(OnlineStatusTracker).to receive(:get_available_users).and_return(
+          { agent.id.to_s => 'online', agent2.id.to_s => 'online' }
+        )
+        allow(AutoAssignment::RateLimiter).to receive(:new).and_return(rate_limiter)
+        allow(rate_limiter).to receive(:within_limit?).and_return(true)
+        allow(rate_limiter).to receive(:track_assignment)
+      end
+
+      it 'assigns to the free agent instead of giving a second conversation to a busy agent' do
+        create(:conversation, inbox: inbox, assignee: agent, status: :open)
+        unassigned = create(:conversation, inbox: inbox, status: :open)
+        unassigned.update!(assignee_id: nil)
+
+        assigned_count = service.perform_bulk_assignment(limit: 1)
+
+        expect(assigned_count).to eq(1)
+        expect(unassigned.reload.assignee).to eq(agent2)
+      end
+
+      it 'allows overflow when the active queue is larger than the online agents' do
+        create(:conversation, inbox: inbox, assignee: agent, status: :open)
+        create(:conversation, inbox: inbox, assignee: agent2, status: :open)
+        unassigned = create(:conversation, inbox: inbox, status: :open)
+        unassigned.update!(assignee_id: nil)
+
+        expect do
+          service.perform_bulk_assignment(limit: 1)
+        end.to change { unassigned.reload.assignee_id }.from(nil)
+      end
+    end
+
     context 'when auto assignment is disabled' do
       before { assignment_policy.update!(enabled: false) }
 

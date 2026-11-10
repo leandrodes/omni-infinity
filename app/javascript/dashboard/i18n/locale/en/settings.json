@@ -956,15 +956,17 @@
         },
         "ASSIGNMENT_ORDER": {
           "LABEL": "Assignment order",
-          "ROUND_ROBIN": {
-            "LABEL": "Round robin",
-            "DESCRIPTION": "Assign conversations evenly among agents."
-          },
           "BALANCED": {
-            "LABEL": "Balanced",
-            "DESCRIPTION": "Assign conversations based on available capacity.",
-            "PREMIUM_MESSAGE": "Upgrade to access balanced assignment and agent capacity management.",
-            "PREMIUM_BADGE": "Premium"
+            "LABEL": "Balanced (default)",
+            "DESCRIPTION": "Routes to the online agent who has been idle the longest today, giving everyone equal opportunities."
+          },
+          "PRIORITY": {
+            "LABEL": "Priority",
+            "DESCRIPTION": "Always tries the online agent with the lowest available level. Higher levels only receive when lower levels are busy."
+          },
+          "SEQUENTIAL": {
+            "LABEL": "Sequential",
+            "DESCRIPTION": "Follows the unique level order: level 1 first; if busy, level 2, and so on."
           }
         },
         "ASSIGNMENT_PRIORITY": {

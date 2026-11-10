@@ -168,6 +168,23 @@ RSpec.describe 'Inbox Member API', type: :request do
         expect(inbox.inbox_members&.first&.user).to eq(agent_to_add)
       end
 
+      it 'updates agent priority levels' do
+        params = {
+          inbox_id: inbox.id,
+          user_ids: [agent_to_add.id],
+          priority_levels: { agent_to_add.id => 3 }
+        }
+
+        patch "/api/v1/accounts/#{account.id}/inbox_members",
+              headers: administrator.create_new_auth_token,
+              params: params,
+              as: :json
+
+        expect(response).to have_http_status(:success)
+        expect(inbox.inbox_members.find_by(user_id: agent_to_add.id).priority_level).to eq(3)
+        expect(response.parsed_body['payload'].first['priority_level']).to eq(3)
+      end
+
       it 'renders not found when inbox not found' do
         params = { inbox_id: nil, user_ids: [agent_to_add.id] }
 

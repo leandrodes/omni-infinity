@@ -1,8 +1,6 @@
 <script setup>
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useRoute } from 'vue-router';
-import { useMapGetter } from 'dashboard/composables/store';
 import BaseInfo from 'dashboard/components-next/AssignmentPolicy/components/BaseInfo.vue';
 import RadioCard from 'dashboard/components-next/radioCard/RadioCard.vue';
 import FairDistribution from 'dashboard/components-next/AssignmentPolicy/components/FairDistribution.vue';
@@ -14,7 +12,7 @@ import WithLabel from 'v3/components/Form/WithLabel.vue';
 import Button from 'dashboard/components-next/button/Button.vue';
 import {
   OPTIONS,
-  ROUND_ROBIN,
+  BALANCED,
   EARLIEST_CREATED,
   DEFAULT_FAIR_DISTRIBUTION_LIMIT,
   DEFAULT_FAIR_DISTRIBUTION_WINDOW,
@@ -27,7 +25,7 @@ const props = defineProps({
     default: () => ({
       name: '',
       description: '',
-      assignmentOrder: ROUND_ROBIN,
+      assignmentOrder: BALANCED,
       conversationPriority: EARLIEST_CREATED,
       fairDistributionLimit: DEFAULT_FAIR_DISTRIBUTION_LIMIT,
       fairDistributionWindow: DEFAULT_FAIR_DISTRIBUTION_WINDOW,
@@ -72,12 +70,6 @@ const MIN_EXCLUSION_MINUTES = 60;
 const MAX_EXCLUSION_MINUTES = 1438560;
 
 const { t } = useI18n();
-const route = useRoute();
-
-const accountId = computed(() => Number(route.params.accountId));
-const isFeatureEnabledonAccount = useMapGetter(
-  'accounts/isFeatureEnabledonAccount'
-);
 
 const BASE_KEY = 'ASSIGNMENT_POLICY.AGENT_ASSIGNMENT_POLICY';
 
@@ -85,7 +77,7 @@ const state = reactive({
   name: '',
   description: '',
   enabled: true,
-  assignmentOrder: ROUND_ROBIN,
+  assignmentOrder: BALANCED,
   conversationPriority: EARLIEST_CREATED,
   fairDistributionLimit: DEFAULT_FAIR_DISTRIBUTION_LIMIT,
   fairDistributionWindow: DEFAULT_FAIR_DISTRIBUTION_WINDOW,
@@ -128,32 +120,11 @@ const createOption = (
   disabledLabel,
 });
 
-const assignmentOrderOptions = computed(() => {
-  const hasAdvancedAssignment = isFeatureEnabledonAccount.value(
-    accountId.value,
-    'advanced_assignment'
-  );
-
-  return OPTIONS.ORDER.map(key => {
-    const isBalanced = key === 'balanced';
-    const disabled = isBalanced && !hasAdvancedAssignment;
-    const disabledMessage = disabled
-      ? t(`${BASE_KEY}.FORM.ASSIGNMENT_ORDER.BALANCED.PREMIUM_MESSAGE`)
-      : '';
-    const disabledLabel = disabled
-      ? t(`${BASE_KEY}.FORM.ASSIGNMENT_ORDER.BALANCED.PREMIUM_BADGE`)
-      : '';
-
-    return createOption(
-      'ASSIGNMENT_ORDER',
-      key,
-      'assignmentOrder',
-      disabled,
-      disabledMessage,
-      disabledLabel
-    );
-  });
-});
+const assignmentOrderOptions = computed(() =>
+  OPTIONS.ORDER.map(key =>
+    createOption('ASSIGNMENT_ORDER', key, 'assignmentOrder')
+  )
+);
 
 const assignmentPriorityOptions = computed(() =>
   OPTIONS.PRIORITY.map(key =>
@@ -188,7 +159,7 @@ const resetForm = () => {
     name: '',
     description: '',
     enabled: true,
-    assignmentOrder: ROUND_ROBIN,
+    assignmentOrder: BALANCED,
     conversationPriority: EARLIEST_CREATED,
     fairDistributionLimit: DEFAULT_FAIR_DISTRIBUTION_LIMIT,
     fairDistributionWindow: DEFAULT_FAIR_DISTRIBUTION_WINDOW,

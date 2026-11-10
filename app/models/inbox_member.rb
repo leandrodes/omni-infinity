@@ -18,6 +18,7 @@ class InboxMember < ApplicationRecord
   validates :inbox_id, presence: true
   validates :user_id, presence: true
   validates :user_id, uniqueness: { scope: :inbox_id }
+  validates :priority_level, numericality: { only_integer: true, greater_than: 0 }
 
   belongs_to :user
   belongs_to :inbox

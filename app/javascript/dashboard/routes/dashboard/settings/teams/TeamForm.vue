@@ -47,7 +47,7 @@ export default {
       description = '',
       name: title = '',
       allow_auto_assign: allowAutoAssign = true,
-      auto_assignment_algorithm: autoAssignmentAlgorithm = 'round_robin',
+      auto_assignment_algorithm: autoAssignmentAlgorithm = 'balanced',
       icon = '',
       icon_color: iconColor = '',
     } = formData;
@@ -174,14 +174,14 @@ export default {
           {{ $t('TEAMS_SETTINGS.FORM.AUTO_ASSIGN.ALGORITHM.LABEL') }}
         </label>
         <select v-model="state.autoAssignmentAlgorithm" class="w-full text-sm">
-          <option value="round_robin">
-            {{ $t('TEAMS_SETTINGS.FORM.AUTO_ASSIGN.ALGORITHM.ROUND_ROBIN') }}
-          </option>
           <option value="balanced">
             {{ $t('TEAMS_SETTINGS.FORM.AUTO_ASSIGN.ALGORITHM.BALANCED') }}
           </option>
           <option value="priority">
             {{ $t('TEAMS_SETTINGS.FORM.AUTO_ASSIGN.ALGORITHM.PRIORITY') }}
+          </option>
+          <option value="sequential">
+            {{ $t('TEAMS_SETTINGS.FORM.AUTO_ASSIGN.ALGORITHM.SEQUENTIAL') }}
           </option>
         </select>
       </div>

@@ -59,10 +59,18 @@ RSpec.describe AssignmentPolicy do
     end
 
     describe 'assignment_order' do
-      it 'can be set to round_robin' do
-        assignment_policy.update!(assignment_order: :round_robin)
-        expect(assignment_policy.assignment_order).to eq('round_robin')
-        expect(assignment_policy.round_robin?).to be true
+      it 'supports balanced, priority and sequential' do
+        assignment_policy.update!(assignment_order: :balanced)
+        expect(assignment_policy.assignment_order).to eq('balanced')
+        expect(assignment_policy.balanced?).to be true
+
+        assignment_policy.update!(assignment_order: :priority)
+        expect(assignment_policy.assignment_order).to eq('priority')
+        expect(assignment_policy.priority?).to be true
+
+        assignment_policy.update!(assignment_order: :sequential)
+        expect(assignment_policy.assignment_order).to eq('sequential')
+        expect(assignment_policy.sequential?).to be true
       end
     end
   end

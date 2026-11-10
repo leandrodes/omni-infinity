@@ -56,6 +56,31 @@ export default {
       const { id } = this.currentTeam;
       return id && !this.uiFlags.isFetching;
     },
+    showPriorityLevels() {
+      return this.currentTeam.auto_assignment_algorithm !== 'balanced';
+    },
+    isSequentialAssignment() {
+      return this.currentTeam.auto_assignment_algorithm === 'sequential';
+    },
+    maxPriorityLevel() {
+      return this.isSequentialAssignment
+        ? Math.max(this.selectedAgents.length, 1)
+        : 10;
+    },
+    priorityLevelsValid() {
+      const levels = this.selectedAgents.map(agentId =>
+        Number(this.priorityLevels[agentId])
+      );
+      const inRange = levels.every(
+        level =>
+          Number.isInteger(level) &&
+          level >= 1 &&
+          level <= this.maxPriorityLevel
+      );
+      if (!inRange) return false;
+      if (!this.isSequentialAssignment) return true;
+      return new Set(levels).size === levels.length;
+    },
   },
 
   async mounted() {
@@ -81,7 +106,12 @@ export default {
       this.selectedAgents = [...newAgentList];
       newAgentList.forEach(agentId => {
         if (this.priorityLevels[agentId] === undefined) {
-          this.priorityLevels[agentId] = 1;
+          const levels = Object.values(this.priorityLevels)
+            .map(Number)
+            .filter(level => level > 0);
+          this.priorityLevels[agentId] = this.isSequentialAssignment
+            ? Math.max(...levels, 0) + 1
+            : 1;
         }
       });
     },
@@ -89,6 +119,11 @@ export default {
       this.priorityLevels[agentId] = Number(value) || 1;
     },
     async addAgents() {
+      if (this.showPriorityLevels && !this.priorityLevelsValid) {
+        useAlert(this.$t('TEAMS_SETTINGS.AGENTS.INVALID_PRIORITY_LEVELS'));
+        return;
+      }
+
       this.isCreating = true;
       const { teamId, selectedAgents } = this;
 
@@ -136,6 +171,8 @@ export default {
           :update-selected-agents="updateSelectedAgents"
           :priority-levels="priorityLevels"
           :update-priority-level="updatePriorityLevel"
+          :show-priority-levels="showPriorityLevels"
+          :max-priority-level="maxPriorityLevel"
           :is-working="isCreating"
           :submit-button-text="
             $t('TEAMS_SETTINGS.EDIT_FLOW.AGENTS.BUTTON_TEXT')

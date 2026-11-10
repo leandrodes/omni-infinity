@@ -127,6 +127,16 @@ RSpec.describe 'Teams API', type: :request do
         expect(response).to conform_schema(200)
         expect(team.reload.name).to eq('new-team')
       end
+
+      it 'updates the team assignment algorithm' do
+        put "/api/v1/accounts/#{account.id}/teams/#{team.id}",
+            params: { team: { auto_assignment_algorithm: 'sequential' } },
+            headers: administrator.create_new_auth_token,
+            as: :json
+
+        expect(response).to have_http_status(:success)
+        expect(team.reload.auto_assignment_algorithm).to eq('sequential')
+      end
     end
   end
 

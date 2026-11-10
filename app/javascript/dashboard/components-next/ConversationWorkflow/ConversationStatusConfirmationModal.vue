@@ -25,7 +25,7 @@ const currentStatus = ref('');
 const targetStatus = ref('');
 const conversationContext = ref(null);
 const conversationTeamId = ref(null);
-const selectedFarewellId = ref(null);
+const selectedFarewellChoice = ref('');
 const isLoadingFarewells = ref(false);
 
 const availableFarewellMessages = computed(() =>
@@ -61,8 +61,12 @@ const isResolving = computed(
 
 const selectedFarewell = computed(() =>
   availableFarewellMessages.value.find(
-    message => Number(message.id) === Number(selectedFarewellId.value)
+    message => Number(message.id) === Number(selectedFarewellChoice.value)
   )
+);
+
+const canConfirm = computed(
+  () => !isResolving.value || selectedFarewellChoice.value !== ''
 );
 
 const buildMessageVariables = () => {
@@ -111,7 +115,7 @@ const open = async ({ conversation, status, snoozedUntil, ...context }) => {
   conversationTeamId.value = Number(
     conversation?.meta?.team?.id || conversation?.team_id
   );
-  selectedFarewellId.value = null;
+  selectedFarewellChoice.value = '';
   dialogRef.value?.open();
 
   if (status === wootConstants.STATUS_TYPE.RESOLVED) {
@@ -126,11 +130,13 @@ const handleClose = () => {
   targetStatus.value = '';
   conversationContext.value = null;
   conversationTeamId.value = null;
-  selectedFarewellId.value = null;
+  selectedFarewellChoice.value = '';
   emit('close');
 };
 
 const handleConfirm = () => {
+  if (!canConfirm.value) return;
+
   const farewell = selectedFarewell.value;
 
   emit('confirm', {
@@ -164,6 +170,7 @@ defineExpose({ open, close });
     "
     :confirm-button-label="t('CONVERSATION.STATUS_CONFIRMATION.CONFIRM')"
     :cancel-button-label="t('CONVERSATION.STATUS_CONFIRMATION.CANCEL')"
+    :disable-confirm-button="!canConfirm"
     @confirm="handleConfirm"
     @close="handleClose"
   >
@@ -181,17 +188,14 @@ defineExpose({ open, close });
         {{ t('CONVERSATION.STATUS_CONFIRMATION.FAREWELL.LOADING') }}
       </div>
 
-      <div
-        v-else-if="availableFarewellMessages.length"
-        class="flex flex-col gap-2 max-h-72 overflow-y-auto"
-      >
+      <div v-else class="flex flex-col gap-2 max-h-72 overflow-y-auto">
         <label
           class="flex items-start gap-3 p-3 border rounded-lg cursor-pointer border-n-weak hover:bg-n-alpha-black2"
         >
           <input
-            v-model="selectedFarewellId"
+            v-model="selectedFarewellChoice"
             type="radio"
-            :value="null"
+            value="none"
             class="mt-1"
           />
           <span class="flex flex-col gap-1">
@@ -207,9 +211,9 @@ defineExpose({ open, close });
           class="flex items-start gap-3 p-3 border rounded-lg cursor-pointer border-n-weak hover:bg-n-alpha-black2"
         >
           <input
-            v-model="selectedFarewellId"
+            v-model="selectedFarewellChoice"
             type="radio"
-            :value="message.id"
+            :value="String(message.id)"
             class="mt-1"
           />
           <span class="flex flex-col gap-1 min-w-0">
@@ -221,11 +225,14 @@ defineExpose({ open, close });
             </span>
           </span>
         </label>
-      </div>
 
-      <p v-else class="mb-0 text-sm text-n-slate-11">
-        {{ t('CONVERSATION.STATUS_CONFIRMATION.FAREWELL.EMPTY') }}
-      </p>
+        <p
+          v-if="!availableFarewellMessages.length"
+          class="px-3 py-2 mb-0 text-sm text-n-slate-11"
+        >
+          {{ t('CONVERSATION.STATUS_CONFIRMATION.FAREWELL.EMPTY') }}
+        </p>
+      </div>
     </div>
   </Dialog>
 </template>

@@ -74,7 +74,8 @@
       "SELECT": "Selecionar",
       "SELECT_ALL": "Selecionar todos os agentes",
       "SELECTED_COUNT": "{selected} de {total} agentes selecionados.",
-      "PRIORITY_LEVEL": "Nível de atendimento"
+      "PRIORITY_LEVEL": "Nível de atendimento",
+      "INVALID_PRIORITY_LEVELS": "Defina níveis válidos e únicos para todos os agentes."
     },
     "ADD": {
       "TITLE": "Adicionar agentes ao time: {teamName}",
@@ -120,9 +121,9 @@
         "LABEL": "Atribuição Automática",
         "ALGORITHM": {
           "LABEL": "Algoritmo de distribuição",
-          "ROUND_ROBIN": "Sequencial (Round Robin)",
-          "BALANCED": "Balanceada",
-          "PRIORITY": "Prioridade"
+          "BALANCED": "Balanceado (padrão)",
+          "PRIORITY": "Prioridade",
+          "SEQUENTIAL": "Sequencial"
         }
       },
       "SUBMIT_CREATE": "Criar novo time"

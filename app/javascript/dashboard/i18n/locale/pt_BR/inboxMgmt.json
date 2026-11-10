@@ -1239,7 +1239,9 @@
       },
       "METHOD": {
         "ROUND_ROBIN": "Rodízio",
-        "BALANCED": "Atribuição equilibrada"
+        "BALANCED": "Balanceado",
+        "PRIORITY": "Prioridade",
+        "SEQUENTIAL": "Sequencial"
       },
       "UPGRADE_PROMPT": "Políticas de atribuição personalizadas estão disponíveis no plano Business",
       "UPGRADE_TO_BUSINESS": "Atualizar para o Business",
@@ -1251,7 +1253,11 @@
       "VIEW_ALL_POLICIES": "Ver todas as políticas",
       "CURRENT_BEHAVIOR": "Atualmente utilizando o comportamento de atribuição padrão:",
       "LINK_SUCCESS": "Política de atribuição vinculada com sucesso",
-      "LINK_ERROR": "Falha ao vincular a política de atribuição"
+      "LINK_ERROR": "Falha ao vincular a política de atribuição",
+      "AGENT_LEVELS": "Nível dos agentes",
+      "PRIORITY_LEVELS_HELP": "Defina um nível de 1 a 10 para cada agente. O nível mais baixo é priorizado.",
+      "SEQUENTIAL_LEVELS_HELP": "Defina níveis únicos para cada agente. O nível 1 recebe primeiro; se estiver ocupado, o nível 2, e assim por diante.",
+      "INVALID_AGENT_LEVELS": "Defina níveis válidos e únicos para todos os agentes."
     },
     "ASSIGNMENT_POLICY": {
       "DELETE_CONFIRM_TITLE": "Excluir política de atribuição?",

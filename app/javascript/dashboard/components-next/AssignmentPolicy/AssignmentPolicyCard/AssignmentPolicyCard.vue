@@ -39,7 +39,11 @@ const inboxes = computed(() => {
 });
 
 const order = computed(() => {
-  return formatToTitleCase(props.assignmentOrder);
+  if (!props.assignmentOrder) return '';
+  const key = props.assignmentOrder.toUpperCase();
+  return t(
+    `ASSIGNMENT_POLICY.AGENT_ASSIGNMENT_POLICY.FORM.ASSIGNMENT_ORDER.${key}.LABEL`
+  );
 });
 
 const priority = computed(() => {

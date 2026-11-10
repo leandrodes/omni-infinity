@@ -167,7 +167,24 @@ const saveSettings = async () => {
             </label>
           </div>
 
-          <div class="flex items-center justify-between gap-4">
+          <div
+            v-for="key in [
+              'enable_resolved_conversations_filter',
+              'enable_pending_conversations_filter',
+            ]"
+            :key="key"
+            class="flex items-center justify-between gap-4"
+          >
+            <span class="text-sm">{{
+              t(`ATTENDANCE_SETTINGS.DISPLAY.${key.toUpperCase()}`)
+            }}</span>
+            <Switch v-model="settings[key]" />
+          </div>
+
+          <div
+            v-if="settings.enable_pending_conversations_filter"
+            class="flex items-center justify-between gap-4"
+          >
             <span class="text-sm">{{
               t(
                 'ATTENDANCE_SETTINGS.DISPLAY.ENABLE_PENDING_TEAM_CONVERSATIONS_FILTER'
@@ -177,10 +194,9 @@ const saveSettings = async () => {
               v-model="settings.enable_pending_team_conversations_filter"
             />
           </div>
+
           <div
             v-for="key in [
-              'enable_resolved_conversations_filter',
-              'enable_pending_conversations_filter',
               'enable_unassigned_conversations_filter',
               'enable_contact_company_filter',
               'show_inbox_name_in_conversation_list',

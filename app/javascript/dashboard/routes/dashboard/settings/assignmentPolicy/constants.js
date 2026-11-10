@@ -1,6 +1,7 @@
 // Assignment order types
-export const ROUND_ROBIN = 'round_robin';
 export const BALANCED = 'balanced';
+export const PRIORITY = 'priority';
+export const SEQUENTIAL = 'sequential';
 
 // Assignment priority types
 export const EARLIEST_CREATED = 'earliest_created';
@@ -15,6 +16,6 @@ export const DEFAULT_EXCLUDE_OLDER_THAN_HOURS = 168;
 
 // Options groupings
 export const OPTIONS = {
-  ORDER: [ROUND_ROBIN, BALANCED],
+  ORDER: [BALANCED, PRIORITY, SEQUENTIAL],
   PRIORITY: [EARLIEST_CREATED, LONGEST_WAITING],
 };

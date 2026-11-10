@@ -29,6 +29,14 @@ const props = defineProps({
     type: Function,
     default: () => {},
   },
+  showPriorityLevels: {
+    type: Boolean,
+    default: false,
+  },
+  maxPriorityLevel: {
+    type: Number,
+    default: 10,
+  },
   isWorking: {
     type: Boolean,
     default: false,
@@ -81,12 +89,17 @@ const toggleSelectAll = () => {
   }
 };
 
-const headers = computed(() => [
-  '',
-  t('TEAMS_SETTINGS.AGENTS.AGENT'),
-  t('TEAMS_SETTINGS.AGENTS.EMAIL'),
-  t('TEAMS_SETTINGS.AGENTS.PRIORITY_LEVEL'),
-]);
+const headers = computed(() => {
+  const baseHeaders = [
+    '',
+    t('TEAMS_SETTINGS.AGENTS.AGENT'),
+    t('TEAMS_SETTINGS.AGENTS.EMAIL'),
+  ];
+  if (props.showPriorityLevels) {
+    baseHeaders.push(t('TEAMS_SETTINGS.AGENTS.PRIORITY_LEVEL'));
+  }
+  return baseHeaders;
+});
 </script>
 
 <template>
@@ -137,13 +150,13 @@ const headers = computed(() => [
             </span>
           </BaseTableCell>
 
-          <BaseTableCell class="min-w-0">
+          <BaseTableCell v-if="showPriorityLevels" class="min-w-0">
             <input
               v-if="isAgentSelected(agent.id)"
               type="number"
               min="1"
-              max="10"
-              class="w-16 text-right border rounded px-2 py-1"
+              :max="maxPriorityLevel"
+              class="w-16 px-2 py-1 text-right border rounded"
               :value="priorityLevels[agent.id] || 1"
               @change="updatePriorityLevel(agent.id, $event.target.value)"
             />
